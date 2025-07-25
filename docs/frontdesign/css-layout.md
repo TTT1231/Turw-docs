@@ -20,7 +20,7 @@ flex布局默认方向是水平摆放即`flex-direction:row` 即主轴方向。�
 - `justify-content: space-evenly;` - `justify-evenly`（平均分布）
 - `justify-content: stretch;` - `justify-stretch`（把内容拉伸）
 ::: tip
-后面有一个`safe`(css),防止内容溢出容器,在css中直接加入即可`safe`,但是tailwindcss不支持。
+后面有一个`safe`(css)，防止内容溢出容器，在css中直接加入即可`safe`，但是tailwindcss不支持。
 :::
 <div class=" justify-items-stretch justify-stretch"></div>
 
@@ -75,4 +75,4 @@ grid布局是一个二维布局系统，同时处理多行多列。与flex布局
 ### grid-template-rows (定义行和行的宽度，与上诉的grid-template-cols类似)
 
 <span class=" text-red-500">注: </span>
-<span class="font-semibold">repeat(重复次数, 列宽度),表示在列中重复多少次，简化重复列或者行的写法。例如repeat(4,1fr)表示4列，每列宽度都是1fr。</span>
+<span class="font-semibold">repeat(重复次数, 列宽度)，表示在列中重复多少次，简化重复列或者行的写法。例如repeat(4,1fr)表示4列，每列宽度都是1fr。</span>
