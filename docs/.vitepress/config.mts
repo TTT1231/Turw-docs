@@ -8,7 +8,7 @@ export default defineConfig({
    description: '日常学习',
 
    themeConfig: {
-      logo: '/public/assets/logo.svg',
+      logo: '/assets/logo.svg',
       nav: [
          { text: '主页', link: '/' },
          {

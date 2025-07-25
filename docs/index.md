@@ -7,7 +7,7 @@ hero:
    text: '日常学习文档'
    tagline: '学无止境'
    image:
-      src: /public/assets/homeright.svg
+      src: /assets/homeright.svg
    actions:
       - theme: brand
         text: Markdown 示例
