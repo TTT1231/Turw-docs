@@ -1,0 +1,11 @@
+
+.output.js
+node_modules
+.vscode
+
+public
+
+*-lock.yaml
+docs/.vitepress/cache
+docs/.vitepress/dist
+
