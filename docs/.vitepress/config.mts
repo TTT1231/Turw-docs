@@ -26,7 +26,7 @@ export default defineConfig({
             collapsed: false, // 默认展开
             items: [
                {
-                  text: 'CSS 布局',
+                  text: 'CSS',
                   link: '/frontdesign/css-layout'
                },
                {

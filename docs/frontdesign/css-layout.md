@@ -1,6 +1,6 @@
-# CSS Layout Examples
+# CSS
 
-这个文档是有关于css的布局示例和详解。
+这个文档是有关于css的示例和详解。
 
 ## Flex Layout
 
@@ -76,3 +76,33 @@ grid布局是一个二维布局系统，同时处理多行多列。与flex布局
 
 <span class=" text-red-500">注: </span>
 <span class="font-semibold">repeat(重复次数, 列宽度)，表示在列中重复多少次，简化重复列或者行的写法。例如repeat(4,1fr)表示4列，每列宽度都是1fr。</span>
+
+## 图片清晰度问题
+
+原始尺寸 = 样式尺寸（原始图片的长和宽） \* DPR（devicePixelRatio）  
+srcset提供多个图片源，让游览器自行选择（要提供多个图片不同尺寸大小）示例
+
+```js
+//其中 1x表示DPR的值，要保持上诉公式成立
+<img
+   srcset="
+    example.com/id/img1_1 1x,
+    example.com/id/img1_2 2x, 
+"
+/>
+```
+img还有一个size属性，目的时在告诉游览器在不同视口（viewport）或布局条件下，图片实际会显示的宽度是多少，从而让游览器选择最合适的图片。例如
+```js
+//size后面表示
+//当视口宽度<= 600px时，图片显示宽度为400ox;
+//其他情况下，图片显示宽度为800px
+<img
+  srcset="
+    example.com/id/img1_400.jpg 400w,
+    example.com/id/img1_800.jpg 800w
+  "
+  sizes="(max-width: 600px) 400px, 800px"
+  src="example.com/id/img1_800.jpg"
+  alt="示例图片"
+/>
+```
