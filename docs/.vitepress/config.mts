@@ -46,7 +46,7 @@ export default defineConfig({
                   collapsed: false,
                   items: [
                      { text: 'vue-router', link: '/frontdesign/vue3/vue-router' },
-                     { text: 'vuex', link: '/frontdesign/vue3/vuex' },
+                     { text: '开发环境问题', link: '/frontdesign/vue3/vue-problem' },
                      { text: '性能优化', link: '/frontdesign/vue3/performance-optimize' },
                      { text: 'vue面试', link: '/frontdesign/vue3/vuemeeting' }
                   ]
