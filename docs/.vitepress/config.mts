@@ -23,7 +23,7 @@ export default defineConfig({
       sidebar: [
          {
             text: '前端',
-            collapsed: false, 
+            collapsed: true, 
             items: [
                {
                   text: 'CSS',
@@ -47,7 +47,7 @@ export default defineConfig({
                },
                {
                   text: 'VUE3',
-                  collapsed: false,
+                  collapsed: true,
                   items: [
                      { text: 'vue-router', link: '/frontdesign/vue3/vue-router' },
                      { text: '开发环境问题', link: '/frontdesign/vue3/vue-problem' },
@@ -64,7 +64,7 @@ export default defineConfig({
          },
          {
             text: '微前端',
-            collapsed: false,
+            collapsed: true,
             items: [
                { text: 'qiankun', link: '/mirco-frontdesign/qiankun' },
                { text: 'single-spa', link: '/mirco-frontdesign/single-spa' }
@@ -72,17 +72,17 @@ export default defineConfig({
          },
          {
             text: 'Nuxt全栈',
-            collapsed: false,
+            collapsed: true,
             items:[]
          },
          {
             text: '边缘计算',
-            collapsed: false,
+            collapsed: true,
             items:[]
          },
          {
             text: 'AI智能体应用',
-            collapsed: false,
+            collapsed: true,
             items:[]
          },
          
