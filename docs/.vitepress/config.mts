@@ -14,8 +14,8 @@ export default defineConfig({
          {
             text: '前端',
             items: [
-               { text: 'Examples', link: '/markdown-examples' },
-               { text: 'API', link: '/api-examples' }
+               { text: 'FAQ', link: '/markdown-examples' },
+               { text: 'Nuxt全栈', link: '/api-examples' }
             ]
          }
       ],
@@ -23,7 +23,7 @@ export default defineConfig({
       sidebar: [
          {
             text: '前端',
-            collapsed: false, // 默认展开
+            collapsed: false, 
             items: [
                {
                   text: 'CSS',
@@ -42,17 +42,50 @@ export default defineConfig({
                   link: '/frontdesign/Vite'
                },
                {
+                  text: 'Monorepo管理',
+                  link: '/frontdesign/monorepo-management'
+               },
+               {
                   text: 'VUE3',
                   collapsed: false,
                   items: [
                      { text: 'vue-router', link: '/frontdesign/vue3/vue-router' },
                      { text: '开发环境问题', link: '/frontdesign/vue3/vue-problem' },
                      { text: '性能优化', link: '/frontdesign/vue3/performance-optimize' },
-                     { text: 'vue面试', link: '/frontdesign/vue3/vuemeeting' }
+                     { text: 'vue核心', link: '/frontdesign/vue3/vue-core' },
+                     
                   ]
-               }
+               },
+               {
+                  text: '常见问题及其解决方案',
+                  link: '/frontdesign/common-problems'
+               },
             ]
-         }
+         },
+         {
+            text: '微前端',
+            collapsed: false,
+            items: [
+               { text: 'qiankun', link: '/mirco-frontdesign/qiankun' },
+               { text: 'single-spa', link: '/mirco-frontdesign/single-spa' }
+            ]
+         },
+         {
+            text: 'Nuxt全栈',
+            collapsed: false,
+            items:[]
+         },
+         {
+            text: '边缘计算',
+            collapsed: false,
+            items:[]
+         },
+         {
+            text: 'AI智能体应用',
+            collapsed: false,
+            items:[]
+         },
+         
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
       footer: {
