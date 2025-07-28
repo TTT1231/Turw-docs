@@ -14,7 +14,7 @@ export default defineConfig({
          {
             text: '前端',
             items: [
-               { text: 'FAQ', link: '/markdown-examples' },
+               { text: 'FAQ', link: '/frontdesign/common-problems' },
                { text: 'Nuxt全栈', link: '/api-examples' }
             ]
          }
