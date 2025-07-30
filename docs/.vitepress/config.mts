@@ -6,7 +6,9 @@ export default defineConfig({
    base: '/Turw-docs/', // Set to your desired base path
    title: '我的文档',
    description: '日常学习',
-
+   head:[
+      ['link', { rel: 'icon', href: '/Turw-docs/assets/favicon.ico' }],
+   ],
    themeConfig: {
       logo: '/assets/logo.svg',
       nav: [
@@ -73,7 +75,10 @@ export default defineConfig({
          {
             text: 'Nuxt全栈',
             collapsed: true,
-            items:[]
+            items:[
+               { text: '目录结构', link: '/frontdesign/nuxt/catalog' },
+               { text: '配置问题及其解决方案', link: '/frontdesign/nuxt/config-solutions' }
+            ]
          },
          {
             text: '边缘计算',
