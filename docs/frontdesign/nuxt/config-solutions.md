@@ -1,10 +1,16 @@
+---
+outline: deep
+---
+
 # 配置问题及其常见解决方案
 
 主要将nuxt4的项目配置问题和解决方案。
 
-## tailwindcss配置问题
+## ts类型提示问题
 
-@nuxt/tailwindcss是官方tailwindcss模块，当使用tailwind css V4文档安装时由于官方已经集成了该模块，因而不需要使用tailwind css V4，如果使用其文档安装，其中@tailwindcss/vite在nuxt.config.js中使用会有ts插件类型错误。<span class=" tw-text-blue-500">这里最好的方式是使用@nuxt/tailwindcss官方模块，然后在项目目录中，再次定义一个tailwind.config.js覆盖掉官方模块的默认配置用于自定义管理（以及配合tailwind类提示），然后在assets/css/[customer-name].css中引入tailwind 3 个css类，最后在nuxt.config.js中引入即可。</span>最后的效果是自定义tailwindcss配置其余交给nuxt自动集成，形成最简、最易维护。
+### tailwindcss配置问题及其类型不提示问题
+
+@nuxt/tailwindcss是官方tailwindcss模块，当使用tailwind css V4文档安装时由于官方已经集成了该模块，因而不需要使用tailwind css V4，如果使用其文档安装，其中@tailwindcss/vite在nuxt.config.js中使用会有ts插件类型错误。<span class=" tw-text-blue-500">这里最好的方式是使用@nuxt/tailwindcss官方模块，然后在项目目录中，再次定义一个tailwind.config.js覆盖掉官方模块的默认配置用于自定义管理（以及配合tailwind类提示），然后在assets/css/[customer-name].css中引入tailwind 3 个css类，最后在nuxt.config.js中引入即可。</span>最后的效果是自定义tailwindcss配置其余交给nuxt自动集成，形成最简、最易维护。😀
 
 ```js {2}
 //============================== first add packages ================================
@@ -39,14 +45,14 @@ export default  {
 }
 ```
 
-## antd 类型提示问题
+### antd 类型提示问题
 
-由于nuxt采用ts项目引用机制，tsconfig.json只负责引用`.nuxt/tsconfig*.json`这些子配置文件，而实际类型检查和包含逻辑都在这些子tsconfig文件里，因而只要类型文件（.d.ts）在app目录下，会被自动引入nuxt自动处理，因而为了统一管理，社区方式是所有类型声明文件全部处于types文件夹下。这里的类型提示也可以直接去node_modules去找，然后引入即可（其实不用的话，也可以正常使用，只是来说开发环境不友好，ts类型推断为any，并且其属性也没有提示）<span class=" text-red-600">可以在开发的时候引入，然后开发完后可以删除，让nuxt自动处理</span>
+由于nuxt采用ts项目引用机制，tsconfig.json只负责引用`.nuxt/tsconfig*.json`这些子配置文件，而实际类型检查和包含逻辑都在这些子tsconfig文件里，因而只要类型文件（.d.ts）在app目录下，会被自动引入nuxt自动处理，因而为了统一管理，社区方式是所有类型声明文件全部处于types文件夹下。<span class=" text-blue-500  text-lg">开发中，最好引入到app目录下的.d.ts文件中</span>
+这里的类型提示也可以直接去node_modules去找，然后引入即可（其实不用的话，也可以正常使用，只是来说开发环境不友好，ts类型推断为any，并且其属性也没有提示）<span class=" text-red-600">可以在开发的时候引入，然后开发完后可以删除，让nuxt自动处理</span>
 <details>
-<summary>
-<span class=" bg-blue-400 text-white cursor-pointer select-none"> 
+<summary class=" bg-blue-400  text-white cursor-pointer select-none
+ text-center active:scale-95">
  antd 全局类型声明
- </span>
 </summary>
 
 ```ts
@@ -326,3 +332,5 @@ export {};
 
 ```
 </details>
+
+
