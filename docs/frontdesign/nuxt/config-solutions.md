@@ -10,7 +10,7 @@ outline: deep
 
 ### tailwindcss配置问题及其类型不提示问题
 
-@nuxt/tailwindcss是官方tailwindcss模块，当使用tailwind css V4文档安装时由于官方已经集成了该模块，因而不需要使用tailwind css V4，如果使用其文档安装，其中@tailwindcss/vite在nuxt.config.js中使用会有ts插件类型错误。<span class=" tw-text-blue-500">这里最好的方式是使用@nuxt/tailwindcss官方模块，然后在项目目录中，再次定义一个tailwind.config.js覆盖掉官方模块的默认配置用于自定义管理（以及配合tailwind类提示），然后在assets/css/[customer-name].css中引入tailwind 3 个css类，最后在nuxt.config.js中引入即可。</span>最后的效果是自定义tailwindcss配置其余交给nuxt自动集成，形成最简、最易维护。😀
+@nuxt/tailwindcss是官方tailwindcss模块，当使用tailwind css V4文档安装时由于官方已经集成了该模块，因而不需要使用tailwind css V4，如果使用其文档安装，其中@tailwindcss/vite在nuxt.config.js中使用会有ts插件类型错误。这里最好的方式是使用<span class=" font-bold">@nuxt/tailwindcss官方模块</span>，然后在项目目录中，再次定义一个tailwind.config.js覆盖掉官方模块的默认配置用于自定义管理（以及配合tailwind类提示），然后在assets/css/[customer-name].css中引入tailwind 3 个css类，最后在nuxt.config.js中引入即可。最后的效果是自定义tailwindcss配置其余交给nuxt自动集成，形成最简、最易维护。😀
 
 ```js {2}
 //============================== first add packages ================================

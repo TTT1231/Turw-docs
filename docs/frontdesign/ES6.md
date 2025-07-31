@@ -5,7 +5,7 @@ js下一代标准，使得js可以编写复杂系统.
 ## Symbol
 
 Symbol()都会生成一个全新、唯一的值，避免属性名冲突，同时不能被常规的属性遍历如(for...in、Object.keys)枚举出来，如果非要实现则需要定义对象的默认迭代器方法(Symbol.iterator)，使得对象可以被for...of、解构赋值等语法遍历。  
-Symbol的值是唯一的，可以接受一个字符串用来区分。即使字符串一样但是Symbol的值不一样`Symbol('a')!=Symbol('a')`。
+Symbol的值是**唯一的**，可以接受一个字符串用来区分。即使字符串一样但是Symbol的值不一样`Symbol('a')!=Symbol('a')`。
 
 ### Symbol.iterator 实现可迭代对象或者数组
 
