@@ -45,7 +45,7 @@ export default  {
 }
 ```
 
-### antd 类型提示问题
+### antd 类型提示问题（手动配置）
 
 由于nuxt采用ts项目引用机制，tsconfig.json只负责引用`.nuxt/tsconfig*.json`这些子配置文件，而实际类型检查和包含逻辑都在这些子tsconfig文件里，因而只要类型文件（.d.ts）在app目录下，会被自动引入nuxt自动处理，因而为了统一管理，社区方式是所有类型声明文件全部处于types文件夹下。<span class=" text-blue-500  text-lg">开发中，最好引入到app目录下的.d.ts文件中</span>
 这里的类型提示也可以直接去node_modules去找，然后引入即可（其实不用的话，也可以正常使用，只是来说开发环境不友好，ts类型推断为any，并且其属性也没有提示）<span class=" text-red-600">可以在开发的时候引入，然后开发完后可以删除，让nuxt自动处理</span>
@@ -332,5 +332,39 @@ export {};
 
 ```
 </details>
+
+### antd样式闪烁问题
+
+由于服务器渲染如果antd样式在服务器中没有引入会导致客户端异步加载样式导致css样式问题（也即渲染后css没有立即加载问题）.。**在nuxt中SSR引入**nuxt.config.ts
+```js
+//定义一个SSR的插件 antd.server.ts
+export default defineNuxtConfig({
+  css: [
+    'ant-design-vue/dist/antd.css'
+  ] //会在客户端和服务端都加载，而在客户端由于css异步加载，且异步加载都造成闪烁
+})
+```  
+当然加载是antd全量css文件，打包后会文件大很多。  
+这里**最好的方式**是使用官方组件@ant-design-vue/nuxt
+```js
+//推荐解决方式
+//1----add package
+pnpx nuxi@latest module add ant-design-vue
+//2----make sure correctly pick(nuxt.config.ts)
+antd:{extraStyle:true} //按需提取和注入 css，默认为 false
+//3----use advanced css,make sure option open——2 step
+<template>
+  <a-extract-style>
+    <!-- Your page or component -->
+  </a-extract-style>
+</template>
+```
+
+### eslint修复代码nuxt.config.ts报错问题
+
+由于eslint找不到我们的TS的顶层依赖项，如果没有安装它隐藏在nuxt后面，导致报错defineNuxt，解决办法是直接安装它**pnpm install -D typescript**
+
+
+
 
 
