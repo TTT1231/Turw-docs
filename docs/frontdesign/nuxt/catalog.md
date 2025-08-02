@@ -44,14 +44,14 @@ my-nuxt-app/
 ```
 
 - **composables**——hooks自动引入包括**类型**（要将项目运行起来，依赖文件系统）能根据自动嵌套目录结构处理。例如<span class=" bg-green-400/90 text-white">composables/auth/login.ts → useLogin()</span>
-- **utils**——utils自动引入(<span class="text-red-400">只引入默认导出，不默认导出要手动引入</span>)包括**类型**（要将项目运行起来，依赖文件系统）能根据自动嵌套目录结构处理。  
-<span class=" bg-green-400/80 text-white">composables/auth/login.ts → useLogin()</span>
-- **plugins**——插件自动引入（要将项目运行起来，依赖文件系统）  
-`plugins/my-plugin.client.ts → 仅客户端【游览器】`  
+
+### 其它（默认不会自动引入，如需自动引入在nuxt.config.tss手动配置即可）
+- **plugins**——插件自动注册（要将项目运行起来，依赖文件系统） 【一般是注入全局方法、指令等等】，**需要注意的是，nuxt不会自动引入，也就是要用的时候，手动引入【具体useNuxtApp()解构出来使用即可】**  
+`plugins/my-plugin.client.ts → 仅客户端【游览器】`    
  `plugins/my-plugin.server.ts → 仅服务端【服务器】`  
 
 - pinia: ~/stores/ (需安装 @pinia/nuxt)  #😃完整类型提示
 - API 路由: ~/server/api/                #😃$fetch有，或者封装axios提供类型也可以
 - 中间件: ~/middleware/                  #基本对象类型，不影响
 - 布局: ~/layouts/                       #基本布局名称【props要手动声明】
-- 页面: ~/pages/                         #😃完整类型提示
+- 页面: ~/pages/                         #😃部分类型提示
