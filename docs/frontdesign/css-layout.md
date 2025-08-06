@@ -106,3 +106,23 @@ img还有一个size属性，目的时在告诉游览器在不同视口（viewpor
   alt="示例图片"
 />
 ```
+
+## CSS选择器-tailwind写法
+注意：**&**在tailwind中表父级
+```css {3,7,11,15}
+/* 特定[target-element][attribute] 指定元素指定属性 */
+[attribute] 属性选择器——例：[nihao]选中所有**nihao**属性。
+[attributeName-attributeVal]:some css
+
+/* 子选择器，直接作用子元素，仅作用一代 */
+father-ele > child-ele
+[father-ele(&)>child-ele]:some css
+
+/* 相邻兄弟选择器——选择紧接在某个元素后的第一个兄弟元素。 */
+father-ele + brother-ele
+[father-ele(&)+brother-ele]:some css【推荐peer和adjacent】
+
+/* 通用兄弟选择器 —— 所有同级别的孩子元素也即同级别*/
+father-ele ~ all-child-ele 
+[father-ele(&)_all-child-ele]:some css
+```
