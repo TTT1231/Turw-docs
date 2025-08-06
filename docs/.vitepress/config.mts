@@ -65,14 +65,6 @@ export default defineConfig({
             ]
          },
          {
-            text: '微前端',
-            collapsed: true,
-            items: [
-               { text: 'qiankun', link: '/mirco-frontdesign/qiankun' },
-               { text: 'single-spa', link: '/mirco-frontdesign/single-spa' }
-            ]
-         },
-         {
             text: 'Nuxt全栈',
             collapsed: true,
             items:[
@@ -80,17 +72,7 @@ export default defineConfig({
                { text: '统一错误处理架构', link: '/frontdesign/nuxt/error-handle' },
                { text: '配置问题及其解决方案', link: '/frontdesign/nuxt/config-solutions' }
             ]
-         },
-         {
-            text: '边缘计算',
-            collapsed: true,
-            items:[]
-         },
-         {
-            text: 'AI智能体应用',
-            collapsed: true,
-            items:[]
-         },
+         }
          
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
