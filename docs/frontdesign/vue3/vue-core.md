@@ -47,3 +47,81 @@ const targetMap = new WeakMap<object, KeyToDepMap>()
 
 当响应式数据发送变化，然后需要实时渲染页面,vue就会发生重绘，使得数据能够实时展示。  
 而回流只是css外观风格发生改变，不会受到响应式数据的影响。
+
+## Suspense消除异步传染核心
+
+核心针对**异步源头中的Promise**将异步转化同步，以此来消除异步传染性。  
+但是会使的同步代码逻辑执行两次。也即第一段同步代码执行到目标【异步改同步】直接抛出promise中断同步执行队列，  
+第二段重新执行同步代码【此时这里已经出结果了，就屏蔽了异步特性】。示例：
+
+```ts
+//Promise缓存
+const cache: {
+  status: 'pending' | 'fulfilled' | 'rejected',
+  data: any
+} = {
+  status: 'pending',
+  data: null,
+};
+
+//当前正在进行的Promise
+let currentPromise: Promise<any> | null = null;
+
+//异步源头，转化同步代码===========主要解决这里=========
+function asyncToSync(){
+    const targetRequestPromise = ()=>$fetch('example',{method:'[target]'}) //nuxt
+
+    if(cache.status === 'fulfilled'){
+        return cache.data
+    }
+
+    if(cache.status === 'pending'){
+        //当前没有promise在进行
+        if(!currentPromise){
+            currentPromise = targetRequestPromise()
+                                .then(res=>{
+                                    cache.status = 'fulfilled'
+                                    cache.data   = res.data
+                                    currentPromise = null
+                                })
+                                .cache((error)=>{
+                                    cache.status = 'rejected';
+                                    cache.data = err ?? new Error('Unknown error');
+                                    currentPromise = null;
+                                })
+        }
+
+        //已有promise，直接抛出错误，交给外层cache执行
+        throw currentPromise;
+    }
+
+     //请求失败了,下次请求失败后续都会抛出这个错误，除非重置cache。
+     // 注：由于这里是同步在这做请求重试会死循环
+    if (cache.status === 'rejected') {
+        throw cache.data;
+    }
+}
+
+function callSync(){
+    return asyncToSync();
+}
+
+function main(){
+    try{
+        console.log('run main');
+        const data = callSync()
+    } catch (error) {
+    if (error instanceof Promise) {
+
+      error.finally?.(() => {
+        main();
+      });
+
+    } else {
+        //返回了不是promise错误对象，请求失败
+        //=========可以在这做请求重试===========
+        //if-else判断即可，但是注意重置缓存状态
+    }
+  }
+}
+```
