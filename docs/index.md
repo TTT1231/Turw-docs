@@ -10,11 +10,11 @@ hero:
       src: /assets/homeright.svg
    actions:
       - theme: brand
-        text: Markdown 示例
-        link: /markdown-examples
+        text: 前端 FAQ
+        link: /frontdesign/common-problems
       - theme: alt
-        text: API 示例
-        link: /api-examples
+        text: Nuxt FAQ
+        link: /frontdesign/nuxt/config-solutions
 
 features:
    - icon: 📚
