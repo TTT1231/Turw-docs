@@ -48,6 +48,10 @@ export default defineConfig({
                   link: '/frontdesign/monorepo-management'
                },
                {
+                  text: '前端安全',
+                  link: '/frontdesign/front-security'
+               },
+               {
                   text: 'VUE3',
                   collapsed: true,
                   items: [
