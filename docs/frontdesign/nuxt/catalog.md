@@ -55,3 +55,53 @@ my-nuxt-app/
 - 中间件: ~/middleware/                  #基本对象类型，不影响
 - 布局: ~/layouts/                       #基本布局名称【props要手动声明】
 - 页面: ~/pages/                         #😃部分类型提示
+
+## 文件命名
+
+[order].[name].[env].[type].ts
+- order 执行顺序，一般用01，02...表示，其中01第一个执行,其次02。
+- name  名字
+- env 作用环境有**server、client、global**表示服务端、客户端、全局。
+- type 文件类型可以是plugin、middleware等
+
+## 服务端 Hooks（Nitro）
+
+### 核心 Runtime Hooks
+| Hook 名称 | 触发时机 |
+|-----------|----------|
+| `request` | 收到请求时触发（处理日志、鉴权等） |
+| `beforeResponse` | 响应发送前（可修改 body 和 headers） |
+| `afterResponse` | 响应发送后（做清理、记录等） |
+| `render:response` | SSR 页面渲染完成、响应发送前（**这里可以做注入csp中nonce**） |
+| `render:html` | 构建 HTML 前（SSR 流程中） |
+| `error` | 请求或渲染出错时触发 |
+| `close` | Nitro 进程关闭时触发 |
+| `dev:ssr-logs` | 开发模式下 SSR 日志输出时 |
+
+---
+
+## 客户端 Hooks
+
+### Nuxt App Hooks（`nuxtApp.hooks`）
+| Hook 名称 | 触发时机 |
+|-----------|----------|
+| `app:created` | Nuxt 应用实例创建后（Vue app 未挂载） |
+| `app:beforeMount` | Vue 应用挂载到 DOM 前 |
+| `app:mounted` | Vue 应用挂载完成（hydration 完成） |
+| `app:rendered` | 首次渲染完成（包含 SSR hydration） |
+| `app:error` | 应用运行时抛出错误 |
+| `vue:error` | **Vue 应用运行时抛出错误**（等价于 `app.config.errorHandler` 捕获） |
+| `page:start` | 页面导航开始（路由切换开始） |
+| `page:finish` | 页面导航完成（页面和数据就绪） |
+| `page:loading:start` | 页面数据开始加载 |
+| `page:loading:end` | 页面数据加载完成 |
+
+### Router Hooks（`vue-router`）
+| Hook 名称 | 触发时机 |
+|-----------|----------|
+| `beforeEach` | 路由跳转前 |
+| `beforeResolve` | 目标路由解析完成前 |
+| `afterEach` | 路由跳转后 |
+
+---
+
