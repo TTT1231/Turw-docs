@@ -1,21 +1,56 @@
+---
+outline: deep
+---
+
 # 前端安全
 
-## 内容安全策略(CSP)
+## 📜 内容安全策略 (CSP) 最佳实践
 
-用不同指令配置CSP，阻止恶意js执行，**要考虑到恶意用户请求拦截修改header，对传输内容进行加密，降低这一可能性。**<span class=" text-red-400">【指令】:【self &nbsp;sample.ip】</span>
-- `default-src:'self' [sample.ip]` 默认资源加载指令,**兜底机制**，其它指令编写时会覆盖它。
-- **`script-src:'self' [sample.ip]`** 设置js脚本只能从同源或者sample.ip加载。
-- `style-src:'self' [sample.ip] 'unsafe-inline'` 内联样式限制，如果加了`unsafe-inline`就可以使用\<style scoped\>或者style属性,
-- `img-src:'self' [sample.ip]` 限制图片加载
-- `font-src:'self' [sample.ip]` 限制字体加载
-- **`connect-src:'self' [sample.ip]`** 限制**XHR、Ajax、WebSocket** 网络请求或链接
-- `frame-src:'self' [sample.ip]` 限制可以嵌入的iframe来源，防止点击劫持
-- `object-src:'none'` 限制 \<object\>、\<embed\>、\<applet\> 等插件内容，建议设为 'none'
-- `base-uri:'self'` 限制 \<base\> 标签的 href 属性，防止基础URL被篡改
-- `form-action:'self' [sample.ip]` 限制表单提交的目标地址，防止表单劫持
-- **`report-to:{"group":"[group-sample]","max_age":[number-sample],"endpoints":"[{mulit-obj-url},...]"}`** 当检测到CSP违规时，自动向多个组发送JSON报告  
+通过配置 CSP，可以有效阻止恶意 JavaScript 执行和跨站资源注入。  
+部署时应注意：
+- **防御恶意用户篡改响应头**（拦截并修改 HTTP Header）
+- **强制使用 HTTPS 加密传输**，防止中间人攻击
+- **严格限制资源来源**，避免策略过宽
+
+---
+
+### 🛡️ 核心安全指令（必须强制启用）
+
+| 指令 | 作用 | 示例 |
+|------|------|------|
+| **`default-src 'self' sample.ip`** | 兜底机制，限制所有未单独声明的资源 | `'self' sample.ip` |
+| **`script-src 'self' sample.ip`** | 限制 JS 来源，防止外部恶意脚本 | `'self' sample.ip` |
+| **`connect-src 'self' sample.ip`** | 限制 XHR/Ajax/WebSocket 请求 | `'self' sample.ip` |
+| **`object-src 'none'`** | 禁止 `<object>`、`<embed>`、`<applet>` | `'none'` |
+| **`frame-ancestors 'self'`** | 限制页面被谁 iframe 嵌入 | `'self'` |
+| **`form-action 'self' sample.ip`** | 限制表单提交目标 | `'self' sample.ip` |
+| **`base-uri 'self'`** | 限制 `<base>` 标签的 href | `'self'` |
+| **`block-all-mixed-content`** | 禁止 HTTPS 页面加载 HTTP 资源 | _(无参数)_ |
+| **`upgrade-insecure-requests`** | 自动升级 HTTP 请求为 HTTPS | _(无参数)_ |
+
+---
+
+### 📝 细化与增强选项（可选）
+
+| 指令 | 作用 | 示例 |
+|------|------|------|
+| `script-src-elem 'self'` | 单独控制 `<script>` 标签的脚本来源 | `'self'` |
+| `style-src 'self' sample.ip 'unsafe-inline'` | 限制 CSS 来源，`unsafe-inline` 允许内联样式（不安全） | `'self' sample.ip 'unsafe-inline'` |
+| `img-src 'self' sample.ip` | 限制图片来源 | `'self' sample.ip` |
+| `font-src 'self' sample.ip` | 限制字体文件来源 | `'self' sample.ip` |
+| `frame-src 'self' sample.ip` | 限制可嵌入 iframe 来源 | `'self' sample.ip` |
+| `require-trusted-types-for 'script'` | 配合 Trusted Types API 防止 DOM 注入 | `'script'` |
+| `report-to` | 配置 CSP 违规报告发送位置 | `{"group":"g","max_age":10886400,"endpoints":[...]}` |
+
+---
+
+### 📌 安全建议
+1. **尽量不要使用 `unsafe-inline`**，改用 **`nonce`** 或 **`hash`** 验证内联脚本。
+2. 开启 **`upgrade-insecure-requests`** 与 **`block-all-mixed-content`**，确保统一加密请求。
+3. 配置 **`report-to`**，便于及时发现并修复策略违规。
+
 ```js
-// report-to参数字段
+// report-to参数字段，如果要兼容则使用report-uri即可【report-uri sample.ip】
 group：指定报告目标的名称，通常对应于 Content-Security-Policy 中的 report-to。
 max_age：报告目标的最大有效时间（秒）。
 endpoints：定义多个报告端点。一个端点包含一个 URL，报告将发送到这些 URL。
@@ -34,3 +69,9 @@ blocked-uri：被阻止的资源 URL。
 source-file：违反策略的资源文件。
 line-number：资源出现问题的代码行号。
 ```
+
+### ⚠️特别注意
+在nuxt的开发模式下，必须要设置**script-src * 'unsafe-inline' 'unsafe-eval' http://localhost:\*  ws://localhost:**  允许任意来源的脚本、内联脚本和动态代码执行。HMR和nuxt devtools动态加载和vue编译器等工具需要内联脚本和动态注入代码以实现实时更新。
+
+还有**script-src-elem * 'unsafe-inline' 'unsafe-eval' http://localhost:\*  ws://localhost:** 开发模式下，Nuxt/Vite/Webpack 会动态插入大量 \<script\> 标签或加载外部脚本（如 HMR 客户端、模块热更新脚本），需要明确允许这些行为。
+
