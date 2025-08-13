@@ -105,3 +105,50 @@ my-nuxt-app/
 
 ---
 
+## Nuxt类型增强提示
+
+### env类型增强（process.env）
+定义一个.d.ts类型文件，重写ProcessEnv接口。例如：定义之后，可能不会自动导入，在**nuxt.config.ts**顶部引入ts类型。
+```ts
+//下面这段ts类型需要在nuxt.config.ts顶部引入，类似ts import 
+/// <reference path="./path-to/[custom-name].d.ts" />
+
+// [custom-name].d.ts
+declare namespace NodeJS {
+   interface ProcessEnv {
+      //字段提示
+   }
+}
+
+```
+
+### event类型增强提示（event.context）
+直接声明即可nuxt会自动完成导入。
+
+```ts
+//[custom-name].d.ts
+declare module 'h3' {
+   interface H3EventContext {
+      //字段拓展,ts提示
+   }
+}
+```
+
+### useRuntimeConfig类型增强提示
+
+```ts
+//[custom-name].d.ts
+import 'nuxt/schema';
+
+declare module 'nuxt/schema' {
+   interface RuntimeConfig {
+      //字段拓展,ts提示
+   }
+}
+
+//上面这个文件类型不会自动引入，在nuxt.config.ts引入一下即可，参考下面这段代码
+/// <reference path="./path-to/[custom-name].d.ts" />
+
+```
+
+
