@@ -186,231 +186,206 @@ import { HTTPStatus } from '~~/shared/enums/httpEnums';
 import { whiteRoute } from '~~/shared/whiteRoute';
 import { decodeJwt } from 'jose';
 import { logServer } from '../utils/serverLog';
-//多个请求，会有多个token被更新，导致资源浪费，用户体验不好
 
-//当前更新access_token的promise,多个请求只会有一个
+// 当前更新 access_token 的 promise，保证并发时只会有一个请求刷新
 let currentAccessTokenUpdatePromise: Promise<string> | null = null;
-//目标jwt token缓存
+// 缓存的 access_token
 let targetAccessTokenCache: string | null = null;
-//目标缓存过期时间
+// 缓存过期时间戳（秒）
 let targetAccessTokenExpires: number = 0;
-//缓存过期时间
-const CACHE_EXPIRY_TIME = 5; // 5秒
-const getCurrentTime = () => Math.floor(Date.now() / 1000); // 获取当前时间戳（秒）
+// 缓存有效期（秒）
+const CACHE_EXPIRY_TIME = 5;
+const getCurrentTime = () => Math.floor(Date.now() / 1000);
 
 export default defineEventHandler(async (event) => {
-   const rawUrl = event.node.req.url || '';
-   const path = rawUrl.split('?')[0];
-   if (whiteRoute.includes(path)) return;
+  const rawUrl = event.node.req.url || '';
+  const path = rawUrl.split('?')[0];
+  if (whiteRoute.includes(path)) return;
 
-   const isApiRequest = path.startsWith('/api/');
-   const { accessToken, refreshToken } = getTokensFromCookie(event);
+  const isApiRequest = path.startsWith('/api/');
+  const { accessToken, refreshToken } = getTokensFromCookie(event);
 
-   // ===== 调试日志开始 =====
-   logServer('=== JWT中间件调试信息 ===');
-   logServer('请求路径:', path);
-   logServer('当前时间:', new Date().toISOString());
-   logServer('当前时间戳(秒):', getCurrentTime());
-   logServer('Access Token 存在:', !!accessToken);
-   logServer('Refresh Token 存在:', !!refreshToken);
+  // ===== 调试日志开始 =====
+  logServer('=== JWT中间件调试信息 ===');
+  logServer('请求路径:', path);
+  logServer('当前时间:', new Date().toISOString());
+  logServer('当前时间戳(秒):', getCurrentTime());
+  logServer('Access Token 存在:', !!accessToken);
+  logServer('Refresh Token 存在:', !!refreshToken);
 
-   // 解码token查看过期时间
-   if (accessToken) {
-      try {
-         const accessDecoded = decodeJwt(accessToken);
-         logServer('Access Token 过期时间:', new Date(accessDecoded.exp! * 1000).toISOString());
-         logServer('Access Token 剩余秒数:', accessDecoded.exp! - getCurrentTime());
-      } catch (e) {
-         logServer('Access Token 解码失败:', e);
-      }
-   }
+  if (accessToken) {
+    try {
+      const accessDecoded = decodeJwt(accessToken);
+      logServer('Access Token 过期时间:', new Date(accessDecoded.exp! * 1000).toISOString());
+      logServer('Access Token 剩余秒数:', accessDecoded.exp! - getCurrentTime());
+    } catch (e) {
+      logServer('Access Token 解码失败:', e);
+    }
+  }
 
-   if (refreshToken) {
-      try {
-         const refreshDecoded = decodeJwt(refreshToken);
-         logServer('Refresh Token 过期时间:', new Date(refreshDecoded.exp! * 1000).toISOString());
-         logServer('Refresh Token 剩余秒数:', refreshDecoded.exp! - getCurrentTime());
-      } catch (e) {
-         logServer('Refresh Token 解码失败:', e);
-      }
-   }
+  if (refreshToken) {
+    try {
+      const refreshDecoded = decodeJwt(refreshToken);
+      logServer('Refresh Token 过期时间:', new Date(refreshDecoded.exp! * 1000).toISOString());
+      logServer('Refresh Token 剩余秒数:', refreshDecoded.exp! - getCurrentTime());
+    } catch (e) {
+      logServer('Refresh Token 解码失败:', e);
+    }
+  }
+  // ===== 调试日志结束 =====
 
-   // ===== 调试日志结束 =====
-
-   // 没任何 token
-   if (!accessToken && !refreshToken) {
-      logServer('🚫 没有任何token，准备跳转登录');
-      if (isApiRequest) {
-         throw createError({
-            statusCode: HTTPStatus.UNAUTHORIZED,
-            statusMessage: 'UNAUTHORIZED',
-            message: '未登录或 token 缺失'
-         });
-      } else {
-         return sendRedirect(event, '/'); // 登录页是 '/'
-      }
-   }
-   // access_token还有效，但是refresh_token没有或者过期无效等其他异常情况
-   if (accessToken) {
-      try {
-         logServer('🔍 尝试验证 Access Token...');
-         const payload = await verifyAccessToken(accessToken);
-         logServer('✅ Access Token 验证成功，用户:', payload.userAccount);
-         event.context.user = payload;
-         return;
-      } catch (err: any) {
-         logServer('❌ Access Token 验证失败:', err.message);
-         // 如果 access_token 验证失败，才会尝试使用 refresh_token 刷新
-      }
-   }
-
-   // 1. 尝试使用 access_token
-   if (accessToken) {
-      try {
-         logServer('🔍 再次尝试验证 Access Token...');
-         const payload = await verifyAccessToken(accessToken);
-         logServer('✅ Access Token 二次验证成功');
-         event.context.user = payload;
-         return;
-      } catch (err: any) {
-         logServer('❌ Access Token 二次验证失败，准备使用 Refresh Token');
-         // 失败则尝试refresh,统一处理
-      }
-   }
-
-   // 2. 尝试使用 refresh_token 刷新，promise单例模式
-   //多请求并发时，只会有一个请求去更新access_token
-   if (refreshToken) {
-      logServer('🔄 开始 Refresh Token 流程...');
-      //目标在刷新，等待
-      if (currentAccessTokenUpdatePromise) {
-         logServer('⏳ 等待其他请求完成刷新...');
-         try {
-            await currentAccessTokenUpdatePromise;
-            // 等待完成后，检查用户是否已经设置
-            if (event.context.user) {
-               logServer('✅ 从其他请求获得用户信息');
-               return;
-            }
-         } catch (error) {
-            logServer('❌ 等待其他请求刷新失败');
-         }
-      }
-
-      if (targetAccessTokenCache && targetAccessTokenExpires > getCurrentTime()) {
-         logServer('📦 使用缓存的 Access Token');
-         //缓存未过期，直接使用缓存
-         event.context.user = decodeJwt(targetAccessTokenCache);
-         return;
-      }
-
-      // 开始刷新 access_token
-      logServer('🚀 开始刷新 Access Token...');
-      currentAccessTokenUpdatePromise = new Promise(async (resolve, reject) => {
-         try {
-            logServer('🔍 验证 Refresh Token...');
-            //有没有过期
-            const refreshPayload = await verifyRefreshToken(refreshToken);
-            logServer('✅ Refresh Token 验证成功，用户:', refreshPayload.userAccount);
-
-            //重新签发新的access_token
-            logServer('🔨 生成新的 Access Token...');
-            const newAccessToken = await signAccessToken({
-               id: refreshPayload.id,
-               userAccount: refreshPayload.userAccount,
-               userPhone: refreshPayload.userPhone,
-               userAuth: refreshPayload.userAuth
-            });
-
-            logServer('🍪 设置新的 Cookie...');
-            setTokensFromCookie(event, newAccessToken, refreshToken);
-            event.context.user = refreshPayload;
-
-            //更新缓存
-            targetAccessTokenCache = newAccessToken;
-            targetAccessTokenExpires = getCurrentTime() + CACHE_EXPIRY_TIME;
-            logServer('✅ Access Token 刷新成功!');
-
-            resolve(newAccessToken); //返回新的access_token
-         } catch (e) {
-            logServer('❌ Refresh Token 验证失败:', e);
-            cleanAllTokensFromCookie(event);
-
-            if (isApiRequest) {
-               //refresh token过期
-               if (e instanceof JWTExpired) {
-                  logServer('⏰ Refresh Token 已过期');
-                  reject(
-                     createError({
-                        statusCode: HTTPStatus.UNAUTHORIZED,
-                        statusMessage: 'UNAUTHORIZED',
-                        message: 'token 已过期，请重新登录'
-                     })
-                  );
-               }
-               //无效的refresh token
-               else if (e instanceof JWTInvalid) {
-                  logServer('🚫 Refresh Token 无效');
-                  reject(
-                     createError({
-                        statusCode: HTTPStatus.UNAUTHORIZED,
-                        statusMessage: 'UNAUTHORIZED',
-                        message: '无效的 token，请重新登录'
-                     })
-                  );
-               }
-               //未知情况
-               else {
-                  logServer('❓ 未知认证错误:', e);
-                  reject(
-                     createError({
-                        statusCode: HTTPStatus.UNAUTHORIZED,
-                        statusMessage: 'UNAUTHORIZED',
-                        message: '认证失败，未知错误，请稍后再试'
-                     })
-                  );
-               }
-            } else {
-               logServer('🏠 非API请求，重定向到登录页');
-               reject(new Error('需要重定向到登录页'));
-            }
-         } finally {
-            logServer('🔄 清理 Promise 状态');
-            currentAccessTokenUpdatePromise = null; //置空，留给下一些并发请求
-         }
-      });
-
-      // 等待刷新完成
-      try {
-         await currentAccessTokenUpdatePromise;
-         if (event.context.user) {
-            logServer('✅ 刷新成功，用户已设置');
-            return;
-         }
-      } catch (error) {
-         logServer('❌ 刷新失败:', error);
-         if (!isApiRequest) {
-            return sendRedirect(event, '/');
-         }
-         throw error;
-      }
-   }
-
-   // 3. 没有 refresh tokens 或刷新失败
-   logServer('🚫 最终认证失败，清理所有 token');
-   cleanAllTokensFromCookie(event);
-   if (isApiRequest) {
-      logServer('❌ API请求认证失败');
+  // 没有任何 token
+  if (!accessToken && !refreshToken) {
+    logServer('🚫 没有任何token，准备跳转登录');
+    if (isApiRequest) {
       throw createError({
-         statusCode: HTTPStatus.UNAUTHORIZED,
-         statusMessage: 'UNAUTHORIZED',
-         message: '未授权，认证失败'
+        statusCode: HTTPStatus.UNAUTHORIZED,
+        statusMessage: 'UNAUTHORIZED',
+        message: '未登录或 token 缺失'
       });
-   } else {
-      logServer('🏠 页面请求认证失败，重定向到登录页');
+    } else {
       return sendRedirect(event, '/');
-   }
+    }
+  }
+
+  // 1. 尝试验证 access_token
+  if (accessToken) {
+    try {
+      logServer('🔍 验证 Access Token...');
+      const payload = await verifyAccessToken(accessToken);
+      logServer('✅ Access Token 验证成功，用户:', payload.userAccount);
+      event.context.user = payload;
+      return;
+    } catch (err: any) {
+      logServer('❌ Access Token 验证失败，尝试使用 Refresh Token:', err.message);
+    }
+  }
+
+  // 2. 使用 refresh_token 刷新
+  if (refreshToken) {
+    logServer('🔄 开始 Refresh Token 流程...');
+
+    // 并发等待
+    if (currentAccessTokenUpdatePromise) {
+      logServer('⏳ 等待其他请求完成刷新...');
+      try {
+        await currentAccessTokenUpdatePromise;
+        if (event.context.user) {
+          logServer('✅ 从其他请求获得用户信息');
+          return;
+        }
+      } catch (error) {
+        logServer('❌ 等待其他请求刷新失败');
+      }
+    }
+
+    // 缓存有效，直接用
+    if (targetAccessTokenCache && targetAccessTokenExpires > getCurrentTime()) {
+      logServer('📦 使用缓存的 Access Token');
+      event.context.user = decodeJwt(targetAccessTokenCache);
+      return;
+    }
+
+    // 开始刷新
+    logServer('🚀 开始刷新 Access Token...');
+    currentAccessTokenUpdatePromise = new Promise(async (resolve, reject) => {
+      try {
+        logServer('🔍 验证 Refresh Token...');
+        const refreshPayload = await verifyRefreshToken(refreshToken);
+        logServer('✅ Refresh Token 验证成功，用户:', refreshPayload.userAccount);
+
+        logServer('🔨 生成新的 Access Token...');
+        const newAccessToken = await signAccessToken({
+          id: refreshPayload.id,
+          userAccount: refreshPayload.userAccount,
+          userPhone: refreshPayload.userPhone,
+          userAuth: refreshPayload.userAuth
+        });
+
+        logServer('🍪 设置新的 Cookie...');
+        setTokensFromCookie(event, newAccessToken, refreshToken);
+        event.context.user = refreshPayload;
+
+        // 更新缓存
+        targetAccessTokenCache = newAccessToken;
+        targetAccessTokenExpires = getCurrentTime() + CACHE_EXPIRY_TIME;
+        logServer('✅ Access Token 刷新成功!');
+
+        resolve(newAccessToken);
+      } catch (e) {
+        logServer('❌ Refresh Token 验证失败:', e);
+        cleanAllTokensFromCookie(event);
+
+        if (isApiRequest) {
+          if (e instanceof JWTExpired) {
+            logServer('⏰ Refresh Token 已过期');
+            reject(
+              createError({
+                statusCode: HTTPStatus.UNAUTHORIZED,
+                statusMessage: 'UNAUTHORIZED',
+                message: 'token 已过期，请重新登录'
+              })
+            );
+          } else if (e instanceof JWTInvalid) {
+            logServer('🚫 Refresh Token 无效');
+            reject(
+              createError({
+                statusCode: HTTPStatus.UNAUTHORIZED,
+                statusMessage: 'UNAUTHORIZED',
+                message: '无效的 token，请重新登录'
+              })
+            );
+          } else {
+            logServer('❓ 未知认证错误:', e);
+            reject(
+              createError({
+                statusCode: HTTPStatus.UNAUTHORIZED,
+                statusMessage: 'UNAUTHORIZED',
+                message: '认证失败，未知错误，请稍后再试'
+              })
+            );
+          }
+        } else {
+          logServer('🏠 非API请求，重定向到登录页');
+          reject(new Error('需要重定向到登录页'));
+        }
+      } finally {
+        logServer('🔄 清理 Promise 状态');
+        currentAccessTokenUpdatePromise = null;
+      }
+    });
+
+    try {
+      await currentAccessTokenUpdatePromise;
+      if (event.context.user) {
+        logServer('✅ 刷新成功，用户已设置');
+        return;
+      }
+    } catch (error) {
+      logServer('❌ 刷新失败:', error);
+      if (!isApiRequest) {
+        return sendRedirect(event, '/');
+      }
+      throw error;
+    }
+  }
+
+  // 3. 最终失败
+  logServer('🚫 最终认证失败，清理所有 token');
+  cleanAllTokensFromCookie(event);
+  if (isApiRequest) {
+    logServer('❌ API请求认证失败');
+    throw createError({
+      statusCode: HTTPStatus.UNAUTHORIZED,
+      statusMessage: 'UNAUTHORIZED',
+      message: '未授权，认证失败'
+    });
+  } else {
+    logServer('🏠 页面请求认证失败，重定向到登录页');
+    return sendRedirect(event, '/');
+  }
 });
+
 
 ```
 </details>
