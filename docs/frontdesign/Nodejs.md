@@ -178,4 +178,8 @@ export {};
 ```
 其中files只会加载项目文件，此时必须通过`include`显示指定哪些文件属于项目中的一部分 。  
 
-**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件
+**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件,例如（**第一个是默认，后面一个是自定义的**）：  
+ ` "typeRoots": [                                    
+    "./node_modules/@types",               
+    "./server/types"
+  ],` 

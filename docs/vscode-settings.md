@@ -3,7 +3,6 @@
 编译器爱好设置。
 
 ```json
-
 {
   // =============================== 编辑器爱好设置 ================================
   // 缩进与格式化
@@ -39,11 +38,13 @@
   //===== 折叠文件夹（美观优化） =====
   "explorer.fileNesting.enabled": true,    // 启用文件嵌套功能
   "explorer.fileNesting.expand": false,    // 默认折叠嵌套文件（不展开）
-  "explorer.fileNesting.patterns": {       
-    "package.json": "package-lock.json, pnpm-lock.yaml,.gitignore,.prettierignore,.prettierrc,.esbuild.config.mjs,.eslintignore",// 折叠package.json
-    "tsconfig.json": "tsconfig.*.json...",  //折叠tsconfi.json
+  "explorer.fileNesting.patterns": { //file fold    
+    "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, pnpm-workspace.yaml",
+    "eslint.config.mjs": ".prettierignore, .prettierrc.mjs", 
+    "tsconfig.json": "tsconfig.*.json...",  
     "vite.config.{js,ts}": "vite.*.{js,ts}",  
-    ".env": ".env.*"    //折叠环境变量文件
+    ".env": ".env.*",
+    "tailwind.config.js": "postcss.config.js"   
   }
 }
 
