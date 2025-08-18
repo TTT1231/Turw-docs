@@ -76,6 +76,11 @@ export default defineConfig({
                { text: '统一错误处理架构', link: '/frontdesign/nuxt/error-handle' },
                { text: '配置问题及其解决方案', link: '/frontdesign/nuxt/config-solutions' }
             ]
+         },
+         {
+            text:'VSCode偏好设置',
+            collapsed: false,
+            link: 'vscode-settings'
          }
          
       ],

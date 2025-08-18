@@ -130,3 +130,52 @@ nodemon --watch \"src/**/*.ts\" --exec \"ts-node\"  main.ts
 app.use(express.static('public'));
 ```
 
+## **自定义类型（.d.ts不加载问题）**
+
+在对原生类型如express中Request进行全局拓展时，如果只定义了
+```ts
+import type { Request } from 'express';
+
+declare global {
+    namespace Express {
+        interface Request {
+            //customer field
+            user?: {
+                id: string;
+                //other field
+            };
+            cookies: {
+                accessToken?: string;
+                refreshToken?: string;
+                [key: string]: any;
+            };
+        }
+    }
+}
+
+//模块化
+export {};
+```
+就算在tsconfig配置了**typeRoots**定义声明文件查找文件，此时ts不报错但是运行报错。  
+原因就是：执行pnpm dev 启动项目时类型声明文件没有加载导致出错。  
+  
+此时可以使用在`tsconfig.json`中添加`ts-node`配置  
+- 解决.d.ts没导入
+- 所有.d.ts配置都在一个地方、维护友好
+- 官方ts和ts-node推荐做法
+- 避免重复导入和保持全局类型的特性
+
+**ts-node是为了让 Node.js 能够直接运行 TypeScript 文件（.ts），而无需先手动编译成 JavaScript。**
+
+<span class=" text-red-400">注意：生产模式还是tsc编译成 JavaScript，再用 node运行【这样保险些】</span>
+
+```ts
+  /* ts-node 配置，输入编译选项外 */
+  "ts-node": {
+    "files": true,                                     /* 启用 TypeScript 的 files 选项，确保类型文件被正确加载 */
+    "transpileOnly": false                             /* 启用严格的类型检查，生产模式注意要关闭 */
+  },
+```
+其中files只会加载项目文件，此时必须通过`include`显示指定哪些文件属于项目中的一部分 。  
+
+**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件
