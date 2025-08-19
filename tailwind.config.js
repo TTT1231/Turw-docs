@@ -4,7 +4,6 @@ export default {
     "./docs/**/*.{js,ts,vue,md}",
     "./docs/.vitepress/**/*.{js,ts,vue}"
   ],
-  prefix: 'tw-',
   theme: {
     extend: {},
   },

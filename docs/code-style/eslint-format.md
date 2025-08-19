@@ -7,13 +7,15 @@
 
 <span class="text-red-400">注：@typescript-eslint/parser 必须与 @typescript-eslint/eslint-plugin 配合使用。前者负责解析 TypeScript 代码，后者负责执行具体的 linting 规则。</span>
   
-## 安装Eslint和prettier
+## 安装
 
 ```cmd
 pnpm add -D eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-config-prettier eslint-plugin-prettier                     
 
 ```
-  
+
+## 配置eslint
+
 创建**eslint.config.mjs**配置文件
 
 ```ts
@@ -78,6 +80,8 @@ export default [
 ];
 
 ```
+
+## 配置prettier
 
 **创建.prettierrc.json和.prettierignore**
 
@@ -150,4 +154,31 @@ coverage/
 *.ttf
 *.eot
 
+```
+
+## 配置命令
+
+**然后设置package.json命令**
+<span class=" text-red-400"> 注：server这里是示例名，类似项目src可以自定义</span>
+
+| 脚本命令                          | 描述 |
+|----------------------------------|------|
+| "lint": "eslint .",            | **eslint检查** |
+| "lint:fix": "eslint \"server/**/*.{ts,js}\" --fix", |**eslint修复** ts、js |
+| `"format": "prettier --write \"server/**/*.{ts,js,json}\""`, | **prettier格式化** ts,js,json|
+| `"format:check": "prettier --check \"server/**/*.{ts,js,json}\""`, | **prettier检查** ts,js,json  |
+| `"code:check": "pnpm run lint && pnpm run format:check",**` | 先执行lint检查，再检查格式化问题 |
+| `"code:fix": "pnpm run lint:fix && pnpm run format"**` | 自动修复lint问题并格式化代码 |
+
+<span class=" text-green-600"> 也可以使用vscode设置，自动执行【选项】(.vscode/settings.json)</span>
+
+```json
+{
+   //your before settings
+
+  "editor.formatOnSave": true,               // 保存时自动格式化
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"       // 保存时自动修复ESLint错误
+  },
+}
 ```
