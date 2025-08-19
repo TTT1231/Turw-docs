@@ -79,7 +79,7 @@ export default [
 
 ```
 
-**创建.prettier.json和.prettierignore**
+**创建.prettierrc.json和.prettierignore**
 
 `.prettier.json`
 ```json
