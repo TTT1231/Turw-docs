@@ -78,9 +78,12 @@ export default defineConfig({
             ]
          },
          {
-            text:'VSCode偏好设置',
-            collapsed: false,
-            link: 'vscode-settings'
+            text:'代码风格和规范',
+            collapsed: true,
+            items:[
+               { text: '格式化代码与检查', link: '/code-style/eslint-format' },
+               { text: 'vscode编译器设置', link: '/code-style/vscode-setting' }
+            ]
          }
          
       ],
