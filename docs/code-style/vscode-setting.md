@@ -64,7 +64,7 @@
   "explorer.fileNesting.patterns": { //file fold    
     "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, pnpm-workspace.yaml",
     "eslint.config.mjs": ".prettierignore, .prettierrc.json,.prettier", 
-    "tsconfig.json": "tsconfig.*.json...",  
+    "tsconfig.json": "tsconfig.*.json",  
     "vite.config.{js,ts}": "vite.*.{js,ts}",  
     ".env": ".env.*",
     "tailwind.config.js": "postcss.config.js"   
