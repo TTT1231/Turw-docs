@@ -85,7 +85,7 @@ export default [
 
 **创建.prettierrc.json和.prettierignore**
 
-`.prettier.json`
+`.prettierrc.json`
 ```json
 {
    "semi": true,
@@ -164,7 +164,7 @@ coverage/
 | 脚本命令                          | 描述 |
 |----------------------------------|------|
 | "lint": "eslint .",            | **eslint检查** |
-| "lint:fix": "eslint \"server/**/*.{ts,js}\" --fix", |**eslint修复** ts、js |
+| "lint:fix": "eslint \"src/**/*.{js,ts}\" --fix", |**eslint修复** ts、js |
 | `"format": "prettier --write \"server/**/*.{ts,js,json}\""`, | **prettier格式化** ts,js,json|
 | `"format:check": "prettier --check \"server/**/*.{ts,js,json}\""`, | **prettier检查** ts,js,json  |
 | `"code:check": "pnpm run lint && pnpm run format:check",**` | 先执行lint检查，再检查格式化问题 |
