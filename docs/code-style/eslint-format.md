@@ -167,8 +167,8 @@ coverage/
 | "lint:fix": "eslint \"src/**/*.{js,ts}\" --fix", |**eslint修复** ts、js |
 | `"format": "prettier --write \"server/**/*.{ts,js,json}\""`, | **prettier格式化** ts,js,json|
 | `"format:check": "prettier --check \"server/**/*.{ts,js,json}\""`, | **prettier检查** ts,js,json  |
-| `"code:check": "pnpm run lint && pnpm run format:check",**` | 先执行lint检查，再检查格式化问题 |
-| `"code:fix": "pnpm run lint:fix && pnpm run format"**` | 自动修复lint问题并格式化代码 |
+| `"code:check": "pnpm run lint && pnpm run format:check",` | 先执行lint检查，再检查格式化问题 |
+| `"code:fix": "pnpm run lint:fix && pnpm run format"` | 自动修复lint问题并格式化代码 |
 
 <span class=" text-green-600"> 也可以使用vscode设置，自动执行【选项】(.vscode/settings.json)</span>
 
