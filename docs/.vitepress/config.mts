@@ -6,9 +6,7 @@ export default defineConfig({
    base: '/Turw-docs/', // Set to your desired base path
    title: '我的文档',
    description: '日常学习',
-   head:[
-      ['link', { rel: 'icon', href: '/Turw-docs/assets/favicon.ico' }],
-   ],
+   head: [['link', { rel: 'icon', href: '/Turw-docs/assets/favicon.ico' }]],
    themeConfig: {
       logo: '/assets/logo.svg',
       nav: [
@@ -25,7 +23,7 @@ export default defineConfig({
       sidebar: [
          {
             text: '前端',
-            collapsed: true, 
+            collapsed: true,
             items: [
                {
                   text: 'CSS',
@@ -58,34 +56,37 @@ export default defineConfig({
                      { text: 'vue-router', link: '/frontdesign/vue3/vue-router' },
                      { text: '开发环境问题', link: '/frontdesign/vue3/vue-problem' },
                      { text: '性能优化', link: '/frontdesign/vue3/performance-optimize' },
-                     { text: 'vue核心', link: '/frontdesign/vue3/vue-core' },
-                     
+                     { text: 'vue核心', link: '/frontdesign/vue3/vue-core' }
                   ]
                },
                {
                   text: '常见问题及其解决方案',
                   link: '/frontdesign/common-problems'
-               },
+               }
             ]
          },
          {
             text: 'Nuxt全栈',
             collapsed: true,
-            items:[
+            items: [
                { text: '目录结构', link: '/frontdesign/nuxt/catalog' },
                { text: '统一错误处理架构', link: '/frontdesign/nuxt/error-handle' },
                { text: '配置问题及其解决方案', link: '/frontdesign/nuxt/config-solutions' }
             ]
          },
          {
-            text:'代码风格和规范',
+            text: '代码风格和规范',
             collapsed: true,
-            items:[
+            items: [
                { text: '格式化代码与检查', link: '/code-style/eslint-format' },
                { text: 'vscode编译器设置', link: '/code-style/vscode-setting' }
             ]
+         },
+         {
+            text: 'SQL',
+            collapsed: true,
+            items: [{ text: 'SQL操作简化', link: '/sql/sql-simplify' }]
          }
-         
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
       footer: {

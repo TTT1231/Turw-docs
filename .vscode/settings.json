@@ -48,6 +48,9 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[markdown]": {
+    "editor.formatOnSave": false
+  },
   // ===== 终端配置 =====
   "terminal.integrated.cursorBlinking": true, // 终端光标闪烁
   "terminal.integrated.tabs.enabled": true,   // 启用终端标签页
