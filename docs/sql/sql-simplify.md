@@ -16,6 +16,9 @@ typeorm将表看成一个对象，所有操作都看作对象的操作，将SQL�
 
 ## orm操作
 
+​​O​​bject-​​R​​elational ​​M​​apping（对象-关系映射）,解决手写简单SQL后，拓展表或维护困难等问题。ORM将表看作一个对象，从操作对象的角度考虑去操作数据库当中的表【面向对象设计】，使得开发效率加快和维护变得更加简单。  
+**对于复杂子查询等，为了更加直观和性能以及维护等考虑，退回SQL处理最好，只需单独管理即可**
+
 ### 创建表
 
 <details>
@@ -74,6 +77,9 @@ export class YourEntity {
 ，在考虑简化复杂查询迁移到原生SQL要考虑软删除问题，和软删除的<span class=" font-bold">累计效应</span>，和逻辑复杂化。  
 【原生SQL很难判断ORM软删除状态，而且原生SQL对软删除的数据在数据库默认是有的】</span>
 
+<span class="text-blue-400">
+   注意：在定义**双向关系**的时候，必须要接受orm中的第一个反射参数，该参数是目标实体实例，并指向当前实体属性，让orm理解。
+</span>
 <details>
 <summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
     定义表字段映射关系（关系数据库）
@@ -204,17 +210,179 @@ export class UserService {
 
    //add user if success return insert user obj
    async createUser(userData: UserData) {
-      try{
+      try {
          // 1. 创建实体实例（不立即插入数据库）
          const newUser = this.userRepo.create(userData);
 
          // 2. 保存到数据库（执行INSERT）
          return await this.userRepo.save(newUser);
-      }catch{
+      } catch {
          //db error or other error
       }
    }
 }
+```
+
+</details>
+
+## find查询
+
+**这里配置的cache选项，跟synchronize不同，synchronize全局会覆盖掉自定义，即使配置或没有配置情况下，而cache会覆盖掉全局这个cache选项，全局没有设置缓存，但具体Repository设置了cache此时缓存会生效**
+
+<span class="text-red-400">
+   如果考虑性能优化、在锁中除了必要的一致性和原子性操作外，或者核心业务流程外，其他就能不用锁就不用锁，或者错开写读时间避免引发一致性问题等。和缓存的使用。
+</span>
+
+锁在并发中性能损失多用户体验不好，而且用的时候最好是在事务中使用【事务中有**原子性、一致性、和最重要的隔离性**】，同时注意锁的使用确保**最快用完最快归放**
+
+<details>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
+   find配置
+</summary>
+
+```ts
+const userTableObj = AppDataSource.getRepository(User)
+
+//======================================配置===================================================
+//find Options defined type
+userRepository.find({
+   //obj type
+   select:FindOptionsSelect<Entity>, //手动设置对应字段的boolean，为true表示投影要返回
+
+   //obj type
+   //类似 where field1 = con1 AND field2 = con2【AND语法】
+   //OR语法只需在字段前用{}分割出来，即{field1:[con1]},{field2:[con2]}
+   where:FindOptionsWhere<Entity>[] | FindOptionsWhere<Entity>,
+
+   //用于eager加载关联数据，不加外键关联关系会被orm置空
+   relations: FindOptionsRelations<Entity>
+   order: {
+      field1: "ASC",
+      field1: "DESC",
+      ...
+   }
+   transaction?: boolean; //查询是否在事务中执行，默认false
+
+   //在进行性能优化时，尤为好用，启用缓存的意思、默认1s也可以传入number进行设置(单位ms)
+   cache:boolean|number;
+
+   //===========分页相关开始=============
+   //注意排序，和知道数据总数，这是分页所必须的
+   skip:[target-number] //从第几条开始,类似跳过意思
+   take:[target-number] //一次取多少条记录
+   //===========分页相关结束=============
+
+   //===========锁相关开始=============
+   lock?: { //乐观锁
+      mode: "optimistic";
+      version: number | Date;   //验证数据是否变化的​​依据，自定义提供
+   }|{//悲观锁
+      mode: "pessimistic_read" | "pessimistic_write" | "dirty_read" | "pessimistic_partial_write" | "pessimistic_write_or_fail" | "for_no_key_update" | "for_key_share";
+      tables?: string[];//加锁的表
+      onLocked?: "nowait" | "skip_locked";//被锁定的行为，nowait不等待直接抛出错误，skip_locked跳过锁
+    };
+   //===========锁相关结束=============
+});
+
+```
+
+</details>
+
+<details>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
+   find操作例子
+</summary>
+
+```ts
+const userTableObj = AppDataSource.getRepository(User);
+
+//select * from users
+const selectAllUser = await userTableObj.find({
+   select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      age: true
+   }
+});
+console.log('selectAllUser', selectAllUser);
+
+//select * from users where id = 1
+const selectTargetUser1 = await userTableObj.find({
+   select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      age: true
+   },
+   where: {
+      id: 1 //可以使用dynamic value
+   }
+});
+
+//select * from users where id = 1 AND age = 25
+const selectTargetUser2 = await userTableObj.find({
+   select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      age: true
+   },
+   where: {
+      id: 1,
+      age: 25
+   }
+});
+
+//select * from users where id = 1 OR age = 25
+const selectTargetUser3 = await userTableObj.find({
+   select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      age: true
+   },
+   where: [
+      {
+         id: 1
+      },
+      {
+         age: 25
+      }
+   ]
+});
+
+// <= LessThanOrEqual >= MoreThanOrEqual != Not,between,In,Null and not null
+//select * from users where id >= 1
+const selectTargetUser4 = await userTableObj.find({
+   select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      age: true
+   },
+   where: {
+      id:MoreThan(1) //>=
+      // id:LessThan(2) //<=
+      // id:Not(2) //!=
+      // id:Between(1,2)
+      // id:In([1,2]) //id in (1,2)
+      // id:IsNull() //id is null
+      // id:Not(IsNull()) //id is not null
+   }
+});
+
+//cache 1s 用于提高查询性能，提高高并发性能问题，解决重复查询
+//select * from users
+const selectTargetUser5 = userTableObj.find({
+   select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      age: true
+   },
+   cache: 1000 //1s
+});
 ```
 
 </details>
