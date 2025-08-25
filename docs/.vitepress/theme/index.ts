@@ -16,6 +16,7 @@ import {
    Select as ASelect,
    SelectOption as ASelectOption
 } from 'ant-design-vue';
+import NuxterrorHandling from './components/NuxterrorHandling.vue';
 export default {
    extends: DefaultTheme,
    Layout: () => {
@@ -32,5 +33,6 @@ export default {
 
       app.component('FlexProperty', FlexProperty);
       app.component('GridProperty', GridProperty);
+      app.component('NuxterrorHandling', NuxterrorHandling);
    }
 } satisfies Theme;
