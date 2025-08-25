@@ -97,7 +97,12 @@ const proxy = new Proxy(obj, {
 
 ## Promise并发处理
 
-当有多个网络请求promise或者多个异步promise时，一个一个获取或异步等待速度慢时，就可以将多个请求promise封装成一个数组或队列，然后借助es6中allSettled进行同时处理。最后进行统一处理错误或者成功的结果。
+当有多个网络请求promise或者多个异步promise时，一个一个获取或异步等待速度慢时，就可以将多个请求promise封装成一个数组或队列，然后借助es6中allSettled进行同时处理。最后进行统一处理错误或者成功的结果。  
+当然了业务不同具体用的方法也不同，但是本质都是差不多的，只是**发生错误的逻辑不同**
+
+- Promise.all 当业务包含原子性、一致性等，就可以使用它，只要一个失败整个Promise并发数组都会失败  
+- Promise.allSettled 不关心单个失败，只关心具体成功的结果或者失败的结果  
+- Promise.race 竞争promise，谁快，谁就最先返回，其他的promise继续执行但是结果不返回，只返回最快的promise结果
 
 ```js
 const p1 = Promise.resolve(1);
