@@ -386,3 +386,15 @@ const selectTargetUser5 = userTableObj.find({
 ```
 
 </details>
+
+## 日志记录
+
+配置logging
+
+- query 记录SQL查询
+- error 记录SQL查询中发生的错误
+- schema 记录模式相关，例如数据库表结构操作【创建新表、修改表和对表结构进行调整】
+- warn 记录警告
+- info 记录消息性信息，例如数据库驱动连接状态、连接池日志和同步检查等
+- log 记录一般日志
+- migraion 记录迁移相关日志  

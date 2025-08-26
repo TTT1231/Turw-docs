@@ -85,7 +85,10 @@ export default defineConfig({
          {
             text: 'SQL',
             collapsed: true,
-            items: [{ text: 'SQL操作简化', link: '/sql/sql-simplify' }]
+            items: [
+               { text: 'SQL操作简化', link: '/sql/sql-simplify' },
+               { text: 'SQL优化', link: '/sql/sql-optimize' }
+            ]
          }
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
