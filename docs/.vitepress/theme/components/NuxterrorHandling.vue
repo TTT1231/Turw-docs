@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
-import ASkeleton from 'ant-design-vue/es/skeleton/index';
+import { Skeleton as ASkeleton } from 'ant-design-vue';
 
 const props = defineProps({
    showImg: {
