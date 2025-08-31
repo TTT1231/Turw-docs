@@ -12,10 +12,16 @@ outline: deep
 后端接受分片存储在一个临时目录中（可以按文件id进行临时存储）  
 最后存储完毕，对所有分片结果进行合并
 
+### 分片断点终止上传
+
+主要实现用户可以对大文件请求进行终止和根据文件内容hash去判断在服务端有没有分片  
+对之前上传的分片继续上传，提高上传速率和容错率。
 <details>
 <summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
     分片上传
 </summary>
+
+
 
 ```ts
 //===========================前端================================
@@ -69,6 +75,328 @@ export default defineEventHandler(async (event) => {
    return 'success';
 });
 //合并分片就简单多了，主要逻辑是获取分片的目标位置，然后读取所有分片数据(注意排序)，最后写入
+```
+
+</details>
+
+**分片断点上传思路**：  
+
+**前端：**
+在上传文件时根据文件内容计算整体md5 hash 这里为了优化采用worker和控制分片策略（**主线程负责分片，worker负责计算hash**）【主线程将每个文件分片ArrayBuffer给Worker,worker计算每个分片md5，最后合并所有分片hash结果，汇总成整个文件内容的md5 hash】，在发送前要进行预检实现断点上传，也即检查服务器中文件hash的目录内容  
+前端重新上传时会发送整个文件的md5 hash给后端，后端根据这个hash去临时目录中去找分片数，然后返回给前端，前端就可以知道之前上传了多少<span class="text-red-400">
+为了前后端统一，和防止上传过程中被修改和丢包，每次上传前应该计算分片hash后端也计算进行比对，保证文件的一致性
+</span>
+  
+**后端：**
+后端主要负责接受分片，并计算分片hash与前端比对，最后进行汇总将数据存储到服务器中，也可以存储到数据库中都可以。前端下载功能直接设置http header启用流失传输，将文件流逐步推送到客户端即可
+
+**注意**
+- 前端如果时fetch请求，由于fetch不支持终止，但是可以使用终止器（AbortController），要将**终止器信号signal**传递给fetch，这样当外部调用终止器的abort时候，就可以终止请求，多次调用没有效果，注意垃圾清理
+- 前端在worker计算md5的时候，不能接受File(**worker在独立线程中，与主线测不共享内存**)，这里可以传递ArrayBuffer或Blob，也可以通过结构化克隆机制（structuredClone）传入File对象。**前者性能更优、后者代码简洁，大文件用前者**
+
+<details>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
+   断点上传实现(前端)
+</summary>
+
+```ts
+//单个文件上传
+const simulateFileUpload = async (file: UploadFile): Promise<void> => {
+   const signal = file.abortInstance?.signal ?? new AbortController().signal;
+
+   // 处理上传中止的逻辑
+   const handleAbort = (message: string) => {
+      console.log(message);
+      file.progress = file.progress || 0;
+      file.status = 'error';
+      throw new Error(message);
+   };
+
+   // 监听中止信号，通过AbortController 中abort中止信号
+   signal.addEventListener('abort', () => handleAbort('上传已被中止'));
+
+   try {
+      if (signal.aborted) {
+         file.progress = file.progress || 0;
+         console.log('上传已被中止');
+         return; // 中止时提前返回
+      }
+
+      file.status = 'uploading';
+
+      //主要完成根据字段名进行过滤，然后存储到相应对象中
+      const extendDBInfo = getExtendDBInfoObj();
+      if (!extendDBInfo) {
+         file.status = 'error';
+         throw new Error('缺少上传必要字段');
+      }
+
+      // 计算文件的MD5，worker计算
+      const md5Hash = await computeFileWholeMD5(file.originFileObj!, file.chunkSize || defaultChunkSize, signal);
+      console.log('文件整体 MD5');
+
+      // 检查文件是否已经上传过
+      //主要根据服务器中存储文件上传的临时目录，检查文件整体hash的分片数
+      const checkFileApi = await $fetch<ApiResponse<CheckFileServerDTO>>('/api/back/arts-management/check-file', {
+         method: 'POST',
+         body: { fileWholeMD5: md5Hash },
+         signal: signal,
+      });
+
+      file.uploadMaxChunkIndex = checkFileApi.data?.currentChunkIndex ?? 0;
+      const totalChunks = file.chunkCount ?? 1;
+      file.fileContentWholeMD5 = md5Hash;
+
+      // 如果文件已经完整上传过
+      if (checkFileApi.status === HTTPStatus.OK && checkFileApi.data?.currentChunkIndex === file.chunkCount) {
+         console.log('文件已完整上传');
+         const isInDB = await $fetch<ApiResponse<'success' | 'uploading' | 'failed' | undefined>>('/api/back/arts-management/db-exist', {
+            method: 'POST',
+            signal: signal,
+            body: { fileWholeMd5: md5Hash },
+         });
+
+         if (isInDB.status === HTTPStatus.OK && !isInDB.data) {
+            await setFileStatus(md5Hash, 'uploading', extendDBInfo, file);
+            const uploadRes = await uploadFileToDB(md5Hash, file, totalChunks, extendDBInfo);
+            if (uploadRes) {
+               await setFileStatus(md5Hash, 'success', extendDBInfo, file);
+               resolveUpload(file);
+            } else {
+               file.status = 'error';
+               resolveUpload(file);
+            }
+         } else {
+            resolveUpload(file); // 文件已经在数据库中
+         }
+         return;
+      }
+
+      // 处理部分上传的情况，继续上传剩余的部分
+      if (checkFileApi.status === HTTPStatus.OK && checkFileApi.data?.currentChunkIndex !== -1) {
+         file.uploadMaxChunkIndex = checkFileApi.data.currentChunkIndex;
+         file.progress = ((file.uploadMaxChunkIndex / totalChunks) * 100).toFixed(2);
+         console.log('检测到部分上传，开始断点续传');
+      }
+
+      // 主上传循环
+      for (let chunkIndex = file.uploadMaxChunkIndex; chunkIndex < totalChunks; chunkIndex++) {
+         if (signal.aborted) {
+            console.log('上传被中止');
+            return;
+         }
+
+         if (file.status === 'paused') {
+            console.log('上传已暂停');
+            return;
+         }
+
+         if (file.status === 'error') {
+            throw new Error('上传失败');
+         }
+
+         const chunkUploadRes = await upLoadFileChunk(file, extendDBInfo);
+         if (signal.aborted) {
+            console.log('上传被中止');
+            return;
+         }
+
+         if (chunkUploadRes === 'user-cancel') {
+            console.log('用户取消上传');
+            return;
+         }
+
+         if (chunkUploadRes === undefined || chunkUploadRes.status !== HTTPStatus.OK) {
+            file.status = 'error';
+            throw new Error('上传失败');
+         }
+
+         // 更新上传进度和当前分片索引
+         file.progress = ((chunkUploadRes.data?.currentChunksIndex! / totalChunks) * 100).toFixed(2);
+         file.uploadMaxChunkIndex = chunkUploadRes.data?.currentChunksIndex ?? file.uploadMaxChunkIndex;
+
+         await new Promise(res => setTimeout(res, 200)); // 延迟，避免请求过于频繁
+      }
+
+      // 上传完成后保存到数据库
+      await setFileStatus(md5Hash, 'uploading', extendDBInfo, file);
+      const uploadRes = await uploadFileToDB(md5Hash, file, totalChunks, extendDBInfo);
+
+      if (uploadRes) {
+         await setFileStatus(md5Hash, 'success', extendDBInfo, file);
+         resolveUpload(file);
+      } else {
+         file.status = 'error';
+         resolveUpload(file);
+      }
+   } catch (error) {
+      console.error('上传过程中发生错误:', error);
+      file.status = 'error';
+      file.progress = file.progress || 0;
+      throw error;
+   }
+};
+
+// 辅助函数：设置文件状态
+const setFileStatus = async (md5Hash: string, status: string, extendDBInfo: any, file: UploadFile) => {
+   await $fetch('/api/back/arts-management/set-status', {
+      method: 'POST',
+      body: { fileWholeMd5: md5Hash, status },
+   });
+};
+
+// 辅助函数：上传文件到数据库
+const uploadFileToDB = async (md5Hash: string, file: UploadFile, totalChunks: number, extendDBInfo: any) => {
+   const uploadRes = await $fetch<ApiResponse<boolean>>('/api/back/arts-management/upload-db', {
+      method: 'POST',
+      body: {
+         currentChunkIndex: file.uploadMaxChunkIndex,
+         totalChunks,
+         fileWholeMd5: md5Hash,
+         totalSize: file.size,
+         projectName: extendDBInfo.projectName ?? file.name,
+         productType: extendDBInfo.productType,
+         targetId: extendDBInfo.targetId,
+         targetName: extendDBInfo.targetName,
+      },
+   });
+
+   return uploadRes.status === HTTPStatus.OK && uploadRes.data === true;
+};
+
+// 辅助函数：处理上传完成
+const resolveUpload = (file: UploadFile) => {
+   file.progress = 100;
+   file.status = 'done';
+};
+
+//================================computed utils====================
+//======================计算md5=========================
+//md5Utils
+import SparkMD5 from 'spark-md5';
+//计算文件整体内容hash
+// md5Utils.ts
+
+export async function computeFileWholeMD5(
+   file: File,
+   chunkSize: number,
+   signal: AbortSignal
+): Promise<string> {
+   return new Promise<string>((resolve, reject) => {
+      // 创建 Worker
+      const computeMD5Thread = new Worker(
+         new URL('./md5Worker.js', import.meta.url),
+         {
+            type: 'module',
+         }
+      );
+
+      // 监听 Worker 返回的 MD5 结果
+      computeMD5Thread.onmessage = event => {
+         const { fileHash } = event.data;
+         if (fileHash) {
+            resolve(fileHash); // 计算完成，返回结果
+         } else {
+            reject(new Error('Failed to compute MD5 hash'));
+         }
+         computeMD5Thread.terminate(); // 计算完成后终止 Worker
+      };
+
+      computeMD5Thread.onerror = err => {
+         reject(new Error('Worker error: ' + err.message));
+         computeMD5Thread.terminate(); // 发生错误时终止 Worker
+      };
+
+      // Handle abort
+      signal.addEventListener('abort', () => {
+         console.log('MD5 computation aborted');
+         computeMD5Thread.terminate(); // Terminate Worker when abort is triggered
+         reject(new Error('MD5 computation aborted by user'));
+      });
+      // 计算文件分片总数
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      const chunkPromises: Promise<ArrayBuffer>[] = [];
+
+      // 逐个分片读取并转换为 ArrayBuffer
+      for (let i = 0; i < totalChunks; i++) {
+         const start = i * chunkSize;
+         const end = Math.min((i + 1) * chunkSize, file.size);
+         const chunk = file.slice(start, end); // 分片
+         chunkPromises.push(chunk.arrayBuffer()); // 将每个分片转换为 ArrayBuffer
+      }
+
+      // 等待所有分片的 ArrayBuffer 完成后再传递给 Worker
+      Promise.all(chunkPromises)
+         .then(chunks => {
+            // 将所有分片（ArrayBuffer）传递给 Worker
+            computeMD5Thread.postMessage({ chunks }, chunks);
+         })
+         .catch(error => {
+            reject(error);
+            computeMD5Thread.terminate(); // Terminate Worker on error
+         });
+   });
+}
+
+/**
+ * 使用 SparkMD5 计算 Blob 分片的 MD5 哈希值
+ * @param chunk - 需要计算哈希的二进制数据分片（Blob）
+ * @returns Promise<string> 返回 MD5 哈希字符串
+ */
+export async function computeChunkMD5(chunk: Blob): Promise<string> {
+   return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      const spark = new SparkMD5.ArrayBuffer();
+
+      fileReader.onload = event => {
+         try {
+            if (!event.target?.result) {
+               throw new Error('FileReader failed to read chunk');
+            }
+
+            // 更新 SparkMD5 哈希计算
+            spark.append(event.target.result as ArrayBuffer);
+
+            // 获取最终哈希值（16进制字符串）
+            const md5 = spark.end();
+            resolve(md5);
+         } catch (err) {
+            reject(err);
+         }
+      };
+
+      fileReader.onerror = () => {
+         reject(new Error('FileReader error'));
+      };
+
+      // 以 ArrayBuffer 形式读取数据
+      fileReader.readAsArrayBuffer(chunk);
+   });
+}
+
+//==================================computed worker.js ======================
+import SparkMD5 from 'spark-md5';
+
+self.onmessage = function (e) {
+   const chunks = e.data.chunks; // 接收所有分片的 ArrayBuffer
+
+   const spark = new SparkMD5.ArrayBuffer();
+
+   try {
+      // 累加所有分片的 MD5
+      for (let i = 0; i < chunks.length; i++) {
+         spark.append(chunks[i]);
+      }
+
+      // 完成 MD5 计算
+      const finalHash = spark.end();
+      self.postMessage({ fileHash: finalHash });
+   } catch {
+      self.postMessage({ fileHash: null });
+      self.close();
+   }
+};
+
 ```
 
 </details>
