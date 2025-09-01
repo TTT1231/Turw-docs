@@ -71,7 +71,8 @@ export default defineConfig({
             items: [
                { text: '目录结构', link: '/frontdesign/nuxt/catalog' },
                { text: '统一错误处理架构', link: '/frontdesign/nuxt/error-handle' },
-               { text: '配置问题及其解决方案', link: '/frontdesign/nuxt/config-solutions' }
+               { text: '配置问题及其解决方案', link: '/frontdesign/nuxt/config-solutions' },
+               { text: 'SEO-SSR', link: '/frontdesign/nuxt/seo-ssr' }
             ]
          },
          {
