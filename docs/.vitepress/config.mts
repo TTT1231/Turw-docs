@@ -90,6 +90,11 @@ export default defineConfig({
                { text: 'SQL操作简化', link: '/sql/sql-simplify' },
                { text: 'SQL优化', link: '/sql/sql-optimize' }
             ]
+         },
+         {
+            text: 'WSL2',
+            collapsed: true,
+            link: '/wsl/wsl'
          }
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
