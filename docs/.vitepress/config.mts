@@ -87,7 +87,7 @@ export default defineConfig({
             text: 'SQL',
             collapsed: true,
             items: [
-               { text: 'SQL操作简化', link: '/sql/sql-simplify' },
+               { text: 'prisma', link: '/sql/sql-prisma' },
                { text: 'SQL优化', link: '/sql/sql-optimize' }
             ]
          },

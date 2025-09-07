@@ -1,0 +1,118 @@
+# SQL简化
+
+在后端中，简化SQL语句的编写，和迁移的简单，这里采用prisma。
+
+## prisma
+
+Prisma将表看成一个对象(model)，所有操作都看作对象的操作，将SQL操作表迁移到对象操作，如果考虑**性能优化** 的情况下，使用`typeorm`会有性能损失，因为它会将对象操作转化SQL有性能损失，同时如果涉及子查询、复杂SQL编写，其缺点显著。
+
+**简单查询用ORM，复杂查询考虑性能的话回退SQL编写的混合策略**
+
+### prisma使用
+
+为了迁移的SQL迁移文件有更好的注释和简化注释操作，这里用husky对迁移文件自动注入**SQL头**注释信息，对于一些自定义注释则使用bash手动编写
+
+**Install husky**
+```sh
+pnpm add --save-dev husky
+```
+
+**husky init**
+```sh
+pnpm exec husky init
+```
+
+**然后编辑git commit提交之前的hook（pre-commit）**
+<details>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
+   pre-commit内容
+</summary>
+
+```sh
+# .husky/pre-commit
+
+# Prettier 格式化
+prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
+
+# Prisma 迁移文件添加提交信息头
+find prisma/migrations -name "migration.sql" | while read -r file; do
+  if ! grep -q '^-- ------github commit hooks触发---------' "$file"; then
+
+    # 头信息
+    header="-- ------github commit hooks触发---------
+-- 作者: $(git config user.name)
+-- 邮箱: $(git config user.email)
+-- Git分支: $(git branch --show-current)
+-- 关联提交: $(git rev-parse --short HEAD)
+-- 提交日期: $(date +'%Y-%m-%d %H:%M:%S')
+"
+    # 插入头
+    echo "$header" | cat - "$file" > temp && mv temp "$file"
+    echo "✅ 已为 $file 添加Git提交头"
+    git add "$file"
+  fi
+done
+
+#  更新 Git 索引
+git update-index --again
+```
+
+</details>
+
+**创建自定义的sh，在生成迁移完后执行自动添加自定义信息**
+<details>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
+   自定义头配合github commit
+</summary>
+
+```sh
+#!/bin/bash
+
+# 严格符合以下格式：
+# -- -----------sh 脚本生成----------------
+# -- 迁移ID: [migration文件夹名称]
+# -- 创建日期:[sh脚本创建日期]
+# -- 变更摘要: [变更摘要]
+# -- 回滚方案: [回滚方案]
+
+MIGRATIONS_DIR="prisma/migrations"
+
+find "$MIGRATIONS_DIR" -name "migration.sql" | while read -r file; do
+  # 检查是否存在标准头信息
+  if ! grep -q '^-- -----------sh 脚本生成----------------' "$file"; then
+    migration_id=$(basename "$(dirname "$file")")
+    header="-- -----------sh 脚本生成----------------
+-- 迁移ID: $migration_id
+-- 创建日期: $(date +'%Y-%m-%d %H:%M:%S')
+-- 变更摘要: 
+-- 回滚方案: 
+
+"
+    # 插入头信息到文件开头
+    echo "$header" > temp_file
+    cat "$file" >> temp_file
+    mv temp_file "$file"
+    
+    echo "✅ 已为 $file 添加标准注释头"
+  fi
+done
+```
+
+</details>
+
+**安装prisma client**，类型安全和简化SQL
+```sh
+pnpm install @prisma/client
+```
+
+init prisma client
+```sh
+npx prisma generate
+```
+
+**最后迁移到数据库中（生产模式下使用）**
+```sh
+npx prisma migrate deploy
+```
+
+针对prisma中迁移历史，可以进行更改，但是前提是要保证该更改不会影响其它表，这样做会造成历史混乱，所以直接使用**前驱**修改，也即增加一个前驱历史这个历史删除或者修改之前的表。
