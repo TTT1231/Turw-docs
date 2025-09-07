@@ -4,7 +4,7 @@
 
 ## prisma
 
-Prisma将表看成一个对象(model)，所有操作都看作对象的操作，将SQL操作表迁移到对象操作，如果考虑**性能优化** 的情况下，使用`typeorm`会有性能损失，因为它会将对象操作转化SQL有性能损失，同时如果涉及子查询、复杂SQL编写，其缺点显著。
+Prisma将表看成一个对象(model)，所有操作都看作对象的操作，将SQL操作表迁移到对象操作，如果考虑**性能优化** 的情况下，使用`prisma`会有性能损失，因为它会将对象操作转化SQL有性能损失，同时如果涉及子查询、复杂SQL编写，其缺点显著。
 
 **简单查询用ORM，复杂查询考虑性能的话回退SQL编写的混合策略**
 
@@ -100,6 +100,9 @@ done
 
 </details>
 
+<span class="text-red-400">
+   注意上面两个插入SQL头注释的prisma目录，按照实际目录进行更改，这里是以prisma/migrations（项目根目录下）
+</span>
 **安装prisma client**，类型安全和简化SQL
 ```sh
 pnpm install @prisma/client
