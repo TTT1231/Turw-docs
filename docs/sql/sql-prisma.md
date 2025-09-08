@@ -12,7 +12,7 @@ Prisma将表看成一个对象(model)，所有操作都看作对象的操作，�
 
 为了迁移的SQL迁移文件有更好的注释和简化注释操作，这里用husky对迁移文件自动注入**SQL头**注释信息，对于一些自定义注释则使用bash手动编写
 
-**Install husky**
+**Install husky**  
 ```sh
 pnpm add --save-dev husky
 ```
@@ -103,6 +103,15 @@ done
 <span class="text-red-400">
    注意上面两个插入SQL头注释的prisma目录，按照实际目录进行更改，这里是以prisma/migrations（项目根目录下）
 </span>
+
+**安装prisma**
+```terminal
+pnpm install prisma -D
+
+<!-- init -->
+npx prisma init --datasource-provider mysql --output ../generated/prisma
+```
+
 **安装prisma client**，类型安全和简化SQL
 ```sh
 pnpm install @prisma/client
@@ -119,3 +128,5 @@ npx prisma migrate deploy
 ```
 
 针对prisma中迁移历史，可以进行更改，但是前提是要保证该更改不会影响其它表，这样做会造成历史混乱，所以直接使用**前驱**修改，也即增加一个前驱历史这个历史删除或者修改之前的表。
+
+**注意：**，由于prisma7中output必填，导致**Prisma客户端**被生成到了指定的ouput目录中，而每次npx prisma generate 的时候会变化，当使用自定义引入类型文件时注意引入的生成路径。该方法解决客户端类型报错问题。`import { PrismaClient } from '../generated/prisma/index';`其中**后面的from对应output中的路径**
