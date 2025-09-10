@@ -34,10 +34,6 @@ export default defineConfig({
                   link: '/frontdesign/ES6'
                },
                {
-                  text: 'Nodejs',
-                  link: '/frontdesign/Nodejs'
-               },
-               {
                   text: 'Vite',
                   link: '/frontdesign/Vite'
                },
@@ -74,6 +70,10 @@ export default defineConfig({
                { text: '配置问题及其解决方案', link: '/frontdesign/nuxt/config-solutions' },
                { text: 'SEO-SSR', link: '/frontdesign/nuxt/seo-ssr' }
             ]
+         },
+         {
+            text: 'Nodejs',
+            link: '/Nodejs'
          },
          {
             text: '代码风格和规范',

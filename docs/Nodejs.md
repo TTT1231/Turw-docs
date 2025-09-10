@@ -821,3 +821,105 @@ export const setupDefaultRoute = (router: Router) => {
    });
 };
 ```
+
+## ESM or Commonjs?
+
+由于**nodejs**已全面转向了ESM模块作为未来发展方向，因而从最佳实践和现代化做法中，选择ESM。Nodejs和ts编译器职责分离，nodejs只执行js，而ts编译器只编译ts。因而引入ts文件必须要.js拓展名即使是ts，主要原因是：**但esm模块解析时，nodejs不会像commonjs自动查找.js、.json扩展名，省略.js就node找不到该模块**  
+  
+之所以必须是`.js`而不是`.ts`因为node是运行时，而ts是编译时类似源文件，所以在nodejs引入或者使用模块就必须引入编译后的`.js`文件
+
+在vite+vue+ts的官方项目中vite+ts编译器自动处理了ts文件，隐藏了编译过程，从而导入文件时不用关心拓展名。  
+
+**配置：**  
+在`package.json`显示声明`"type":"module"`即可，然后就是配置`tsconfig.json`让ts如何解析该模块，
+```json
+{
+   "compilerOptions": {
+      "target": "ES6", 
+      /* Modules */
+      "module": "NodeNext" /* 指定生成的模块代码.Node ESM推荐 */,
+      "moduleResolution": "NodeNext" /* 让ts模块解析逻辑完全匹配Nodejs的ESM解析规则*/,
+      "rootDir": ".",
+      "resolveJsonModule": true, /* 启用导入.json文件. */ 
+      "baseUrl": "./",
+      "outDir": "./dist",
+      "esModuleInterop": true,/** commonjs支持 */
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "skipLibCheck": true
+   },
+   "exclude": ["node_modules", "dist"]
+}
+```
+
+然后就是`package.json`启动命令的配置，这里使用更加现代的ts编译器`tsx`。
+
+```
+<!-- 1、install tsx -->
+pnpm i tsx -D
+<!-- 2、setting command(默认src/main.ts为入口) -->
+"scripts": {
+   "start": "node --import tsx src/main.ts",
+   "dev": "nodemon --watch \"src/**/*.ts\" -e ts,json --exec \"node --import tsx src/main.ts\""
+},
+```
+
+## 打包
+
+打包nodejs常见的有两个一个是`esbuild`另外一个是`webpack`，esbuild构建速度快，配置简单易用性高，但是在一些复杂项目中没有webpack好用，因而**复杂项目使用webpack，快速上线中小项目使用esbuild**
+
+### esbuild打包
+
+```terminal
+pnpm i esbuild -D
+```
+
+**setting config file(esbuild.config.mjs)**
+```ts
+const// esbuild.config.mjs
+import { build } from 'esbuild';
+import { rmSync, existsSync } from 'fs';
+import glob from 'fast-glob';
+
+const outdir = 'dist';
+
+// 先清空 dist 目录
+if (existsSync(outdir)) rmSync(outdir, { recursive: true });
+
+// 模块解耦，或者微服务的时候很重要，因为要保证文件的结构
+// 使用 glob 匹配所有 .ts,.js 文件，同时排除prisma生成的文件
+const entryPoints = await glob([
+  'src/**/*.{ts,js}',
+  '!src/common/prisma/generated/**/*',
+]);
+
+// 打包核心入口
+await build({
+  //模块解耦
+  //entryPoints, // 配置为多个入口，这里配置时就会保持目录结构
+                // 如果在微服务或者对模块功能进行解耦时这里是必须要的
+  //outbase: 'src', // 保持 src 目录结构
+  entryPoints:['/src/main.ts'] //简单api使用单入口打包即可
+  outdir, 
+  bundle: true,
+
+  platform: 'node', // 针对 Node.js 平台，如果是node平台就不能使用esbuild的代码压缩minifiy(这个是在游览器独有的)
+                    //nodejs是运行时，会一次性加载所有目标代码（在需要时）分包会导致性能下降等，除非很在乎启动时间
+  target: 'node18', // 目标 Node.js 版本
+  format: 'esm', 
+
+  //调试
+  minify: false, 
+  sourceMap:true,
+  
+  external: [
+    // Node.js 内置模块
+    'fs', 'path', 'http', 'https', 'url', 'net', 'dns', 'tls',
+    'child_process', 'cluster', 'os', 'process', 'querystring',
+    'readline', 'repl', 'stream', 'tty', 'util', 'v8', 'vm', 'zlib',
+    // 大型外部依赖
+    'express', 'mongoose', 'redis', 'mysql2'
+  ],
+});
+
+```
