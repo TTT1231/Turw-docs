@@ -1,3 +1,6 @@
+---
+outline: deep
+---
 # SQL简化
 
 在后端中，简化SQL语句的编写，和迁移的简单，这里采用prisma。
@@ -130,3 +133,29 @@ npx prisma migrate deploy
 针对prisma中迁移历史，可以进行更改，但是前提是要保证该更改不会影响其它表，这样做会造成历史混乱，所以直接使用**前驱**修改，也即增加一个前驱历史这个历史删除或者修改之前的表。
 
 **注意：**，由于prisma7中output必填，导致**Prisma客户端**被生成到了指定的ouput目录中，而每次npx prisma generate 的时候会变化，当使用自定义引入类型文件时注意引入的生成路径。该方法解决客户端类型报错问题。`import { PrismaClient } from '../generated/prisma/index';`其中**后面的from对应output中的路径**
+
+### prisma打包问题
+
+**esbuild打包问题**
+
+如果在prisma手动配置了output位置不是`node_modules`，`@prisma/client`包在运行时动态查找时会导致找不到这个模块，**同时在项目中直接引入@prisma/client包找不到任何东西**  
+
+虽然可以手动引入prisma生成的client但是esbuild进行打包运行就会报错模块找不到问题，一个简单方法**直接默认或者手动生成进node_modules目录**与@prisma/client动态查找包就会生效，esbuild配置也简单。<span class="text-red-400">但是打包后的dist目录不能脱离`node_modules`,因为SQL的执行依赖prisma client，脱离node引入模块时就会失败。</span>
+
+**schema.prisma**
+```ts
+
+generator client {
+  provider = "prisma-client-js"
+  //这里很重要，也可以默认不填，如果不引入到node_modules那么配置很麻烦，针对打包
+  /**虽然官方文档推荐保持目录结构，然后将ts转化js，然后直接运行，最后的结果跟打包差不多 */
+  output = "../node_modules/.prisma/client"
+  moduleFormat="esm"
+}
+
+```
+
+**import 引入时**
+
+当需要`prisma client`与数据库通信时，直接使用`prisma`的动态查找包形式，而不是从`prisma`生成的`client`引入，这样子缺乏类型安全和提示，后面还要考虑包的引入问题。  
+`import {PrismaClient} from '@prisma/client'`
