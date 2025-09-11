@@ -905,3 +905,43 @@ export default defineNuxtPlugin(() => {
 如果是在第一个数据已经知道的情况下，预估第一个数据的布局所占用的长和宽，然后根据总数据的length去动态设置骨架屏的占位
 
 **还有一种方法就是虚拟滚动**，以vueuse中useVirtualList为例，也差不多，但是要限制容器高度触发滚动。
+
+## 二次组件封装
+
+注意封装完后，需要将事件通过ref去暴露。
+
+```vue
+<script setup lang="ts">
+import {Button} from 'ant-design-vue';
+import {getCurrentInstance, h,  type ComponentPublicInstance} from 'vue';
+import type { ButtonProps } from 'ant-design-vue'
+
+/**
+ * 组件的二次封装
+ * 1、属性
+ * 2、事件
+ * 3、方法
+ * 4、插槽
+ * 5、类型
+ */
+
+
+type ButtonInstance = ComponentPublicInstance<ButtonProps>
+const vm = getCurrentInstance();
+
+//将事件方法暴露给父组件，供其ref（父组件）调用
+function changeRef(expose: Element | ButtonInstance | null) {
+    if (vm) {
+        vm.exposed = expose
+    }
+}
+
+//ts 提示
+defineExpose({} as ButtonInstance)
+</script>
+<template>
+<!-- 注意这里不能用div或者容器包裹，否则事件会冒泡会被重复执行 -->
+   <component :is="h(Button,{...$attrs,ref:changeRef},$slots)">
+   </component>
+</template>
+```
