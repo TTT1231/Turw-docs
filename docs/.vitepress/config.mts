@@ -72,10 +72,6 @@ export default defineConfig({
             ]
          },
          {
-            text: 'Nodejs',
-            link: '/Nodejs'
-         },
-         {
             text: '代码风格和规范',
             collapsed: true,
             items: [
@@ -95,6 +91,17 @@ export default defineConfig({
             text: 'WSL2',
             collapsed: true,
             link: '/wsl/wsl'
+         },
+         {
+            text: '服务端',
+            collapsed: true,
+            items: [
+               { text: '架构设计思想', link: '/server/architect-design-thought' },
+               {
+                  text: 'Nodejs',
+                  link: '/server/Nodejs'
+               }
+            ]
          }
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
