@@ -100,6 +100,10 @@ export default defineConfig({
                {
                   text: 'Nodejs',
                   link: '/server/Nodejs'
+               },
+               {
+                  text: 'Nestjs',
+                  link: '/server/Nestjs'
                }
             ]
          }
