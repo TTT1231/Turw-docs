@@ -84,6 +84,17 @@
    --vp-button-brand-active-border: transparent;
    --vp-button-brand-active-text: var(--vp-c-white);
    --vp-button-brand-active-bg: var(--vp-c-brand-1);
+
+   /* nest btn - 现代渐变粉紫色 */
+   --vp-button-nest-border: transparent;
+   --vp-button-nest-text: var(--vp-c-white);
+   --vp-button-nest-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 优雅的紫色渐变 */
+   --vp-button-nest-hover-border: transparent;
+   --vp-button-nest-hover-text: var(--vp-c-white);
+   --vp-button-nest-hover-bg: linear-gradient(135deg, #5568d3 0%, #6a4199 100%); /* 悬停时稍深 */
+   --vp-button-nest-active-border: transparent;
+   --vp-button-nest-active-text: var(--vp-c-white);
+   --vp-button-nest-active-bg: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%); /* 点击时更深 */
 }
 
 /**
@@ -136,4 +147,53 @@
    -webkit-user-select: none;
    -moz-user-select: none;
    -ms-user-select: none;
+}
+
+/* Enhanced button effects for all themes */
+.VPButton.brand,
+.VPButton.alt,
+.VPButton.nest {
+   transition: all 0.3s ease;
+}
+
+.VPButton.brand:hover,
+.VPButton.alt:hover,
+.VPButton.nest:hover {
+   transform: translateY(-2px);
+}
+
+.VPButton.brand:active,
+.VPButton.alt:active,
+.VPButton.nest:active {
+   transform: translateY(0);
+}
+
+/* Brand button enhanced hover */
+.VPButton.brand:hover {
+   box-shadow: 0 4px 12px rgba(var(--vp-c-brand-3), 0.4);
+}
+
+/* Alt button enhanced hover */
+.VPButton.alt:hover {
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom nest theme button */
+.VPButton.nest {
+   border-color: var(--vp-button-nest-border);
+   color: var(--vp-button-nest-text);
+   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.VPButton.nest:hover {
+   border-color: var(--vp-button-nest-hover-border);
+   color: var(--vp-button-nest-hover-text);
+   background: linear-gradient(135deg, #5568d3 0%, #6a4199 100%);
+   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.VPButton.nest:active {
+   border-color: var(--vp-button-nest-active-border);
+   color: var(--vp-button-nest-active-text);
+   background: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%);
 }

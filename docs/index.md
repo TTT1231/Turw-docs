@@ -15,6 +15,9 @@ hero:
       - theme: alt
         text: Nuxt FAQ
         link: /frontdesign/nuxt/config-solutions
+      - theme: nest
+        text: Nest FAQ
+        link: /server/Nestjs
 
 features:
    - icon: 📚
