@@ -278,6 +278,25 @@ export function propertyDecorator<T extends Object, Value>() {
     };
 }
 
-
-
 ```ts
+```
+
+## 元数据处理实践
+
+针对**Nestjs**提供的两种元数据处理`Reflector`和`MetadataScanner`两者侧重点不同，虽然都是简化元数据处理，两者在使用场景和侧重点不同。
+
+**Reflector:**
+- 简化元数据获取，通常从类、方法、参数获取装饰器简化**设置**和**获取**
+- 主要在守卫、拦截器、管道中来获取元数据
+- 自定义装饰器和元数据获取
+
+**MetadataScanner:**
+- 关注：**方法元数据**获取，倾向结构化和静态的扫描
+- 主要用在静态扫描和自动化注册以及模块化和配置
+- **现在只保留了getAllMethodNames**，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
+
+## 缓存监控与埋点
+
+详情代码：[stackblitz](https://stackblitz.com/edit/ttt1231-nestjs-cachemonoitor?file=README.md){target="_blank" rel="noopener noreferrer"}  
+详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor){target="_blank" rel="noopener noreferrer"}
+
