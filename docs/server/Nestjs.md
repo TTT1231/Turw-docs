@@ -103,6 +103,9 @@ return next.handle().pipe(
 - 方法装饰器,接受类的原型、方法名、方法描述符作为参数，`修改方法实现`
 - 属性装饰器,接受类的原型和属性名作为参数，可以对属性进行元数据`标记`
 
+<span class=" text-red-400">注意：</span>截至`2025/10/12` Nestjs还是使用stage2写法，因此它会自动添加元数据`design:paramtypes`但这种不安全，同时由于是stage2写法所有在tsconfig.json中必须要配置`emitDecoratorMetadata`和`experimentalDecorators`**值为true**，否则其内部提供的元数据会失效，DI和AOP会失效，工厂函数创建实例失败。
+
+
 **使用示例:【ts5标准 (Stage 3 Decorators)】**  
 
 ```ts
