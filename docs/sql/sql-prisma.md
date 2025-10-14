@@ -147,15 +147,27 @@ npx prisma migrate deploy
 
 generator client {
   provider = "prisma-client-js"
-  //这里很重要，也可以默认不填，如果不引入到node_modules那么配置很麻烦，针对打包
-  /**虽然官方文档推荐保持目录结构，然后将ts转化js，然后直接运行，最后的结果跟打包差不多 */
-  output = "../node_modules/.prisma/client"
-  moduleFormat="esm"
+  //这里很重要，也可以默认不填，但是为了更好的排除动态生成的影响还是要配置一些要好，
+  //这样在部署的时候就不用担心版本和迁移问题，每次只需要删除动态生成的客户端，然后执行npx prisma generate即可
+  //然后打包的时候排除这个目录即可
+   output   = "../generated/prisma"
+
 }
 
 ```
 
-**import 引入时**
+**import type问题**
 
-当需要`prisma client`与数据库通信时，直接使用`prisma`的动态查找包形式，而不是从`prisma`生成的`client`引入，这样子缺乏类型安全和提示，后面还要考虑包的引入问题。  
-`import {PrismaClient} from '@prisma/client'`
+`import {PrismaClient} from '@prisma/client'`这里会出错，连接问题，解决方案时在`package.json`中的dependencies中添加:
+```json
+"dependencies": {
+   //....
+   +
+   "prisma-client": "file:./generated/prisma"
+},
+```
+然后执行`pnpm i`链接到这个包既可以正常导入了
+
+### 部署
+
+部署的时候将打包好的`dist`文件传递到服务器中，注意这个prisma的配置和历史文件，因为这里的动态生成prisma客户端依赖这个schema.prisma文件，然后执行npx prisma generate生成一下即可
