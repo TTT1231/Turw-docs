@@ -303,3 +303,7 @@ export function propertyDecorator<T extends Object, Value>() {
 详情代码：[stackblitz](https://stackblitz.com/edit/ttt1231-nestjs-cachemonoitor?file=README.md){target="_blank" rel="noopener noreferrer"}  
 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor){target="_blank" rel="noopener noreferrer"}
 
+## 动态模块配置验证与实现
+
+详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-dynamicmodule-rte9xnqd){target="_blank" rel="noopener noreferrer"}  
+详情Github仓库：[Github](https://github.com/TTT1231/nestjs-dynamicmodule-rte9xnqd){target="_blank" rel="noopener noreferrer"}
