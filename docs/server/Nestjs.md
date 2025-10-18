@@ -363,7 +363,7 @@ export function extractConfigFromKeys<T>(configService: ConfigService<T, true>, 
 
 ```
 
-### cookie
+### cookies
 
 **express版本**
 ```ts
