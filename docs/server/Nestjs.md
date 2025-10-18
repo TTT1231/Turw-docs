@@ -362,3 +362,264 @@ export function extractConfigFromKeys<T>(configService: ConfigService<T, true>, 
 }
 
 ```
+
+### cookie
+
+**express版本**
+```ts
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Request } from 'express';
+
+type CookieOptions<T = string> = {
+  /** Cookie 键名 */
+  key?: string;
+  /** 默认值 */
+  defaultValue?: T;
+  /** 类型转换函数 */
+  transform?: (value: string) => T;
+};
+
+/**
+ * @description 自定义装饰器，从 HTTP Request 提取 cookies（类型安全增强版）
+ * @usageNotes 基于 express 和 cookie-parser 中间件
+ * @template T - Cookie 值的类型
+ * @param options - Cookie 选项或键名字符串
+ * 
+ * @example
+ * // 获取单个 cookie（字符串）
+ * getCookie(@Cookies('sessionId') sessionId: string | undefined)
+ * 
+ * // 获取单个 cookie 并指定默认值
+ * getCookie(@Cookies({ key: 'sessionId', defaultValue: 'anonymous' }) sessionId: string)
+ * 
+ * // 获取并转换类型
+ * getCount(@Cookies({ 
+ *   key: 'count', 
+ *   transform: (v) => parseInt(v, 10),
+ *   defaultValue: 0 
+ * }) count: number)
+ * 
+ * // 获取所有 cookies
+ * getAllCookies(@Cookies() cookies: Record<string, string>)
+ */
+export const Cookies = createParamDecorator(
+  <T = string>(
+    options: string | CookieOptions<T> | undefined,
+    ctx: ExecutionContext,
+  ): T | Record<string, string> | undefined => {
+    const request = ctx.switchToHttp().getRequest<Request>();
+    const cookies: Record<string, string> | undefined = request.cookies;
+
+    // 如果没有传入任何参数，返回所有 cookies
+    if (options === undefined) {
+      return cookies ?? {};
+    }
+
+    // 字符串参数
+    if (typeof options === 'string') {
+      return cookies?.[options] as T | undefined;
+    }
+
+    // 处理对象配置
+    const { key, defaultValue, transform } = options;
+
+    // 没有指定 key，返回所有 cookies
+    if (!key) {
+      return cookies ?? {};
+    }
+
+    const value = cookies?.[key];
+
+    // Cookie 不存在时返回默认值
+    if (value === undefined) {
+      return defaultValue as T;
+    }
+
+    // 如果提供了转换函数，进行类型转换
+    if (transform) {
+      try {
+        return transform(value);
+      } catch (error) {
+        // 转换失败时返回默认值
+        return defaultValue as T;
+      }
+    }
+    
+    return value as T;
+  },
+);
+
+```
+
+**fastify版本**
+```ts
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { FastifyRequest } from 'fastify'; 
+
+type CookieOptions<T = string> = {
+  /** Cookie 键名 */
+  key?: string;
+  /** 默认值 */
+  defaultValue?: T;
+  /** 类型转换函数 */
+  transform?: (value: string) => T;
+};
+
+/**
+ * @description 自定义装饰器，从 Fastify Request 提取 cookies（类型安全增强版）
+ * @usageNotes 基于 fastify 和 @fastify/cookie 插件
+ * @template T - Cookie 值的类型
+ * @param options - Cookie 选项或键名字符串
+ * 
+ * @example
+ * // 获取单个 cookie（字符串）
+ * getCookie(@Cookies('sessionId') sessionId: string | undefined)
+ * 
+ * // 获取单个 cookie 并指定默认值
+ * getCookie(@Cookies({ key: 'sessionId', defaultValue: 'anonymous' }) sessionId: string)
+ * 
+ * // 获取并转换类型
+ * getCount(@Cookies({ 
+ *   key: 'count', 
+ *   transform: (v) => parseInt(v, 10),
+ *   defaultValue: 0 
+ * }) count: number)
+ * 
+ * // 获取所有 cookies
+ * getAllCookies(@Cookies() cookies: Record<string, string>)
+ */
+export const Cookies = createParamDecorator(
+  <T = string>(
+    options: string | CookieOptions<T> | undefined,
+    ctx: ExecutionContext,
+  ): T | Record<string, string> | undefined => {
+    const request = ctx.switchToHttp().getRequest<FastifyRequest>();
+    const cookieList = request.cookies?.getAll() ?? [];
+    const cookies: Record<string, string> = cookieList.reduce((obj, cookie) => {
+      obj[cookie.name] = cookie.value;
+      return obj;
+    }, {} as Record<string, string>);
+
+    // 如果没有传入任何参数，返回所有 cookies
+    if (options === undefined) {
+      return cookies;
+    }
+
+    // 字符串参数
+    if (typeof options === 'string') {
+      return cookies[options] as T | undefined;
+    }
+
+    // 处理对象配置
+    const { key, defaultValue, transform } = options;
+
+    // 没有指定 key，返回所有 cookies
+    if (!key) {
+      return cookies;
+    }
+
+    const value = cookies[key];
+
+    // Cookie 不存在时返回默认值
+    if (value === undefined) {
+      return defaultValue as T;
+    }
+
+    // 如果提供了转换函数，进行类型转换
+    if (transform) {
+      try {
+        return transform(value);
+      } catch (error) {
+        // 转换失败时返回默认值
+        return defaultValue as T;
+      }
+    }
+    
+    return value as T;
+  },
+);
+
+```
+
+**跨平台通用（注意类型安全）**
+```ts
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+type CookieOptions<T = string> = {
+  /** Cookie 键名 */
+  key?: string;
+  /** 默认值 */
+  defaultValue?: T;
+  /** 类型转换函数 */
+  transform?: (value: string) => T;
+};
+
+/**
+ * @description 跨平台通用的 Cookie 参数装饰器（类型安全增强版）
+ * @template T - Cookie 值的类型
+ * @param options - Cookie 选项或键名字符串
+ * 
+ * @example
+ * // 获取单个 cookie（字符串）
+ * getCookie(@Cookies('sessionId') sessionId: string | undefined)
+ * 
+ * // 获取单个 cookie 并指定默认值
+ * getCookie(@Cookies({ key: 'sessionId', defaultValue: 'anonymous' }) sessionId: string)
+ * 
+ * // 获取并转换类型
+ * getCount(@Cookies({ 
+ *   key: 'count', 
+ *   transform: (v) => parseInt(v, 10),
+ *   defaultValue: 0 
+ * }) count: number)
+ * 
+ * // 获取所有 cookies
+ * getAllCookies(@Cookies() cookies: Record<string, string>)
+ */
+export const Cookies = createParamDecorator(
+  <T = string>(
+    options: string | CookieOptions<T> | undefined,
+    ctx: ExecutionContext,
+  ): T | Record<string, string> | undefined => {
+    const request = ctx.switchToHttp().getRequest();
+    const cookies: Record<string, string> | undefined = request.cookies;
+
+    // 如果没有传入任何参数，返回所有 cookies
+    if (options === undefined) {
+      return cookies ?? {};
+    }
+
+    // 兼容旧版字符串参数
+    if (typeof options === 'string') {
+      return cookies?.[options] as T | undefined;
+    }
+
+    // 处理对象配置
+    const { key, defaultValue, transform } = options;
+
+    // 没有指定 key，返回所有 cookies
+    if (!key) {
+      return cookies ?? {};
+    }
+
+    const value = cookies?.[key];
+
+    // Cookie 不存在时返回默认值
+    if (value === undefined) {
+      return defaultValue as T;
+    }
+
+    // 如果提供了转换函数，进行类型转换
+    if (transform) {
+      try {
+        return transform(value);
+      } catch (error) {
+        // 转换失败时返回默认值
+        return defaultValue as T;
+      }
+    }
+
+    return value as T;
+  },
+);
+```
