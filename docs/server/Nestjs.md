@@ -305,5 +305,60 @@ export function propertyDecorator<T extends Object, Value>() {
 
 ## 动态模块配置验证与实现
 
+### 模块配置实践
+
+**nestjs官方设计实践:**
+
+| 方法前缀 | 语义 | 设计意图 |
+|:--------:|:----:|:--------:|
+| for | 为...而配置 | 强调目的和作用域 |
+| register | 注册 | 强调行为和灵活性 |
+| Async | 异步 | 强调时机和依赖 |
+
+考虑下面几种模块配置方法**forRoot**和**register**以及**asyncRegister**
+
+- forRoot:为根模块进行配置,通常只在AppModule中调用一次,配合@Global将其provider配置到全局完成全局provider的提供，也可以使用动态模块的global属性
+- register:为需要功能的模块中调用,需要提供moduleId用来标识不同实例,交由nestjs容器来管理.
+- asyncRegister:异步配置,可以使用其他提供者的provider进行配置,注意如果声明了global那么其内部提供的moduleId中token会被覆盖,也即是这个moduleId的token被全局注册了,显然违背了模块设计思想,因为根本用不着,全局模块提供的服务应该是唯一的单例的可复用的.
+
+### 实际使用
+
 详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-dynamicmodule-rte9xnqd){target="_blank" rel="noopener noreferrer"}  
 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-dynamicmodule-rte9xnqd){target="_blank" rel="noopener noreferrer"}
+
+## 实用工具函数
+
+### extractConfigFromKeys
+
+```ts
+//简化返回配置
+import { ConfigService } from '@nestjs/config';
+
+/**
+ * 从 ConfigService 提取指定 keys 的配置，生成符合接口 T 的对象
+ * @param configService NestJS ConfigService
+ * @param keys 必须指定要提取的键（数组）
+ *
+ * usages like
+ * interface YourConfig{
+ * //some keys
+ * nihao: string;
+ * }
+ * extractConfigFromKeys<YourConfig>(ConfigService, ['nihao']);
+ * //这样避免了繁琐的手动get和类型断言
+ */
+export function extractConfigFromKeys<T>(configService: ConfigService<T, true>, keys: Array<keyof T>): T {
+   const result: Partial<T> = {};
+
+   keys.forEach(key => {
+      // 使用类型断言确保 key 是合法的 Path<T>
+      const value = configService.get(key as string & keyof T, { infer: true });
+      if (value !== undefined) {
+         result[key] = value as T[keyof T];
+      }
+   });
+
+   return result as T;
+}
+
+```

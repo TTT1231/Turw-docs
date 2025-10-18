@@ -80,6 +80,17 @@ export default defineConfig({
             ]
          },
          {
+            text: '网络代理工具',
+            collapsed: true,
+            items: [
+               {
+                  text: 'WSL2代理',
+                  collapsed: true,
+                  link: '/wsl/wsl'
+               }
+            ]
+         },
+         {
             text: 'SQL',
             collapsed: true,
             items: [
@@ -87,11 +98,7 @@ export default defineConfig({
                { text: 'SQL优化', link: '/sql/sql-optimize' }
             ]
          },
-         {
-            text: 'WSL2',
-            collapsed: true,
-            link: '/wsl/wsl'
-         },
+
          {
             text: '服务端',
             collapsed: true,
