@@ -168,6 +168,8 @@ generator client {
 ```
 然后执行`pnpm i`链接到这个包既可以正常导入了
 
+如果嫌弃上诉过程麻烦，也可以在构建时执行`pnpm add <url>`,这个url指向构建好的PrismaClient，注意地址问题，也就是这个url工作目录也就是当前工作目录是处于`项目根目录的`
+
 ### 部署
 
 部署的时候将打包好的`dist`文件传递到服务器中，注意这个prisma的配置和历史文件，因为这里的动态生成prisma客户端依赖这个schema.prisma文件，然后执行npx prisma generate生成一下即可
