@@ -1,12 +1,12 @@
 {
   "type": "module",
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.11",
+    "@tailwindcss/postcss": "^4.1.15",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
-    "tailwindcss": "^4.1.11",
-    "vitepress": "^1.6.3"
+    "tailwindcss": "^4.1.15",
+    "vitepress": "^1.6.4"
   },
   "scripts": {
     "docs:dev": "vitepress dev docs",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "ant-design-vue": "^4.2.6",
-    "vue": "^3.5.18"
+    "vue": "^3.5.22"
   },
   "packageManager": "pnpm@10.1.0+sha1.ab7948c89104fdd3fc88b5b391fa4b73fd800631"
 }

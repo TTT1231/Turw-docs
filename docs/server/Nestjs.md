@@ -331,6 +331,139 @@ export function propertyDecorator<T extends Object, Value>() {
 详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-passport-websocket-zwhyb6vz?file=README.md){target="_blank" rel="noopener noreferrer"}  
 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-passport-websocket-zwhyb6vz){target="_blank" rel="noopener noreferrer"}
 
+## ws适配器
+
+**main.ts**
+
+```ts
+import { WsAdapter } from '@nestjs/platform-ws';
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+//+  
+  app.useWebSocketAdapter(new WsAdapter(app));
+  await app.listen(process.env.PORT ?? 3000);
+  console.log(`Application is running on: ${await app.getUrl()}`);
+}
+```
+
+<details>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
+   Usages in gateway
+</summary>
+
+```ts
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  WebSocketServer,
+  ConnectedSocket,
+  OnGatewayInit,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
+import { Server, WebSocket } from 'ws';
+
+@WebSocketGateway(3001, {
+  path: '/ws',
+  cors: {
+    origin: '*',
+  },
+})
+export class WsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  //网关注入风格,webSocket-server实例
+  @WebSocketServer() server: Server; // Injects the WebSocket server instance
+
+  afterInit(server: Server) {
+    console.log('WebSocket Gateway initialized');
+  }
+  handleConnection(client: WebSocket, args: any[]) {
+    console.log('连接参数 args 详情：');
+    console.dir(args, { depth: null }); // depth: null 表示打印所有层级
+    console.log('========================================================================');
+    return {
+      event: 'connected',
+      data: 'Successfully connected to WebSocket!',
+    };
+  }
+  handleDisconnect(client: WebSocket) {
+    console.log(`Client disconnected: ${client}`);
+  }
+
+  @SubscribeMessage('message') // Listens for messages with the 'message' event
+  handleMessage(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+    console.log(`Received message from client: ${data}`);
+    return {
+      event: 'message',
+      data: `Server received: ${data}`,
+    };
+  }
+
+  @SubscribeMessage('nihao')
+  handleMessageNihao(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+    console.log(`Received nihao message from: ${data}`);
+
+    return {
+      event: 'nihao',
+      data: `Server received: ${data}`,
+    };
+  }
+
+  @SubscribeMessage('testin')
+  handleMessageTestIn(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+    console.log(this.server.clients);
+    return { event: 'testin', data: `BACKEND:Server received: ${data}` };
+  }
+
+  //广播
+  @SubscribeMessage('broadcast') // Listens for messages with the 'broadcast' event
+  handleBroadcast(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+    console.log(`Received broadcast message from client ${client}: ${data}`);
+    // Broadcast the message to all connected clients
+    this.server.clients.forEach((c) => {
+      if (c !== client && c.readyState === WebSocket.OPEN) {
+        c.send(
+          JSON.stringify({
+            event: 'broadcast',
+            data: `Broadcast from ${client}: ${data}`,
+          }),
+        );
+      }
+    });
+    return {
+      event: 'broadcast',
+      data: `Server broadcasted: ${data}`,
+    };
+  }
+}
+```
+
+</details>
+
+**use in frontend**
+```ts
+const ws= new WebSocket('ws://localhost:3001/ws')
+ws.onopen = () => {
+  console.log('WebSocket 连接已建立');
+  const message = {
+    event: 'testin', // 这里的 'message' 与后端 @SubscribeMessage('message') 对应
+    data: '前端发送的内容' // 传递给后端的数据（会被 @MessageBody() 接收）
+  };
+  // 发送 JSON 字符串格式的消息
+  ws.send(JSON.stringify(message));
+
+};
+
+// 接收后端消息
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('收到后端消息：', message);
+  if (message.event === 'message') {
+    console.log('这是来自后端 message 事件的响应：', message.data);
+  }
+};
+```
+
 ## 实用工具函数
 
 ### extractConfigFromKeys
@@ -628,3 +761,4 @@ export const Cookies = createParamDecorator(
   },
 );
 ```
+
