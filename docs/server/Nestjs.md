@@ -331,6 +331,10 @@ export function propertyDecorator<T extends Object, Value>() {
 详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-passport-websocket-zwhyb6vz?file=README.md){target="_blank" rel="noopener noreferrer"}  
 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-passport-websocket-zwhyb6vz){target="_blank" rel="noopener noreferrer"}
 
+## redis多节点部署
+
+详情Github仓库：[Github](https://github.com/TTT1231/redis-single-deploy){target="_blank" rel="noopener noreferrer"}
+
 ## ws适配器
 
 **main.ts**
