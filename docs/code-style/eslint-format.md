@@ -89,9 +89,9 @@ export default [
 ```json
 {
    "semi": true,
-   "trailingComma": "es5",
+   "trailingComma": "all",
    "singleQuote": true,
-   "printWidth": 80,
+   "printWidth": 100,
    "tabWidth": 3,
    "useTabs": false,
    "quoteProps": "as-needed",
@@ -154,6 +154,8 @@ coverage/
 *.ttf
 *.eot
 
+# custom settings
+pnpm-workspace.yaml
 ```
 
 ## 配置命令
