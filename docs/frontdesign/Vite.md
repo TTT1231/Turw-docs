@@ -187,9 +187,25 @@ export default defineConfig({
 ```
 
 ## vite dev tools 和 增强import.meta提示
+
 `import vueDevTools from 'vite-plugin-vue-devtools'`  
+
+`pnpm add vite-plugin-vue-devtools -D`
+
+```ts
+import vueDevTools from 'vite-plugin-vue-devtools';
+export default defineConfig({
+   plugins: [
+   +  vueDevTools()
+   ],
+})
+```
+
 **增强提示（类型安全）**
 ```js
+/// <reference types="vite/client" />
+//加上上面那个进行类型提示增强
+//需要在tsconfig.app.json配置`"types": ["vite/client"]`
 interface ImportMeta {
    readonly env: ImportMetaEnv;
 }

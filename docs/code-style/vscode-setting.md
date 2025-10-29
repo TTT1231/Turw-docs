@@ -127,10 +127,19 @@
    "vsicons.associations.folders": [
       {
          "icon": "src",
-         "extensions": ["src/renderer"],
+         "extensions": ["renderer"],
          "format": "svg"
       }
-   ]
+   ],
+   "vsicons.associations.files": [
+      {
+         "icon": "tsconfig",
+         "extensions": ["tsconfig.preload.json"],
+         "filename": true,
+         "format": "svg"
+      }
+   ],
+   "workbench.iconTheme": "vscode-icons"
 }
 ```
 
@@ -188,9 +197,9 @@ vscode插件推荐
 
 由于这里使用的是`vscode-icons`插件，因此所支持的图标如下:
 
-[文件夹图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFolders){target="_blank" rel="noopener noreferrer"}  
+[文件夹图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFolders){target="\_blank" rel="noopener noreferrer"}
 
-[文件图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFiles){target="_blank" rel="noopener noreferrer"}
+[文件图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFiles){target="\_blank" rel="noopener noreferrer"}
 
 保存文件vscode自动格式化配置 **editorconfig**
 
