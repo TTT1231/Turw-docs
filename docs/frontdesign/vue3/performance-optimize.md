@@ -1,6 +1,8 @@
 # 性能优化
 
-- **格式优化、懒加载、CDN、代码压缩、请求合并（可以使用es6特性allSettled并发）、以及缓存策略、代码分割、Tree Shaking**
+::: tip
+格式优化、懒加载、CDN、代码压缩、请求合并（可以使用es6特性allSettled并发）、以及缓存策略、代码分割、Tree Shaking
+:::
 
 ## vite构建优化
 
@@ -24,27 +26,27 @@ export default defineConfig({
    build: {
       minify: 'terser', //默认
       sourcemap: false,
-      cssCodeSplit: true, //css代码分离
+      cssCodeSplit: true, //css代码分离 // [!code warning]
       terserOptions: {
          //具体也可参考 https://terser.org/docs/api-reference/#minify-options
          /**
-          * compress 压缩选项
-          * format   格式选项
-          * mangle   混淆选项
+          * compress 压缩选项  // [!code error]
+          * format   格式选项  // [!code error]
+          * mangle   混淆选项  // [!code error]
           */
          //@ts-ignore `terser` may not be installed
          compress: {
-            drop_console: true, // 删除console
-            drop_debugger: true, // 删除调试断点
-            arguments: true, // 删除未使用的函数参数
-            unused: true, // 删除未使用的变量
-            dead_code: true // 删除死代码
+            drop_console: true, // 删除console           // [!code warning]
+            drop_debugger: true, // 删除调试断点         // [!code warning]
+            arguments: true, // 删除未使用的函数参数     // [!code warning]
+            unused: true, // 删除未使用的变量           // [!code warning]
+            dead_code: true // 删除死代码             // [!code warning]
          },
          format: {
-            comments: false // 删除注释
+            comments: false // 删除注释             // [!code warning]
          },
          mangle: {
-            toplevel: true //混淆顶级变量名
+            toplevel: true //混淆顶级变量名        // [!code warning]
          }
       }
    }
@@ -59,43 +61,57 @@ export default defineConfig({
 //options
 ViteImagemin({
    gifsicle: {
-      optimizationLevel: 3, // 设置 GIF 压缩等级（0-3）
-      interlaced: false // 是否进行逐行扫描优化
+      optimizationLevel: 3, // 设置 GIF 压缩等级（0-3）      // [!code warning]
+      interlaced: false // 是否进行逐行扫描优化              // [!code warning]
    },
    optipng: {
-      optimizationLevel: 5 // 设置 PNG 压缩等级（0-7）
+      optimizationLevel: 5 // 设置 PNG 压缩等级（0-7）      // [!code warning]
    },
    mozjpeg: {
-      quality: 75 // 设置 JPEG 压缩质量（0-100）
+      quality: 75 // 设置 JPEG 压缩质量（0-100）            // [!code warning]
    },
    pngquant: {
-      quality: [0.6, 0.8] // 设置 PNG 压缩质量范围
+      quality: [0.6, 0.8] // 设置 PNG 压缩质量范围          // [!code warning]
    },
    svgo: {
       plugins: [
-         { removeViewBox: false } // 保留视图框
+         { removeViewBox: false } // 保留视图框            // [!code warning]
       ]
    },
    webp: {
-      quality: 75 // 设置 WebP 图片质量
+      quality: 75 // 设置 WebP 图片质量                    // [!code warning]
    }
 });
 ```
 
-## 缓存减少请求
+## 缓存策略
 
-- [local/session]Storage，持久化或会话数据
-- 强缓存(Cache-Control /Expires)，只发送一次请求，之前使用缓存，http状态码**200** （from cache）  
-  **强缓存又分为内存缓存和硬盘缓存，游览器自动调度，不能自定义**
-- 协商缓存，使用变化不确定，或者频繁变化的数据。例如<span class="text-blue-400">API请求</span>。http状态码**304** （Not Modified）  
-  <span class="text-red-400">注：需要配对字段一起使用，例如**Last-Modified / If-Modified-Since**和**ETag / If-None-Match**</span>  
-  **If-Modified-Since**是上一次修改时间，Last-Modified是最后更改时间，它们适合**静态文件js、ts、img**等。  
-  **ETag / If-None-Match**和前者差不多，但是它更适合**动态内容、API数据**等，基于哈希快速计算ETag，精确度高。
+### 缓存方式对比
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-    协商缓存API示例
-</summary>
+| 方式            | 存储位置   | 状态码               | 使用场景       | 说明                                              |
+| --------------- | ---------- | -------------------- | -------------- | ------------------------------------------------- |
+| **Storage API** | 浏览器本地 | -                    | 持久化数据     | 包括 localStorage（永久）、sessionStorage（会话） |
+| **强缓存**      | 内存/硬盘  | `200 (from cache)`   | 不变的静态资源 | 浏览器自动调度，不可自定义                        |
+| **协商缓存**    | 服务器验证 | `304 (Not Modified)` | 变化的动态资源 | 需要与服务器验证                                  |
+
+### 协商缓存策略
+
+#### Last-Modified / If-Modified-Since
+
+- **适用于** - 静态文件（JS、TS、IMG、CSS 等）
+- **原理** - 对比文件修改时间
+- **精确度** - 中等（以秒为单位）
+
+#### ETag / If-None-Match
+
+- **适用于** - 动态内容、API 数据
+- **原理** - 基于内容哈希计算，变化即改变
+- **精确度** - 高（内容级别）
+
+> [!TIP]
+> 两种方式可配对使用，服务器会根据 `If-Modified-Since` 或 `If-None-Match` 判断资源是否变化
+
+::: details 协商缓存API示例
 
 ```ts
 import express from 'express';
@@ -142,14 +158,13 @@ app.get('/api/data', (req, res, next) => {
 });
 ```
 
-</details>
+:::
 
-**注：** Cache-Control中，public表示任何服务器都可以缓存，而private只能游览器缓存不包含代理服务器，当设置`Cache-Control: no-cache` 则表示不用强缓存，当Cache-Control与Expires同时存在时，游览器会以Cache-Control为准
+::: info
+Cache-Control中，public表示任何服务器都可以缓存，而private只能游览器缓存不包含代理服务器，当设置`Cache-Control: no-cache` 则表示**不用强缓存**，当`·`Cache-Control`与`Expires`同时存在时，游览器会以Cache-Control为准
+:::
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-    强缓存
-</summary>
+::: details 强缓存
 
 ```ts
 //注意
@@ -166,4 +181,4 @@ app.get('/api/data', (req, res) => {
 });
 ```
 
-</details>
+:::

@@ -4,8 +4,7 @@ js下一代标准，使得js可以编写复杂系统.
 
 ## Symbol
 
-Symbol()都会生成一个全新、唯一的值，避免属性名冲突，同时不能被常规的属性遍历如(for...in、Object.keys)枚举出来，如果非要实现则需要定义对象的默认迭代器方法(Symbol.iterator)，使得对象可以被for...of、解构赋值等语法遍历。  
-Symbol的值是**唯一的**，可以接受一个字符串用来区分。即使字符串一样但是Symbol的值不一样`Symbol('a')!=Symbol('a')`。
+Symbol() 会生成**全新且唯一**的值，核心作用是避免对象属性名冲突，默认无法通过 `for...in`、`Object.keys()` 等常规方式枚举，若需遍历需定义 `Symbol.iterator` 方法（支持 `for...of`、解构赋值等）；其唯一性体现在即使传入相同描述字符串，生成的 Symbol 也不相等（例：`Symbol('a') !== Symbol('a')`），字符串参数仅用于区分标识，不影响唯一性。
 
 ### Symbol.iterator 实现可迭代对象或者数组
 
@@ -32,8 +31,9 @@ let [a,b] = arr; //解构赋值
 for (const c of arr){} // for .. of
 ```
 
-<span class=" text-red-400">注: </span>
-<span class=" font-medium">迭代器对象必须实现next方法，迭代协议要求。</span>
+::: tip
+迭代器对象必须实现next方法，迭代协议要求。
+:::
 
 #### Symbol属性或方法
 
@@ -93,7 +93,9 @@ const proxy = new Proxy(obj, {
 });
 ```
 
-<label>当代理用完不想用时，或者代理就使用一次，就可以取消代理Proxy.revocable <span class=" text-red-300">revocable:可撤销的，可取消的</span></label>
+::: tip
+当代理用完不想用时，或者代理就使用一次，就可以**取消代理**Proxy.revocable revocable:可撤销的，可取消的
+:::
 
 ## Promise并发处理
 

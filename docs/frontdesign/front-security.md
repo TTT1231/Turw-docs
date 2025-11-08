@@ -7,7 +7,7 @@ outline: deep
 前端安全包括csp内容安全，防止xss攻击和脚本注入，和防止跨站请求伪造  
 CSRF和配置生产反向代理隐藏真实服务器ip防范ddos攻击。
 
-## 📜 内容安全策略 (CSP) 最佳实践
+## 内容安全策略 (CSP) 最佳实践
 
 通过配置 CSP，可以有效阻止恶意 JavaScript 执行和跨站资源注入。  
 部署时应注意：
@@ -18,7 +18,7 @@ CSRF和配置生产反向代理隐藏真实服务器ip防范ddos攻击。
 
 ---
 
-### 🛡️ 核心安全指令（必须强制启用）
+### 核心安全指令（必须强制启用）
 
 | 指令                               | 作用                                   | 示例               |
 | ---------------------------------- | -------------------------------------- | ------------------ |
@@ -34,7 +34,7 @@ CSRF和配置生产反向代理隐藏真实服务器ip防范ddos攻击。
 
 ---
 
-### 📝 细化与增强选项（可选）
+### 细化与增强选项（可选）
 
 | 指令                                         | 作用                                                  | 示例                                                 |
 | -------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
@@ -48,13 +48,13 @@ CSRF和配置生产反向代理隐藏真实服务器ip防范ddos攻击。
 
 ---
 
-### 📌 安全建议
+### 安全建议
 
 1. **尽量不要使用 `unsafe-inline`**，改用 **`nonce`** 或 **`hash`** 验证内联脚本。
 2. 开启 **`upgrade-insecure-requests`** 与 **`block-all-mixed-content`**，确保统一加密请求。
 3. 配置 **`report-to`**，便于及时发现并修复策略违规。
 
-```js
+```js{1,5-8}
 // report-to参数字段，如果要兼容则使用report-uri即可【report-uri sample.ip】
 group：指定报告目标的名称，通常对应于 Content-Security-Policy 中的 report-to。
 max_age：报告目标的最大有效时间（秒）。
@@ -75,37 +75,41 @@ source-file：违反策略的资源文件。
 line-number：资源出现问题的代码行号。
 ```
 
-### ⚠️特别注意
+### Nuxt 开发模式 CSP 配置
 
-在nuxt的开发模式下，必须要设置**script-src \* 'unsafe-inline' 'unsafe-eval' http://localhost:\* ws://localhost:** 允许任意来源的脚本、内联脚本和动态代码执行。HMR和nuxt devtools动态加载和vue编译器等工具需要内联脚本和动态注入代码以实现实时更新。
+> [!WARNING]
+> 开发模式下，Nuxt/Vite/Webpack 需要动态脚本支持，必须允许以下行为：
 
-还有**script-src-elem \* 'unsafe-inline' 'unsafe-eval' http://localhost:\* ws://localhost:** 开发模式下，Nuxt/Vite/Webpack 会动态插入大量 \<script\> 标签或加载外部脚本（如 HMR 客户端、模块热更新脚本），需要明确允许这些行为。
+| 指令              | 配置                                                                  | 原因                                              |
+| ----------------- | --------------------------------------------------------------------- | ------------------------------------------------- |
+| `script-src`      | `* 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*` | HMR、DevTools、Vue 编译器需要动态脚本和 WebSocket |
+| `script-src-elem` | `* 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*` | 动态 `<script>` 标签注入和模块热更新              |
 
-### 实现策略注意（Nuxt为例）
+### CSP 实现策略对比（Nuxt）
 
-**针对http response注入和网页标签&lt;meta&gt;注入:**  
-服务器响应注入csp客户端不能修改，而meta能修改。  
-同时如果服务器和meta同时有的话，游览器优先使用服务器csp策略覆盖掉meta策略。  
-同时服务器的response注入能够精准的控制，每一个页面的注入csp策略。  
-**所以同等情况下，服务器res策略注入csp更好。**
+#### 注入方式选择
 
-<span class=" text-red-400 font-bold">Nuxt中：</span>
-**nuxt.config与nuxt server middleware设置CSP对比：**  
-在**nuxt.config**会在构建预定义直接生成响应头返回，那么每个请求都是直接返回相应的头部，**虽然是静态**但是其效率、性能更高。&lt;span class=" text-red-400"&gt;缺点是不能自定义每个页面的CSP策略。&lt;/span&gt;
+| 方式                 | 优点                                 | 缺点                           | 推荐 |
+| -------------------- | ------------------------------------ | ------------------------------ | ---- |
+| **HTTP Response 头** | 客户端无法修改，精准控制，优先级最高 | -                              | ✅   |
+| **`<meta>` 标签**    | 可动态修改                           | 客户端可修改，优先级低于响应头 | ❌   |
 
-**如果是nuxt server middleware**这种灵活性更高，可以自定义每一个页面甚至是角色划分权限的csp策略，但是如果自定义过多，**每一个请求都会去执行一些条件判断动态引入**，虽然这里可以根据请求的**频数**进行排序，但是会增加一定if性能开销，**如果考虑维护动态设置过多会导致难以维护代码量过多的情况。**
+#### 配置方式对比
 
-所以实际使用结合实际情况使用最好，**一般只需在server.middleware动态生成nonce和定义csp，然后再渲染html准备返回服务端后，增加nonce即可**这样的代码最少，也最好维护。
+| 方式                  | 性能      | 灵活性    | 维护成本  | 适用场景          |
+| --------------------- | --------- | --------- | --------- | ----------------- |
+| **nuxt.config**       | ⭐⭐⭐ 高 | ⭐ 低     | ⭐ 简单   | 全局统一策略      |
+| **server middleware** | ⭐⭐ 中   | ⭐⭐⭐ 高 | ⭐⭐ 中等 | 页面级/权限级策略 |
+
+> [!TIP]
+> **推荐方案**：在 server middleware 中动态生成 nonce 和基础 CSP，结合 render hook 为脚本标签注入 nonce，代码最少、最好维护。
 
 ### 演示代码（Nuxt为例）
 
 这里服务端中间件只需完成csp指令的设置，和动态生成唯一的**nonce**即可。  
 最后在向服务端返回对应html之前，为\<script\>增加nonce即可
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-  服务端中间件，完成csp指令的设置和生成nonce
-</summary>
+::: details 服务端中间件，完成csp指令的设置和生成nonce
 
 ```ts
 import crypto from 'crypto';
@@ -178,12 +182,9 @@ export default defineEventHandler((event) => {
 });
 ```
 
-</details>
+:::
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-    服务端插件，为script添加nonce
-</summary>
+::: details 服务端插件，为script添加nonce
 
 ```ts
 //这个render:response会在渲染html完后，准备向客户端返回触发。
@@ -209,16 +210,13 @@ export default defineNitroPlugin((nitroApp) => {
 });
 ```
 
-</details>
+:::
 
 ## 反向代理
 
 反向代理就是代理服务器地址，充当中间商，隐藏真实的服务器地址，特别适合防范ddos攻击等。
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-    vite反向代理config
-</summary>
+::: details vite反向代理config
 
 ```ts
 //vite.config.ts config
@@ -250,4 +248,4 @@ server:{
 
 ```
 
-</details>
+:::

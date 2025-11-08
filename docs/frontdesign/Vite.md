@@ -10,7 +10,9 @@
 
 假设我菜单路由如下:
 
-```js
+::: details 菜单路由配置
+
+```json
 [
    {
       path: '/main',
@@ -129,27 +131,40 @@
 ];
 ```
 
-然后使用递归函数将components组件懒加载过来，实际上import.meta.glob，其数组对象，对象返回键是文件路径（key），值是一个异步导入函数（value），然后访问数组中特定对象，【文件的位置，名字也需要进行约定】，然后在将异步导入函数赋值给component，来完成动态路由的导入。例如：
+:::
 
-```js
-//递归处理
+### 动态导入组件的原理
+
+`import.meta.glob` 返回一个对象，其中：
+
+- **键（key）** - 文件路径（相对路径）
+- **值（value）** - 异步导入函数（懒加载函数）
+
+通过递归函数遍历路由配置，将组件字符串转换为异步导入函数，实现动态加载。
+
+> [!TIP]
+> **文件位置和名字需要约定**，保证 `components` 对象中的路径能正确对应到实际组件文件
+
+#### 实现示例
+
+```ts {1,4}
+// 1. 使用 import.meta.glob 导入所有组件
+const components = import.meta.glob('../../views/**/*.vue');
+
+// 2. 递归处理路由，将组件字符串替换为导入函数
 function recurseAddRoutes(routes: RoutesType[]) {
    return routes.map((route) => {
-      if ( route.component === ''||route.component === undefined ) {
-         //空字符说明不要加载组件,这里就不需要做任何操作
-      } else {
+      // 如果有组件配置，获取对应的导入函数
+      if (route.component && route.component !== '') {
          route.component = components[`../../views/${route.component}.vue`];
+      }
 
-        }
       // 递归处理子路由
-      if (route.children.length > 0 && route.children) {
+      if (route.children?.length > 0) {
          route.children = recurseAddRoutes(route.children);
       }
 
-      // 返回更新后的路由项
-      return {
-         ...route
-      };
+      return route;
    });
 }
 ```
@@ -168,12 +183,11 @@ function recurseAddRoutes(routes: RoutesType[]) {
             return 'admin' // 管理后台相关组件
           }
         }
-
 ```
 
 ## 代码压缩
 
-sourceMap（源映射）是一种映射文件，主要用于调试。它可以将编译、打包、压缩后的代码映射到源代码位置，及其方便进行调试。**但是它文件体积大，如果直接应用到实际环境会有源码泄露风险**。  
+sourceMap（源映射）是一种映射文件，主要用于调试。它可以将编译、打包、压缩后的代码映射到源代码位置，及其方便进行调试。**但是它文件体积大，如果直接应用到实际环境会有源码泄露风险**。
 在打包时可以启动代码压缩`Minify`的功能，同时也要关闭sourceMap映射，如果用于调试上线则不用。具体配置如下
 
 ```js
@@ -183,7 +197,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
    build: {
       minify: 'esbuild', // 启用代码压缩，默认就是 'esbuild',速度快，也可用 'terser'
-      sourcemap: false // 关闭 sourceMap 映射，防止源码泄露
+      sourcemap: false // 关闭 sourceMap 映射，防止源码泄露 [!code error]
    }
 });
 ```
@@ -195,20 +209,23 @@ export default defineConfig({
 `pnpm add vite-plugin-vue-devtools -D`
 
 ```ts
-import vueDevTools from 'vite-plugin-vue-devtools';
+import vueDevTools from 'vite-plugin-vue-devtools'; //[!code ++]
+
 export default defineConfig({
-   plugins: [+vueDevTools()]
+   plugins: [
+      vueDevTools() //[!code ++]
+   ]
 });
 ```
 
 **增强提示（类型安全）**
 
 ```js
-/// <reference types="vite/client" />
+/// <reference types="vite/client" /> //[!code ++]
 //加上上面那个进行类型提示增强
-//需要在tsconfig.app.json配置`"types": ["vite/client"]`
+//需要在tsconfig.app.json配置`"types": ["vite/client"]` // [!code warning]
 interface ImportMeta {
-   readonly env: ImportMetaEnv;
+   readonly env: ImportMetaEnv; //这个ImportMetaEnv这个是自定义的
 }
 ```
 
@@ -228,10 +245,12 @@ interface ImportMetaEnv extends Record<ImportMetaEnvFallbackKey, any> {
 
 其中的BASE_URL，MODE，DEV，PROD，SSR属性移除掉组合一个新类型，例如`type newType = Omit<ImportMetaEnv,'BASE_URL',...>`这时ts会推断不出来全局拓展的环境变量，也就没有了类型安全。
 
-解决方案就是**保留它**，在需要的验证的地方例如`zod`中scheme只针对特定的变量进行验证，
-parse验证时直接将`import.mata.env`进行解构赋值即可
+> [!IMPORTANT]
+> 解决方案就是**保留它**，在需要的验证的地方例如`zod`中scheme只针对特定的变量进行验证，
+> parse验证时直接将`import.mata.env`进行解构赋值即可
 
-如果想在vite启动时就对环境变量进行验证，使得验证不通过应用程序直接终止，那么就需要在`vite.config.ts`文件中在defineConfig进行验证，缺点就是要**手动加载环境变量**，vite不会自动处理，如下:
+> [!WARNING]
+> 如果想在vite启动时就对环境变量进行验证，使得验证不通过应用程序直接终止，那么就需要在`vite.config.ts`文件中在defineConfig进行验证，缺点就是要**手动加载环境变量**，vite不会自动处理，如下:
 
 ```ts
 //vite.config.ts
@@ -251,7 +270,11 @@ export default defineConfig(({mode})=>{
 })
 ```
 
-同时为了更好的类型安全，这里的类型要手动定义，会导致重复定义了类型(例如，在env.d.ts中的`ImportMeta`的全局拓展env类型，但是也有解决方案，就是将需要的`envConfig`直接定义为全局类型，然后嵌入到`ImportMeta`中，`vite.config.ts`直接使用即可，就避免了重复类型定义，和维护多个类型问题)，例如:
+为保障类型安全需手动定义相关类型，但易出现重复定义情况（例如在 `env.d.ts` 中拓展 `ImportMeta` 全局类型时，可能与其他位置类型冲突）。解决方案是将所需的 `envConfig` 直接定义为全局类型，再嵌入 `ImportMeta` 中，`vite.config.ts` 可直接使用，既避免重复定义，也解决了多位置维护类型的问题。例如:
+
+::: tip
+上诉中这个`ImportMeta`是自定义的环境变量类型
+:::
 
 ```ts
 //这是全局类型，这里是局部类型定义
@@ -264,4 +287,4 @@ type ViteEnv = RequiredEnv & Record<string, string>;
 const env = loadEnv(mode, process.cwd(), '') as ViteEnv;
 ```
 
-这种手动没有vite自动加载BASE_URL，MODE，DEV，PROD，SSR属性，如果要对其进行验证就需要手动完成vite的这个功能
+这种手动没有vite自动加载BASE_URL，MODE，DEV，PROD，SSR属性，如果要对其进行验证就需要手动完成vite的这个功能。
