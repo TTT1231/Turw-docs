@@ -1,22 +1,24 @@
 {
-  "type": "module",
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.15",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4.1.15",
-    "vitepress": "^1.6.4"
-  },
-  "scripts": {
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "docs:format": "prettier --write docs/"
-  },
-  "dependencies": {
-    "ant-design-vue": "^4.2.6",
-    "vue": "^3.5.22"
-  },
-  "packageManager": "pnpm@10.1.0+sha1.ab7948c89104fdd3fc88b5b391fa4b73fd800631"
+   "type": "module",
+   "devDependencies": {
+      "@tailwindcss/postcss": "^4.1.15",
+      "autoprefixer": "^10.4.21",
+      "postcss": "^8.5.6",
+      "prettier": "^3.6.2",
+      "tailwindcss": "^4.1.15",
+      "vitepress": "^1.6.4"
+   },
+   "scripts": {
+      "docs:dev": "vitepress dev docs",
+      "dev": "vitepress dev",
+      "docs:build": "vitepress build docs",
+      "docs:preview": "vitepress preview docs",
+      "docs:format": "prettier --write docs/",
+      "format": "prettier --write docs/"
+   },
+   "dependencies": {
+      "ant-design-vue": "^4.2.6",
+      "vue": "^3.5.22"
+   },
+   "packageManager": "pnpm@10.1.0+sha1.ab7948c89104fdd3fc88b5b391fa4b73fd800631"
 }
