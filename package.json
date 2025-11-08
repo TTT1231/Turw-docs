@@ -9,11 +9,9 @@
       "vitepress": "^1.6.4"
    },
    "scripts": {
-      "docs:dev": "vitepress dev docs",
-      "dev": "vitepress dev",
+      "dev": "vitepress dev docs",
       "docs:build": "vitepress build docs",
       "docs:preview": "vitepress preview docs",
-      "docs:format": "prettier --write docs/",
       "format": "prettier --write docs/"
    },
    "dependencies": {
