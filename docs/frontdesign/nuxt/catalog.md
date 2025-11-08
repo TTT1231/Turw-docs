@@ -1,8 +1,9 @@
 # Nuxt目录
 
 这里以nuxt4.0为准，结构如下
+
 ```js
-my-nuxt-app/ 
+my-nuxt-app/
 ├─ app/
 │  ├─ assets/         //存放静态资源文件，构建工具处理后会交给游览器
 │  ├─ components/     //vue组件，自动导入无需手动import，支持异步
@@ -35,6 +36,7 @@ my-nuxt-app/
 ## 自动引入规制和类型提示
 
 - **components**——组件自动引入包括**类型**（要将项目运行起来，依赖文件系统）能根据自动嵌套目录结构生成组件名称。例如<span class=" bg-green-400 text-white">components/base/Button.vue → BaseButton</span>也可以自定义：
+
 ```js
  {
     path: '~/components/base',      //路径
@@ -46,71 +48,78 @@ my-nuxt-app/
 - **composables**——hooks自动引入包括**类型**（要将项目运行起来，依赖文件系统）能根据自动嵌套目录结构处理。例如<span class=" bg-green-400/90 text-white">composables/auth/login.ts → useLogin()</span>
 
 ### 其它（默认不会自动引入，如需自动引入在nuxt.config.tss手动配置即可）
-- **plugins**——插件自动注册（要将项目运行起来，依赖文件系统） 【一般是注入全局方法、指令等等】，**需要注意的是，nuxt不会自动引入，也就是要用的时候，手动引入【具体useNuxtApp()解构出来使用即可】**  
-`plugins/my-plugin.client.ts → 仅客户端【游览器】`    
- `plugins/my-plugin.server.ts → 仅服务端【服务器】`  
 
-- pinia: ~/stores/ (需安装 @pinia/nuxt)  #😃完整类型提示
-- API 路由: ~/server/api/                #😃$fetch有，或者封装axios提供类型也可以
-- 中间件: ~/middleware/                  #基本对象类型，不影响
-- 布局: ~/layouts/                       #基本布局名称【props要手动声明】
-- 页面: ~/pages/                         #😃部分类型提示
+- **plugins**——插件自动注册（要将项目运行起来，依赖文件系统） 【一般是注入全局方法、指令等等】，**需要注意的是，nuxt不会自动引入，也就是要用的时候，手动引入【具体useNuxtApp()解构出来使用即可】**  
+  `plugins/my-plugin.client.ts → 仅客户端【游览器】`  
+   `plugins/my-plugin.server.ts → 仅服务端【服务器】`
+
+- pinia: ~/stores/ (需安装 @pinia/nuxt) #😃完整类型提示
+- API 路由: ~/server/api/ #😃$fetch有，或者封装axios提供类型也可以
+- 中间件: ~/middleware/ #基本对象类型，不影响
+- 布局: ~/layouts/ #基本布局名称【props要手动声明】
+- 页面: ~/pages/ #😃部分类型提示
 
 ## 文件命名
 
 [order].[name].[env].[type].ts
+
 - order 执行顺序，一般用01，02...表示，其中01第一个执行,其次02。
-- name  名字
+- name 名字
 - env 作用环境有**server、client、global**表示服务端、客户端、全局。
 - type 文件类型可以是plugin、middleware等
 
 ## 服务端 Hooks（Nitro）
 
 ### 核心 Runtime Hooks
-| Hook 名称 | 触发时机 |
-|-----------|----------|
-| `request` | 收到请求时触发（处理日志、鉴权等） |
-| `beforeResponse` | 响应发送前（可修改 body 和 headers） |
-| `afterResponse` | 响应发送后（做清理、记录等） |
+
+| Hook 名称         | 触发时机                                                     |
+| ----------------- | ------------------------------------------------------------ |
+| `request`         | 收到请求时触发（处理日志、鉴权等）                           |
+| `beforeResponse`  | 响应发送前（可修改 body 和 headers）                         |
+| `afterResponse`   | 响应发送后（做清理、记录等）                                 |
 | `render:response` | SSR 页面渲染完成、响应发送前（**这里可以做注入csp中nonce**） |
-| `render:html` | 构建 HTML 前（SSR 流程中） |
-| `error` | 请求或渲染出错时触发 |
-| `close` | Nitro 进程关闭时触发 |
-| `dev:ssr-logs` | 开发模式下 SSR 日志输出时 |
+| `render:html`     | 构建 HTML 前（SSR 流程中）                                   |
+| `error`           | 请求或渲染出错时触发                                         |
+| `close`           | Nitro 进程关闭时触发                                         |
+| `dev:ssr-logs`    | 开发模式下 SSR 日志输出时                                    |
 
 ---
 
 ## 客户端 Hooks
 
 ### Nuxt App Hooks（`nuxtApp.hooks`）
-| Hook 名称 | 触发时机 |
-|-----------|----------|
-| `app:created` | Nuxt 应用实例创建后（Vue app 未挂载） |
-| `app:beforeMount` | Vue 应用挂载到 DOM 前 |
-| `app:mounted` | Vue 应用挂载完成（hydration 完成） |
-| `app:rendered` | 首次渲染完成（包含 SSR hydration） |
-| `app:error` | 应用运行时抛出错误 |
-| `vue:error` | **Vue 应用运行时抛出错误**（等价于 `app.config.errorHandler` 捕获） |
-| `page:start` | 页面导航开始（路由切换开始） |
-| `page:finish` | 页面导航完成（页面和数据就绪） |
-| `page:loading:start` | 页面数据开始加载 |
-| `page:loading:end` | 页面数据加载完成 |
+
+| Hook 名称            | 触发时机                                                            |
+| -------------------- | ------------------------------------------------------------------- |
+| `app:created`        | Nuxt 应用实例创建后（Vue app 未挂载）                               |
+| `app:beforeMount`    | Vue 应用挂载到 DOM 前                                               |
+| `app:mounted`        | Vue 应用挂载完成（hydration 完成）                                  |
+| `app:rendered`       | 首次渲染完成（包含 SSR hydration）                                  |
+| `app:error`          | 应用运行时抛出错误                                                  |
+| `vue:error`          | **Vue 应用运行时抛出错误**（等价于 `app.config.errorHandler` 捕获） |
+| `page:start`         | 页面导航开始（路由切换开始）                                        |
+| `page:finish`        | 页面导航完成（页面和数据就绪）                                      |
+| `page:loading:start` | 页面数据开始加载                                                    |
+| `page:loading:end`   | 页面数据加载完成                                                    |
 
 ### Router Hooks（`vue-router`）
-| Hook 名称 | 触发时机 |
-|-----------|----------|
-| `beforeEach` | 路由跳转前 |
+
+| Hook 名称       | 触发时机           |
+| --------------- | ------------------ |
+| `beforeEach`    | 路由跳转前         |
 | `beforeResolve` | 目标路由解析完成前 |
-| `afterEach` | 路由跳转后 |
+| `afterEach`     | 路由跳转后         |
 
 ---
 
 ## Nuxt类型增强提示
 
 ### env类型增强（process.env）
+
 定义一个.d.ts类型文件，重写ProcessEnv接口。例如：定义之后，可能不会自动导入，在**nuxt.config.ts**顶部引入ts类型。
+
 ```ts
-//下面这段ts类型需要在nuxt.config.ts顶部引入，类似ts import 
+//下面这段ts类型需要在nuxt.config.ts顶部引入，类似ts import
 /// <reference path="./path-to/[custom-name].d.ts" />
 
 // [custom-name].d.ts
@@ -119,10 +128,10 @@ declare namespace NodeJS {
       //字段提示
    }
 }
-
 ```
 
 ### event类型增强提示（event.context）
+
 直接声明即可nuxt会自动完成导入。
 
 ```ts
@@ -148,7 +157,4 @@ declare module 'nuxt/schema' {
 
 //上面这个文件类型不会自动引入，在nuxt.config.ts引入一下即可，参考下面这段代码
 /// <reference path="./path-to/[custom-name].d.ts" />
-
 ```
-
-

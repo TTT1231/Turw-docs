@@ -91,24 +91,28 @@ srcset提供多个图片源，让游览器自行选择（要提供多个图片�
 "
 />
 ```
+
 img还有一个size属性，目的时在告诉游览器在不同视口（viewport）或布局条件下，图片实际会显示的宽度是多少，从而让游览器选择最合适的图片。例如
+
 ```js
 //size后面表示
 //当视口宽度<= 600px时，图片显示宽度为400ox;
 //其他情况下，图片显示宽度为800px
 <img
-  srcset="
+   srcset="
     example.com/id/img1_400.jpg 400w,
     example.com/id/img1_800.jpg 800w
   "
-  sizes="(max-width: 600px) 400px, 800px"
-  src="example.com/id/img1_800.jpg"
-  alt="示例图片"
+   sizes="(max-width: 600px) 400px, 800px"
+   src="example.com/id/img1_800.jpg"
+   alt="示例图片"
 />
 ```
 
 ## CSS选择器-tailwind写法
+
 注意：**&**在tailwind中表父级
+
 ```css {3,7,11,15}
 /* 特定[target-element][attribute] 指定元素指定属性 */
 [attribute] 属性选择器——例：[nihao]选中所有**nihao**属性。
@@ -123,6 +127,6 @@ father-ele + brother-ele
 [father-ele(&)+brother-ele]:some css【推荐peer和adjacent】
 
 /* 通用兄弟选择器 —— 所有同级别的孩子元素也即同级别*/
-father-ele ~ all-child-ele 
+father-ele ~ all-child-ele
 [father-ele(&)_all-child-ele]:some css
 ```

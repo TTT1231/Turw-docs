@@ -90,8 +90,7 @@ ViteImagemin({
 - 协商缓存，使用变化不确定，或者频繁变化的数据。例如<span class="text-blue-400">API请求</span>。http状态码**304** （Not Modified）  
   <span class="text-red-400">注：需要配对字段一起使用，例如**Last-Modified / If-Modified-Since**和**ETag / If-None-Match**</span>  
   **If-Modified-Since**是上一次修改时间，Last-Modified是最后更改时间，它们适合**静态文件js、ts、img**等。  
-  **ETag / If-None-Match**和前者差不多，但是它更适合**动态内容、API数据**等，基于哈希快速计算ETag，精确度高。  
-
+  **ETag / If-None-Match**和前者差不多，但是它更适合**动态内容、API数据**等，基于哈希快速计算ETag，精确度高。
 
 <details>
 <summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">

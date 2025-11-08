@@ -8,8 +8,7 @@ outline: deep
 
 ### 响应Observable流程
 
-整个响应流程指：**真正开始处理请求到返回响应数据结束**，考虑一个请求生命周期如下：  
-
+整个响应流程指：**真正开始处理请求到返回响应数据结束**，考虑一个请求生命周期如下：
 
 1、请求进入 → 2、中间件 → 3、守卫 → 4、拦截器（Before） → 5、管道 → 6、控制器方法（业务） → 7、拦截器（After） → 8、响应发出
 
@@ -18,24 +17,25 @@ outline: deep
 **Nestjs**使用Observable 来统一内部处理的**所有的抽象模型和流程**【统一输出，例如输出一个number,Promise,Observer等等，nest统一使用Observable处理，特别是`微服务`、`WebSocket`、`流操作`等等】，内部使用**RxJS**的解决**异步操作**的便利性和功能强大性。
 
 考虑这样一个`RxJS`中的of
+
 ```ts
 //RxJX of
 //from方法跟of类似，不过from可以从数组、迭代对象、Promise或者类Observable的数据源创建一个Observable
-function of(value:any):Observable {
-   return new Observable(subscriber=>{
+function of(value: any): Observable {
+   return new Observable((subscriber) => {
       //Observable的执行体,一旦被订阅这里会立即执行
       subscriber.next(value); //向订阅者发送value
 
       //input stream complete
       subscriber.complete();
-   })
+   });
 }
 
 //核心：当被订阅的时候会自动执行
-const observables = of[1,2]
+const observables = of[(1, 2)];
 observables.subscribe({
-   next:val=>console.log(val) //print 1,2
-})
+   next: (val) => console.log(val) //print 1,2
+});
 ```
 
 那么`Nestjs`响应式设计类似，我们看看这个拦截器的内部自动实现,**核心实现与上诉类似**
@@ -79,7 +79,7 @@ return next.handle().pipe(
    tap({
       //在该拦截器结束时，会打印After intercept
       next: () => {
-         console.log('After intercept'); 
+         console.log('After intercept');
       },
       //在该拦截器流结束时会打印
       complete: () => {
@@ -95,9 +95,9 @@ return next.handle().pipe(
 
 [详情见服务端架构设计思想](./architect-design-thought.md#职责、模块分离思想)
 
-### 装饰器 
+### 装饰器
 
-装饰器的本质是一个函数，用来修饰类、方法、属性。  
+装饰器的本质是一个函数，用来修饰类、方法、属性。
 
 - 类装饰器，可以给类添加`元数据`也可以返回一个`新构造函数`
 - 方法装饰器,接受类的原型、方法名、方法描述符作为参数，`修改方法实现`
@@ -105,10 +105,9 @@ return next.handle().pipe(
 
 <span class=" text-red-400">注意：</span>截至`2025/10/12` Nestjs还是使用stage2写法，因此它会自动添加元数据`design:paramtypes`但这种不安全，同时由于是stage2写法所有在tsconfig.json中必须要配置`emitDecoratorMetadata`和`experimentalDecorators`**值为true**，否则其内部提供的元数据会失效，DI和AOP会失效，工厂函数创建实例失败。
 
+**使用示例:【ts5标准 (Stage 3 Decorators)】**
 
-**使用示例:【ts5标准 (Stage 3 Decorators)】**  
-
-```ts
+````ts
 /**
  * @description 类装饰器 - 新标准 (Stage 3 Decorators)
  * @returns 返回一个类装饰器函数
@@ -140,7 +139,7 @@ export function classDecorator(token?: string) {
          * class A {}
          * const class_value = Reflect.getMetadata('custom:class', A);
          * //打印：类元数据，不用实例化类
-         * console.log('类元数据：', class_value); 
+         * console.log('类元数据：', class_value);
          * ```ts
          */
         context.addInitializer(function (this: T) {
@@ -177,8 +176,8 @@ export function methodDecorator<T>() {
          * !注意: 如果是在context.addInitializer中定义元数据，则在类实例化时执行,
          *              !该方法中的回调是在类实例化阶段执行的，不是在定义阶段
          * @usage       然后如果想要在实例化时获取元数据可以将元数据绑定到类实例上，必须在context.addInitializer中定义
-         * 
-         * @example  
+         *
+         * @example
          * ```ts
          * class A {
          *   @methodDecorator()
@@ -247,7 +246,7 @@ export function propertyDecorator<T extends Object, Value>() {
     return function (
         context: ClassFieldDecoratorContext<T, Value>
     ): (initialValue: Value) => Value {
-      
+
         /**
          * !十分注意的是： 这里的this指向类实例，但是在addInitializer回调中，this指向类的构造函数。也就是说这里的addInitializer每次实例化时执行
          * TODO 在类实例化时定义元数据
@@ -282,26 +281,28 @@ export function propertyDecorator<T extends Object, Value>() {
 }
 
 ```ts
-```
+````
 
 ## 元数据处理实践
 
 针对**Nestjs**提供的两种元数据处理`Reflector`和`MetadataScanner`两者侧重点不同，虽然都是简化元数据处理，两者在使用场景和侧重点不同。
 
 **Reflector:**
+
 - 简化元数据获取，通常从类、方法、参数获取装饰器简化**设置**和**获取**
 - 主要在守卫、拦截器、管道中来获取元数据
 - 自定义装饰器和元数据获取
 
 **MetadataScanner:**
+
 - 关注：**方法元数据**获取，倾向结构化和静态的扫描
 - 主要用在静态扫描和自动化注册以及模块化和配置
 - **现在只保留了getAllMethodNames**，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
 
 ## 缓存监控与埋点
 
-详情代码：[stackblitz](https://stackblitz.com/edit/ttt1231-nestjs-cachemonoitor?file=README.md){target="_blank" rel="noopener noreferrer"}  
-详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor){target="_blank" rel="noopener noreferrer"}
+详情代码：[stackblitz](https://stackblitz.com/edit/ttt1231-nestjs-cachemonoitor?file=README.md){target="\_blank" rel="noopener noreferrer"}  
+详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor){target="\_blank" rel="noopener noreferrer"}
 
 ## 动态模块配置验证与实现
 
@@ -309,11 +310,11 @@ export function propertyDecorator<T extends Object, Value>() {
 
 **nestjs官方设计实践:**
 
-| 方法前缀 | 语义 | 设计意图 |
-|:--------:|:----:|:--------:|
-| for | 为...而配置 | 强调目的和作用域 |
-| register | 注册 | 强调行为和灵活性 |
-| Async | 异步 | 强调时机和依赖 |
+| 方法前缀 |    语义     |     设计意图     |
+| :------: | :---------: | :--------------: |
+|   for    | 为...而配置 | 强调目的和作用域 |
+| register |    注册     | 强调行为和灵活性 |
+|  Async   |    异步     |  强调时机和依赖  |
 
 考虑下面几种模块配置方法**forRoot**和**register**以及**asyncRegister**
 
@@ -323,17 +324,17 @@ export function propertyDecorator<T extends Object, Value>() {
 
 ### 实际使用
 
-详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-dynamicmodule-rte9xnqd){target="_blank" rel="noopener noreferrer"}  
-详情Github仓库：[Github](https://github.com/TTT1231/nestjs-dynamicmodule-rte9xnqd){target="_blank" rel="noopener noreferrer"}
+详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-dynamicmodule-rte9xnqd){target="\_blank" rel="noopener noreferrer"}  
+详情Github仓库：[Github](https://github.com/TTT1231/nestjs-dynamicmodule-rte9xnqd){target="\_blank" rel="noopener noreferrer"}
 
 ## passport策略与webSocket
 
-详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-passport-websocket-zwhyb6vz?file=README.md){target="_blank" rel="noopener noreferrer"}  
-详情Github仓库：[Github](https://github.com/TTT1231/nestjs-passport-websocket-zwhyb6vz){target="_blank" rel="noopener noreferrer"}
+详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-passport-websocket-zwhyb6vz?file=README.md){target="\_blank" rel="noopener noreferrer"}  
+详情Github仓库：[Github](https://github.com/TTT1231/nestjs-passport-websocket-zwhyb6vz){target="\_blank" rel="noopener noreferrer"}
 
 ## redis多节点部署
 
-详情Github仓库：[Github](https://github.com/TTT1231/redis-single-deploy){target="_blank" rel="noopener noreferrer"}
+详情Github仓库：[Github](https://github.com/TTT1231/redis-single-deploy){target="\_blank" rel="noopener noreferrer"}
 
 ## ws适配器
 
@@ -342,11 +343,11 @@ export function propertyDecorator<T extends Object, Value>() {
 ```ts
 import { WsAdapter } from '@nestjs/platform-ws';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-//+  
-  app.useWebSocketAdapter(new WsAdapter(app));
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+   const app = await NestFactory.create(AppModule);
+   //+
+   app.useWebSocketAdapter(new WsAdapter(app));
+   await app.listen(process.env.PORT ?? 3000);
+   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 ```
 
@@ -357,114 +358,114 @@ async function bootstrap() {
 
 ```ts
 import {
-  WebSocketGateway,
-  SubscribeMessage,
-  MessageBody,
-  WebSocketServer,
-  ConnectedSocket,
-  OnGatewayInit,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
+   WebSocketGateway,
+   SubscribeMessage,
+   MessageBody,
+   WebSocketServer,
+   ConnectedSocket,
+   OnGatewayInit,
+   OnGatewayConnection,
+   OnGatewayDisconnect
 } from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
 
 @WebSocketGateway(3001, {
-  path: '/ws',
-  cors: {
-    origin: '*',
-  },
+   path: '/ws',
+   cors: {
+      origin: '*'
+   }
 })
 export class WsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  //网关注入风格,webSocket-server实例
-  @WebSocketServer() server: Server; // Injects the WebSocket server instance
+   //网关注入风格,webSocket-server实例
+   @WebSocketServer() server: Server; // Injects the WebSocket server instance
 
-  afterInit(server: Server) {
-    console.log('WebSocket Gateway initialized');
-  }
-  handleConnection(client: WebSocket, args: any[]) {
-    console.log('连接参数 args 详情：');
-    console.dir(args, { depth: null }); // depth: null 表示打印所有层级
-    console.log('========================================================================');
-    return {
-      event: 'connected',
-      data: 'Successfully connected to WebSocket!',
-    };
-  }
-  handleDisconnect(client: WebSocket) {
-    console.log(`Client disconnected: ${client}`);
-  }
+   afterInit(server: Server) {
+      console.log('WebSocket Gateway initialized');
+   }
+   handleConnection(client: WebSocket, args: any[]) {
+      console.log('连接参数 args 详情：');
+      console.dir(args, { depth: null }); // depth: null 表示打印所有层级
+      console.log('========================================================================');
+      return {
+         event: 'connected',
+         data: 'Successfully connected to WebSocket!'
+      };
+   }
+   handleDisconnect(client: WebSocket) {
+      console.log(`Client disconnected: ${client}`);
+   }
 
-  @SubscribeMessage('message') // Listens for messages with the 'message' event
-  handleMessage(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
-    console.log(`Received message from client: ${data}`);
-    return {
-      event: 'message',
-      data: `Server received: ${data}`,
-    };
-  }
+   @SubscribeMessage('message') // Listens for messages with the 'message' event
+   handleMessage(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+      console.log(`Received message from client: ${data}`);
+      return {
+         event: 'message',
+         data: `Server received: ${data}`
+      };
+   }
 
-  @SubscribeMessage('nihao')
-  handleMessageNihao(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
-    console.log(`Received nihao message from: ${data}`);
+   @SubscribeMessage('nihao')
+   handleMessageNihao(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+      console.log(`Received nihao message from: ${data}`);
 
-    return {
-      event: 'nihao',
-      data: `Server received: ${data}`,
-    };
-  }
+      return {
+         event: 'nihao',
+         data: `Server received: ${data}`
+      };
+   }
 
-  @SubscribeMessage('testin')
-  handleMessageTestIn(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
-    console.log(this.server.clients);
-    return { event: 'testin', data: `BACKEND:Server received: ${data}` };
-  }
+   @SubscribeMessage('testin')
+   handleMessageTestIn(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+      console.log(this.server.clients);
+      return { event: 'testin', data: `BACKEND:Server received: ${data}` };
+   }
 
-  //广播
-  @SubscribeMessage('broadcast') // Listens for messages with the 'broadcast' event
-  handleBroadcast(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
-    console.log(`Received broadcast message from client ${client}: ${data}`);
-    // Broadcast the message to all connected clients
-    this.server.clients.forEach((c) => {
-      if (c !== client && c.readyState === WebSocket.OPEN) {
-        c.send(
-          JSON.stringify({
-            event: 'broadcast',
-            data: `Broadcast from ${client}: ${data}`,
-          }),
-        );
-      }
-    });
-    return {
-      event: 'broadcast',
-      data: `Server broadcasted: ${data}`,
-    };
-  }
+   //广播
+   @SubscribeMessage('broadcast') // Listens for messages with the 'broadcast' event
+   handleBroadcast(@MessageBody() data: string, @ConnectedSocket() client: WebSocket) {
+      console.log(`Received broadcast message from client ${client}: ${data}`);
+      // Broadcast the message to all connected clients
+      this.server.clients.forEach((c) => {
+         if (c !== client && c.readyState === WebSocket.OPEN) {
+            c.send(
+               JSON.stringify({
+                  event: 'broadcast',
+                  data: `Broadcast from ${client}: ${data}`
+               })
+            );
+         }
+      });
+      return {
+         event: 'broadcast',
+         data: `Server broadcasted: ${data}`
+      };
+   }
 }
 ```
 
 </details>
 
 **use in frontend**
-```ts
-const ws= new WebSocket('ws://localhost:3001/ws')
-ws.onopen = () => {
-  console.log('WebSocket 连接已建立');
-  const message = {
-    event: 'testin', // 这里的 'message' 与后端 @SubscribeMessage('message') 对应
-    data: '前端发送的内容' // 传递给后端的数据（会被 @MessageBody() 接收）
-  };
-  // 发送 JSON 字符串格式的消息
-  ws.send(JSON.stringify(message));
 
+```ts
+const ws = new WebSocket('ws://localhost:3001/ws');
+ws.onopen = () => {
+   console.log('WebSocket 连接已建立');
+   const message = {
+      event: 'testin', // 这里的 'message' 与后端 @SubscribeMessage('message') 对应
+      data: '前端发送的内容' // 传递给后端的数据（会被 @MessageBody() 接收）
+   };
+   // 发送 JSON 字符串格式的消息
+   ws.send(JSON.stringify(message));
 };
 
 // 接收后端消息
 ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  console.log('收到后端消息：', message);
-  if (message.event === 'message') {
-    console.log('这是来自后端 message 事件的响应：', message.data);
-  }
+   const message = JSON.parse(event.data);
+   console.log('收到后端消息：', message);
+   if (message.event === 'message') {
+      console.log('这是来自后端 message 事件的响应：', message.data);
+   }
 };
 ```
 
@@ -489,10 +490,13 @@ import { ConfigService } from '@nestjs/config';
  * extractConfigFromKeys<YourConfig>(ConfigService, ['nihao']);
  * //这样避免了繁琐的手动get和类型断言
  */
-export function extractConfigFromKeys<T>(configService: ConfigService<T, true>, keys: Array<keyof T>): T {
+export function extractConfigFromKeys<T>(
+   configService: ConfigService<T, true>,
+   keys: Array<keyof T>
+): T {
    const result: Partial<T> = {};
 
-   keys.forEach(key => {
+   keys.forEach((key) => {
       // 使用类型断言确保 key 是合法的 Path<T>
       const value = configService.get(key as string & keyof T, { infer: true });
       if (value !== undefined) {
@@ -502,23 +506,23 @@ export function extractConfigFromKeys<T>(configService: ConfigService<T, true>, 
 
    return result as T;
 }
-
 ```
 
 ### cookies
 
 **express版本**
+
 ```ts
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
 
 type CookieOptions<T = string> = {
-  /** Cookie 键名 */
-  key?: string;
-  /** 默认值 */
-  defaultValue?: T;
-  /** 类型转换函数 */
-  transform?: (value: string) => T;
+   /** Cookie 键名 */
+   key?: string;
+   /** 默认值 */
+   defaultValue?: T;
+   /** 类型转换函数 */
+   transform?: (value: string) => T;
 };
 
 /**
@@ -526,85 +530,85 @@ type CookieOptions<T = string> = {
  * @usageNotes 基于 express 和 cookie-parser 中间件
  * @template T - Cookie 值的类型
  * @param options - Cookie 选项或键名字符串
- * 
+ *
  * @example
  * // 获取单个 cookie（字符串）
  * getCookie(@Cookies('sessionId') sessionId: string | undefined)
- * 
+ *
  * // 获取单个 cookie 并指定默认值
  * getCookie(@Cookies({ key: 'sessionId', defaultValue: 'anonymous' }) sessionId: string)
- * 
+ *
  * // 获取并转换类型
- * getCount(@Cookies({ 
- *   key: 'count', 
+ * getCount(@Cookies({
+ *   key: 'count',
  *   transform: (v) => parseInt(v, 10),
- *   defaultValue: 0 
+ *   defaultValue: 0
  * }) count: number)
- * 
+ *
  * // 获取所有 cookies
  * getAllCookies(@Cookies() cookies: Record<string, string>)
  */
 export const Cookies = createParamDecorator(
-  <T = string>(
-    options: string | CookieOptions<T> | undefined,
-    ctx: ExecutionContext,
-  ): T | Record<string, string> | undefined => {
-    const request = ctx.switchToHttp().getRequest<Request>();
-    const cookies: Record<string, string> | undefined = request.cookies;
+   <T = string>(
+      options: string | CookieOptions<T> | undefined,
+      ctx: ExecutionContext
+   ): T | Record<string, string> | undefined => {
+      const request = ctx.switchToHttp().getRequest<Request>();
+      const cookies: Record<string, string> | undefined = request.cookies;
 
-    // 如果没有传入任何参数，返回所有 cookies
-    if (options === undefined) {
-      return cookies ?? {};
-    }
-
-    // 字符串参数
-    if (typeof options === 'string') {
-      return cookies?.[options] as T | undefined;
-    }
-
-    // 处理对象配置
-    const { key, defaultValue, transform } = options;
-
-    // 没有指定 key，返回所有 cookies
-    if (!key) {
-      return cookies ?? {};
-    }
-
-    const value = cookies?.[key];
-
-    // Cookie 不存在时返回默认值
-    if (value === undefined) {
-      return defaultValue as T;
-    }
-
-    // 如果提供了转换函数，进行类型转换
-    if (transform) {
-      try {
-        return transform(value);
-      } catch (error) {
-        // 转换失败时返回默认值
-        return defaultValue as T;
+      // 如果没有传入任何参数，返回所有 cookies
+      if (options === undefined) {
+         return cookies ?? {};
       }
-    }
-    
-    return value as T;
-  },
-);
 
+      // 字符串参数
+      if (typeof options === 'string') {
+         return cookies?.[options] as T | undefined;
+      }
+
+      // 处理对象配置
+      const { key, defaultValue, transform } = options;
+
+      // 没有指定 key，返回所有 cookies
+      if (!key) {
+         return cookies ?? {};
+      }
+
+      const value = cookies?.[key];
+
+      // Cookie 不存在时返回默认值
+      if (value === undefined) {
+         return defaultValue as T;
+      }
+
+      // 如果提供了转换函数，进行类型转换
+      if (transform) {
+         try {
+            return transform(value);
+         } catch (error) {
+            // 转换失败时返回默认值
+            return defaultValue as T;
+         }
+      }
+
+      return value as T;
+   }
+);
 ```
 
 **fastify版本**
+
 ```ts
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { FastifyRequest } from 'fastify'; 
+import { FastifyRequest } from 'fastify';
 
 type CookieOptions<T = string> = {
-  /** Cookie 键名 */
-  key?: string;
-  /** 默认值 */
-  defaultValue?: T;
-  /** 类型转换函数 */
-  transform?: (value: string) => T;
+   /** Cookie 键名 */
+   key?: string;
+   /** 默认值 */
+   defaultValue?: T;
+   /** 类型转换函数 */
+   transform?: (value: string) => T;
 };
 
 /**
@@ -612,157 +616,159 @@ type CookieOptions<T = string> = {
  * @usageNotes 基于 fastify 和 @fastify/cookie 插件
  * @template T - Cookie 值的类型
  * @param options - Cookie 选项或键名字符串
- * 
+ *
  * @example
  * // 获取单个 cookie（字符串）
  * getCookie(@Cookies('sessionId') sessionId: string | undefined)
- * 
+ *
  * // 获取单个 cookie 并指定默认值
  * getCookie(@Cookies({ key: 'sessionId', defaultValue: 'anonymous' }) sessionId: string)
- * 
+ *
  * // 获取并转换类型
- * getCount(@Cookies({ 
- *   key: 'count', 
+ * getCount(@Cookies({
+ *   key: 'count',
  *   transform: (v) => parseInt(v, 10),
- *   defaultValue: 0 
+ *   defaultValue: 0
  * }) count: number)
- * 
+ *
  * // 获取所有 cookies
  * getAllCookies(@Cookies() cookies: Record<string, string>)
  */
 export const Cookies = createParamDecorator(
-  <T = string>(
-    options: string | CookieOptions<T> | undefined,
-    ctx: ExecutionContext,
-  ): T | Record<string, string> | undefined => {
-    const request = ctx.switchToHttp().getRequest<FastifyRequest>();
-    const cookieList = request.cookies?.getAll() ?? [];
-    const cookies: Record<string, string> = cookieList.reduce((obj, cookie) => {
-      obj[cookie.name] = cookie.value;
-      return obj;
-    }, {} as Record<string, string>);
+   <T = string>(
+      options: string | CookieOptions<T> | undefined,
+      ctx: ExecutionContext
+   ): T | Record<string, string> | undefined => {
+      const request = ctx.switchToHttp().getRequest<FastifyRequest>();
+      const cookieList = request.cookies?.getAll() ?? [];
+      const cookies: Record<string, string> = cookieList.reduce(
+         (obj, cookie) => {
+            obj[cookie.name] = cookie.value;
+            return obj;
+         },
+         {} as Record<string, string>
+      );
 
-    // 如果没有传入任何参数，返回所有 cookies
-    if (options === undefined) {
-      return cookies;
-    }
-
-    // 字符串参数
-    if (typeof options === 'string') {
-      return cookies[options] as T | undefined;
-    }
-
-    // 处理对象配置
-    const { key, defaultValue, transform } = options;
-
-    // 没有指定 key，返回所有 cookies
-    if (!key) {
-      return cookies;
-    }
-
-    const value = cookies[key];
-
-    // Cookie 不存在时返回默认值
-    if (value === undefined) {
-      return defaultValue as T;
-    }
-
-    // 如果提供了转换函数，进行类型转换
-    if (transform) {
-      try {
-        return transform(value);
-      } catch (error) {
-        // 转换失败时返回默认值
-        return defaultValue as T;
+      // 如果没有传入任何参数，返回所有 cookies
+      if (options === undefined) {
+         return cookies;
       }
-    }
-    
-    return value as T;
-  },
-);
 
+      // 字符串参数
+      if (typeof options === 'string') {
+         return cookies[options] as T | undefined;
+      }
+
+      // 处理对象配置
+      const { key, defaultValue, transform } = options;
+
+      // 没有指定 key，返回所有 cookies
+      if (!key) {
+         return cookies;
+      }
+
+      const value = cookies[key];
+
+      // Cookie 不存在时返回默认值
+      if (value === undefined) {
+         return defaultValue as T;
+      }
+
+      // 如果提供了转换函数，进行类型转换
+      if (transform) {
+         try {
+            return transform(value);
+         } catch (error) {
+            // 转换失败时返回默认值
+            return defaultValue as T;
+         }
+      }
+
+      return value as T;
+   }
+);
 ```
 
 **跨平台通用（注意类型安全）**
+
 ```ts
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 type CookieOptions<T = string> = {
-  /** Cookie 键名 */
-  key?: string;
-  /** 默认值 */
-  defaultValue?: T;
-  /** 类型转换函数 */
-  transform?: (value: string) => T;
+   /** Cookie 键名 */
+   key?: string;
+   /** 默认值 */
+   defaultValue?: T;
+   /** 类型转换函数 */
+   transform?: (value: string) => T;
 };
 
 /**
  * @description 跨平台通用的 Cookie 参数装饰器（类型安全增强版）
  * @template T - Cookie 值的类型
  * @param options - Cookie 选项或键名字符串
- * 
+ *
  * @example
  * // 获取单个 cookie（字符串）
  * getCookie(@Cookies('sessionId') sessionId: string | undefined)
- * 
+ *
  * // 获取单个 cookie 并指定默认值
  * getCookie(@Cookies({ key: 'sessionId', defaultValue: 'anonymous' }) sessionId: string)
- * 
+ *
  * // 获取并转换类型
- * getCount(@Cookies({ 
- *   key: 'count', 
+ * getCount(@Cookies({
+ *   key: 'count',
  *   transform: (v) => parseInt(v, 10),
- *   defaultValue: 0 
+ *   defaultValue: 0
  * }) count: number)
- * 
+ *
  * // 获取所有 cookies
  * getAllCookies(@Cookies() cookies: Record<string, string>)
  */
 export const Cookies = createParamDecorator(
-  <T = string>(
-    options: string | CookieOptions<T> | undefined,
-    ctx: ExecutionContext,
-  ): T | Record<string, string> | undefined => {
-    const request = ctx.switchToHttp().getRequest();
-    const cookies: Record<string, string> | undefined = request.cookies;
+   <T = string>(
+      options: string | CookieOptions<T> | undefined,
+      ctx: ExecutionContext
+   ): T | Record<string, string> | undefined => {
+      const request = ctx.switchToHttp().getRequest();
+      const cookies: Record<string, string> | undefined = request.cookies;
 
-    // 如果没有传入任何参数，返回所有 cookies
-    if (options === undefined) {
-      return cookies ?? {};
-    }
-
-    // 兼容旧版字符串参数
-    if (typeof options === 'string') {
-      return cookies?.[options] as T | undefined;
-    }
-
-    // 处理对象配置
-    const { key, defaultValue, transform } = options;
-
-    // 没有指定 key，返回所有 cookies
-    if (!key) {
-      return cookies ?? {};
-    }
-
-    const value = cookies?.[key];
-
-    // Cookie 不存在时返回默认值
-    if (value === undefined) {
-      return defaultValue as T;
-    }
-
-    // 如果提供了转换函数，进行类型转换
-    if (transform) {
-      try {
-        return transform(value);
-      } catch (error) {
-        // 转换失败时返回默认值
-        return defaultValue as T;
+      // 如果没有传入任何参数，返回所有 cookies
+      if (options === undefined) {
+         return cookies ?? {};
       }
-    }
 
-    return value as T;
-  },
+      // 兼容旧版字符串参数
+      if (typeof options === 'string') {
+         return cookies?.[options] as T | undefined;
+      }
+
+      // 处理对象配置
+      const { key, defaultValue, transform } = options;
+
+      // 没有指定 key，返回所有 cookies
+      if (!key) {
+         return cookies ?? {};
+      }
+
+      const value = cookies?.[key];
+
+      // Cookie 不存在时返回默认值
+      if (value === undefined) {
+         return defaultValue as T;
+      }
+
+      // 如果提供了转换函数，进行类型转换
+      if (transform) {
+         try {
+            return transform(value);
+         } catch (error) {
+            // 转换失败时返回默认值
+            return defaultValue as T;
+         }
+      }
+
+      return value as T;
+   }
 );
 ```
-

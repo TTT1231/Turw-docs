@@ -2,7 +2,6 @@
 outline: deep
 ---
 
-
 # NUXT SEO SSR
 
 SEO（搜索引擎优化）让搜索引擎和爬虫更容易获取页面的内容。
@@ -17,30 +16,31 @@ body 网站的内容核心，优化主要优化在这个地方，为用户提供
 
 - title 网站的标题
 - meta 【name-content】
-  - description 网站描述
-  - keywords 关键词
-  - author 作者
-  - robots 控制搜索引擎爬虫对当前页面的抓取和索引行为。
-  - og: Open Graph 元数据协议，使得在分享的时候平台能自动抓取网页OG标签，显示对应描述、标题、图片的预览卡片，而不是一个链接，用户友好【property-conetnt】
-    - title 分享卡片标题
-    - type 分享内容类型，website（网站首页）、article（博客、新闻）、vdeio.move(视频)等
-    - image 分享预览图片，必须要有ssl配置https
-    - description 对分享内容简要描述
-    - site_name 所属网站名称
-    - locale 分享页面语言
-    ....
-  - manifest【link 引入，必须在head中引入，是一个json文件】 将网站添加到主屏幕、和控制视觉表现、还有start_url用户在主屏幕点击图标后应该打开哪个网址，**移动端友好，但是需要提供多种尺寸图标来适应不同设备，还有配置颜色**
-  - canonical【link 引入】 解决query搜索，搜索引擎困惑问题，也即一个界面根据query参数渲染不同内容，和分页。**一般如果是一个界面根据query渲染不同内容，直接动态返回，有内容就指向自己，否则就使用noindex禁止搜索引擎收入**
+   - description 网站描述
+   - keywords 关键词
+   - author 作者
+   - robots 控制搜索引擎爬虫对当前页面的抓取和索引行为。
+   - og: Open Graph 元数据协议，使得在分享的时候平台能自动抓取网页OG标签，显示对应描述、标题、图片的预览卡片，而不是一个链接，用户友好【property-conetnt】
+      - title 分享卡片标题
+      - type 分享内容类型，website（网站首页）、article（博客、新闻）、vdeio.move(视频)等
+      - image 分享预览图片，必须要有ssl配置https
+      - description 对分享内容简要描述
+      - site_name 所属网站名称
+      - locale 分享页面语言
+        ....
+   - manifest【link 引入，必须在head中引入，是一个json文件】 将网站添加到主屏幕、和控制视觉表现、还有start_url用户在主屏幕点击图标后应该打开哪个网址，**移动端友好，但是需要提供多种尺寸图标来适应不同设备，还有配置颜色**
+   - canonical【link 引入】 解决query搜索，搜索引擎困惑问题，也即一个界面根据query参数渲染不同内容，和分页。**一般如果是一个界面根据query渲染不同内容，直接动态返回，有内容就指向自己，否则就使用noindex禁止搜索引擎收入**
 
 **robots:**
-| 指令                | 含义                               | 适用场景                                   |
+| 指令 | 含义 | 适用场景 |
 |---------------------|-----------------------------------|------------------------------------------|
-| `index, follow`     | 允许收录，并跟踪链接（默认）       | 大多数公开页面（如首页、产品页）             |
-| `noindex, follow`   | 禁止收录，但跟踪链接                 | 临时页面（如测试页、未完成的内容）           |
-| `index, nofollow`   | 允许收录，但忽略链接                 | 免责声明页（链接不传递权重）                |
-| `noindex, nofollow` | 禁止收录，且忽略链接                 | 隐私页、后台页（完全隐藏）                  |
+| `index, follow` | 允许收录，并跟踪链接（默认） | 大多数公开页面（如首页、产品页） |
+| `noindex, follow` | 禁止收录，但跟踪链接 | 临时页面（如测试页、未完成的内容） |
+| `index, nofollow` | 允许收录，但忽略链接 | 免责声明页（链接不传递权重） |
+| `noindex, nofollow` | 禁止收录，且忽略链接 | 隐私页、后台页（完全隐藏） |
 
 **manifest options:**
+
 - name 名称
 - short_name 简短名称，空间不足无法显示完整名称name，就会显示这个
 - start_url 起始url
@@ -56,8 +56,9 @@ body 网站的内容核心，优化主要优化在这个地方，为用户提供
 
 **robots.txt：**
 纯文本文件，遵循Robots Exclusion Protocol告诉搜索引擎哪些页面能爬取，哪些不能被爬取，还有网站地图sitemap的位置
-- User-agent 爬虫者，一般设置 User-agent:*（适用所有爬虫，也可也针对特定爬虫者进行设置，例如goolebot谷歌爬虫，User-agent:Goolebot）
-- Disallow 禁止爬取，例如Disallow:/back/*禁止爬虫访问所有/back所有子目录
+
+- User-agent 爬虫者，一般设置 User-agent:\*（适用所有爬虫，也可也针对特定爬虫者进行设置，例如goolebot谷歌爬虫，User-agent:Goolebot）
+- Disallow 禁止爬取，例如Disallow:/back/\*禁止爬虫访问所有/back所有子目录
 - Allow 允许爬取
 - Sitemap 站点目录，可以使用nuxt中sitemap自动生成，然后引入这个内容
 
@@ -142,15 +143,19 @@ app: {
 body的内容为用户服务，也是对head的进一步描述，**head相当于目录，而body相当于内容**，搜索引擎会会根据用户的query去匹配head和body，而且大多数情况下会以**body**为准，因为内容是为用户服务的，head只是让搜索引擎更加了解。
 
 <span class="text-red-400">注意：如果只关心搜索引擎排名，为搜索引擎服务就会违背了：“内容为用户而创造，而非搜索引擎”，类似下面做法</span>
+
 <details>
 <summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
    黑帽SEO技术
 </summary>
 
 ```html
-
 <!-- SEO 专用内容区域 - 对用户隐藏，但搜索引擎能抓取 -->
-<div class="seo-content" aria-hidden="true" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
+<div
+   class="seo-content"
+   aria-hidden="true"
+   style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;"
+>
    <h2>产品解决方案 - 字段描述</h2>
    <p>对h2进行描述</p>
    <h3>产品特点</h3>
@@ -163,14 +168,13 @@ body的内容为用户服务，也是对head的进一步描述，**head相当于
    <h3>应用行业</h3>
    <p>应用行业1</p>
 </div>
-
 ```
 
 </details>
 
 **最佳就是去掉隐藏，很自然的编写内容**
 
-**页面级别的seo** 
+**页面级别的seo**
 
 为了更好的类型提示和安全，直接使用`useSeoMeta`，然后直接配置即可
 
@@ -201,13 +205,14 @@ useHead({
 SSRF服务端渲染在nuxt比较简单，直接设置`ssr:true`即可，但是要注意的是在服务端渲染和SEO共同存在的场景下，注意API的调用，也即**useFetch**和 **$fetch**  
 由于服务端渲染要保证客户端和服务端在内容上要保持一直，否则水合阶段会报错。因而如果是使用$fetch就要执行两次，而useFetch有缓存只执行一次。
 **useFetch 使用场景:**
- - SEO内容
- - 页面主要内容
- - 需要服务端渲染的数据
-**$fetch**
- - 用户交互触发
- - 表单提交
- - 客户端逻辑
- - 实时数据更新，调用api
+
+- SEO内容
+- 页面主要内容
+- 需要服务端渲染的数据
+  **$fetch**
+- 用户交互触发
+- 表单提交
+- 客户端逻辑
+- 实时数据更新，调用api
 
 其他用法两者大差不差

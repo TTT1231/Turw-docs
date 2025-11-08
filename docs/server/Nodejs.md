@@ -824,26 +824,27 @@ export const setupDefaultRoute = (router: Router) => {
 
 ## ESM or Commonjs?
 
-由于**nodejs**已全面转向了ESM模块作为未来发展方向，因而从最佳实践和现代化做法中，选择ESM。Nodejs和ts编译器职责分离，nodejs只执行js，而ts编译器只编译ts。因而引入ts文件必须要.js拓展名即使是ts，主要原因是：**但esm模块解析时，nodejs不会像commonjs自动查找.js、.json扩展名，省略.js就node找不到该模块**  
-  
+由于**nodejs**已全面转向了ESM模块作为未来发展方向，因而从最佳实践和现代化做法中，选择ESM。Nodejs和ts编译器职责分离，nodejs只执行js，而ts编译器只编译ts。因而引入ts文件必须要.js拓展名即使是ts，主要原因是：**但esm模块解析时，nodejs不会像commonjs自动查找.js、.json扩展名，省略.js就node找不到该模块**
+
 之所以必须是`.js`而不是`.ts`因为node是运行时，而ts是编译时类似源文件，所以在nodejs引入或者使用模块就必须引入编译后的`.js`文件
 
-在vite+vue+ts的官方项目中vite+ts编译器自动处理了ts文件，隐藏了编译过程，从而导入文件时不用关心拓展名。  
+在vite+vue+ts的官方项目中vite+ts编译器自动处理了ts文件，隐藏了编译过程，从而导入文件时不用关心拓展名。
 
 **配置：**  
 在`package.json`显示声明`"type":"module"`即可，然后就是配置`tsconfig.json`让ts如何解析该模块，
+
 ```json
 {
    "compilerOptions": {
-      "target": "ES6", 
+      "target": "ES6",
       /* Modules */
       "module": "NodeNext" /* 指定生成的模块代码.Node ESM推荐 */,
       "moduleResolution": "NodeNext" /* 让ts模块解析逻辑完全匹配Nodejs的ESM解析规则*/,
       "rootDir": ".",
-      "resolveJsonModule": true, /* 启用导入.json文件. */ 
+      "resolveJsonModule": true /* 启用导入.json文件. */,
       "baseUrl": "./",
       "outDir": "./dist",
-      "esModuleInterop": true,/** commonjs支持 */
+      "esModuleInterop": true /** commonjs支持 */,
       "forceConsistentCasingInFileNames": true,
       "strict": true,
       "skipLibCheck": true
@@ -875,6 +876,7 @@ pnpm i esbuild -D
 ```
 
 **setting config file(esbuild.config.mjs)**
+
 ```ts
 const// esbuild.config.mjs
 import { build } from 'esbuild';
@@ -900,18 +902,18 @@ await build({
                 // 如果在微服务或者对模块功能进行解耦时这里是必须要的
   //outbase: 'src', // 保持 src 目录结构
   entryPoints:['/src/main.ts'] //简单api使用单入口打包即可
-  outdir, 
+  outdir,
   bundle: true,
 
   platform: 'node', // 针对 Node.js 平台，如果是node平台就不能使用esbuild的代码压缩minifiy(这个是在游览器独有的)
                     //nodejs是运行时，会一次性加载所有目标代码（在需要时）分包会导致性能下降等，除非很在乎启动时间
   target: 'node18', // 目标 Node.js 版本
-  format: 'esm', 
+  format: 'esm',
 
   //调试
-  minify: false, 
+  minify: false,
   sourceMap:true,
-  
+
   external: [
     // Node.js 内置模块
     'fs', 'path', 'http', 'https', 'url', 'net', 'dns', 'tls',

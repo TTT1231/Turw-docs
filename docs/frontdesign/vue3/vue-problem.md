@@ -21,6 +21,7 @@ proxy:{
       }
     }
 ```
+
 ```json
 //vite打包后，proxy配置不会生效，需要在Nginx中配置/javaserver转发规则，代替vite中proxy使得请求进行转发。
 //==========nginx setting ==================

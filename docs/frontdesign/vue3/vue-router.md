@@ -6,6 +6,7 @@ history模式，干净标准的url，直接访问子路由会404，需要配置t
 ## 路由元信息提示
 
 vue-router做权限控制可以对路由中meta元信息进行类型拓展，这里可以自定义角色和权限。例如:
+
 ```js
 declare module 'vue-router' {
   interface RouteMeta {

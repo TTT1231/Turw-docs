@@ -1,6 +1,7 @@
 ---
 outline: deep
 ---
+
 # SQL简化
 
 在后端中，简化SQL语句的编写，和迁移的简单，这里采用prisma。
@@ -15,17 +16,20 @@ Prisma将表看成一个对象(model)，所有操作都看作对象的操作，�
 
 为了迁移的SQL迁移文件有更好的注释和简化注释操作，这里用husky对迁移文件自动注入**SQL头**注释信息，对于一些自定义注释则使用bash手动编写
 
-**Install husky**  
+**Install husky**
+
 ```sh
 pnpm add --save-dev husky
 ```
 
 **husky init**
+
 ```sh
 pnpm exec husky init
 ```
 
 **然后编辑git commit提交之前的hook（pre-commit）**
+
 <details>
 <summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
    pre-commit内容
@@ -63,6 +67,7 @@ git update-index --again
 </details>
 
 **创建自定义的sh，在生成迁移完后执行自动添加自定义信息**
+
 <details>
 <summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
    自定义头配合github commit
@@ -87,15 +92,15 @@ find "$MIGRATIONS_DIR" -name "migration.sql" | while read -r file; do
     header="-- -----------sh 脚本生成----------------
 -- 迁移ID: $migration_id
 -- 创建日期: $(date +'%Y-%m-%d %H:%M:%S')
--- 变更摘要: 
--- 回滚方案: 
+-- 变更摘要:
+-- 回滚方案:
 
 "
     # 插入头信息到文件开头
     echo "$header" > temp_file
     cat "$file" >> temp_file
     mv temp_file "$file"
-    
+
     echo "✅ 已为 $file 添加标准注释头"
   fi
 done
@@ -108,6 +113,7 @@ done
 </span>
 
 **安装prisma**
+
 ```terminal
 pnpm install prisma -D
 
@@ -116,16 +122,19 @@ npx prisma init --datasource-provider mysql --output ../generated/prisma
 ```
 
 **安装prisma client**，类型安全和简化SQL
+
 ```sh
 pnpm install @prisma/client
 ```
 
 init prisma client
+
 ```sh
 npx prisma generate
 ```
 
 **最后迁移到数据库中（生产模式下使用）**
+
 ```sh
 npx prisma migrate deploy
 ```
@@ -138,11 +147,12 @@ npx prisma migrate deploy
 
 **esbuild打包问题**
 
-如果在prisma手动配置了output位置不是`node_modules`，`@prisma/client`包在运行时动态查找时会导致找不到这个模块，**同时在项目中直接引入@prisma/client包找不到任何东西**  
+如果在prisma手动配置了output位置不是`node_modules`，`@prisma/client`包在运行时动态查找时会导致找不到这个模块，**同时在项目中直接引入@prisma/client包找不到任何东西**
 
 虽然可以手动引入prisma生成的client但是esbuild进行打包运行就会报错模块找不到问题，一个简单方法**直接默认或者手动生成进node_modules目录**与@prisma/client动态查找包就会生效，esbuild配置也简单。<span class="text-red-400">但是打包后的dist目录不能脱离`node_modules`,因为SQL的执行依赖prisma client，脱离node引入模块时就会失败。</span>
 
 **schema.prisma**
+
 ```ts
 
 generator client {
@@ -159,6 +169,7 @@ generator client {
 **import type问题**
 
 `import {PrismaClient} from '@prisma/client'`这里会出错，连接问题，解决方案时在`package.json`中的dependencies中添加:
+
 ```json
 "dependencies": {
    //....
@@ -166,6 +177,7 @@ generator client {
    "prisma-client": "file:./generated/prisma"
 },
 ```
+
 然后执行`pnpm i`链接到这个包既可以正常导入了
 
 如果嫌弃上诉过程麻烦，也可以在构建时执行`pnpm add <url>`,这个url指向构建好的PrismaClient，注意地址问题，也就是这个url工作目录也就是当前工作目录是处于`项目根目录的`

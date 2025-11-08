@@ -5,13 +5,15 @@
 索引：核心提高数据库的查询速度（空间换时间），**适合频繁需要的查询，但是不能经常更新索引，否则索引需要经常更新得不偿失**
 
 索引type
+
 - NORMAL 普通索引，只是单纯加快查询速度，基本索引类型。
 - UNIQUE 唯一索引，加快查询速度的同时，强制要求索引列唯一。
 - FULLTEXT 全文索引，与搜索引擎类似，查找文本中关键词等。
 - SPATTAL 空间索引，用于点、线、
-面等地理位置和空间查询。
+  面等地理位置和空间查询。
 
 索引method
+
 - BTREE b树索引方法，**绝大部分通用索引方法**，支持范围和like查询，速度（O(log n)）
 - HASH hash索引，只能支持等值索引，速度非常快（O（1）计算hash），但是更依赖hash表
 
@@ -20,20 +22,20 @@
 ```ts
 //typeorm 索引
 
-import { Entity, PrimaryGeneratedColumn, Column, Index } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+   @PrimaryGeneratedColumn()
+   id: number;
 
-  @Index({ unique: true })
-  @Column()
-  firstName: string;
+   @Index({ unique: true })
+   @Column()
+   firstName: string;
 
-  @Column()
-  @Index({ unique: true })
-  lastName: string;
+   @Column()
+   @Index({ unique: true })
+   lastName: string;
 }
 ```
 
@@ -43,7 +45,7 @@ export class User {
 
 ```ts
 // options type (毫秒为单位)
-cache:boolean|number;
+cache: boolean | number;
 
 //example
 const selectCache = selectCacheRepo.find({
@@ -55,5 +57,4 @@ const selectCache = selectCacheRepo.find({
    },
    cache: 1000 //1s
 });
-
 ```

@@ -16,12 +16,11 @@ outline: deep
 
 主要实现用户可以对大文件请求进行终止和根据文件内容hash去判断在服务端有没有分片  
 对之前上传的分片继续上传，提高上传速率和容错率。
+
 <details>
 <summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
     分片上传
 </summary>
-
-
 
 ```ts
 //===========================前端================================
@@ -79,18 +78,19 @@ export default defineEventHandler(async (event) => {
 
 </details>
 
-**分片断点上传思路**：  
+**分片断点上传思路**：
 
 **前端：**
 在上传文件时根据文件内容计算整体md5 hash 这里为了优化采用worker和控制分片策略（**主线程负责分片，worker负责计算hash**）【主线程将每个文件分片ArrayBuffer给Worker,worker计算每个分片md5，最后合并所有分片hash结果，汇总成整个文件内容的md5 hash】，在发送前要进行预检实现断点上传，也即检查服务器中文件hash的目录内容  
 前端重新上传时会发送整个文件的md5 hash给后端，后端根据这个hash去临时目录中去找分片数，然后返回给前端，前端就可以知道之前上传了多少<span class="text-red-400">
 为了前后端统一，和防止上传过程中被修改和丢包，每次上传前应该计算分片hash后端也计算进行比对，保证文件的一致性
 </span>
-  
+
 **后端：**
 后端主要负责接受分片，并计算分片hash与前端比对，最后进行汇总将数据存储到服务器中，也可以存储到数据库中都可以。前端下载功能直接设置http header启用流失传输，将文件流逐步推送到客户端即可
 
 **注意**
+
 - 前端如果时fetch请求，由于fetch不支持终止，但是可以使用终止器（AbortController），要将**终止器信号signal**传递给fetch，这样当外部调用终止器的abort时候，就可以终止请求，多次调用没有效果，注意垃圾清理
 - 前端在worker计算md5的时候，不能接受File(**worker在独立线程中，与主线测不共享内存**)，这里可以传递ArrayBuffer或Blob，也可以通过结构化克隆机制（structuredClone）传入File对象。**前者性能更优、后者代码简洁，大文件用前者**
 
@@ -132,29 +132,42 @@ const simulateFileUpload = async (file: UploadFile): Promise<void> => {
       }
 
       // 计算文件的MD5，worker计算
-      const md5Hash = await computeFileWholeMD5(file.originFileObj!, file.chunkSize || defaultChunkSize, signal);
+      const md5Hash = await computeFileWholeMD5(
+         file.originFileObj!,
+         file.chunkSize || defaultChunkSize,
+         signal
+      );
       console.log('文件整体 MD5');
 
       // 检查文件是否已经上传过
       //主要根据服务器中存储文件上传的临时目录，检查文件整体hash的分片数
-      const checkFileApi = await $fetch<ApiResponse<CheckFileServerDTO>>('/api/back/arts-management/check-file', {
-         method: 'POST',
-         body: { fileWholeMD5: md5Hash },
-         signal: signal,
-      });
+      const checkFileApi = await $fetch<ApiResponse<CheckFileServerDTO>>(
+         '/api/back/arts-management/check-file',
+         {
+            method: 'POST',
+            body: { fileWholeMD5: md5Hash },
+            signal: signal
+         }
+      );
 
       file.uploadMaxChunkIndex = checkFileApi.data?.currentChunkIndex ?? 0;
       const totalChunks = file.chunkCount ?? 1;
       file.fileContentWholeMD5 = md5Hash;
 
       // 如果文件已经完整上传过
-      if (checkFileApi.status === HTTPStatus.OK && checkFileApi.data?.currentChunkIndex === file.chunkCount) {
+      if (
+         checkFileApi.status === HTTPStatus.OK &&
+         checkFileApi.data?.currentChunkIndex === file.chunkCount
+      ) {
          console.log('文件已完整上传');
-         const isInDB = await $fetch<ApiResponse<'success' | 'uploading' | 'failed' | undefined>>('/api/back/arts-management/db-exist', {
-            method: 'POST',
-            signal: signal,
-            body: { fileWholeMd5: md5Hash },
-         });
+         const isInDB = await $fetch<ApiResponse<'success' | 'uploading' | 'failed' | undefined>>(
+            '/api/back/arts-management/db-exist',
+            {
+               method: 'POST',
+               signal: signal,
+               body: { fileWholeMd5: md5Hash }
+            }
+         );
 
          if (isInDB.status === HTTPStatus.OK && !isInDB.data) {
             await setFileStatus(md5Hash, 'uploading', extendDBInfo, file);
@@ -212,10 +225,13 @@ const simulateFileUpload = async (file: UploadFile): Promise<void> => {
          }
 
          // 更新上传进度和当前分片索引
-         file.progress = ((chunkUploadRes.data?.currentChunksIndex! / totalChunks) * 100).toFixed(2);
-         file.uploadMaxChunkIndex = chunkUploadRes.data?.currentChunksIndex ?? file.uploadMaxChunkIndex;
+         file.progress = ((chunkUploadRes.data?.currentChunksIndex! / totalChunks) * 100).toFixed(
+            2
+         );
+         file.uploadMaxChunkIndex =
+            chunkUploadRes.data?.currentChunksIndex ?? file.uploadMaxChunkIndex;
 
-         await new Promise(res => setTimeout(res, 200)); // 延迟，避免请求过于频繁
+         await new Promise((res) => setTimeout(res, 200)); // 延迟，避免请求过于频繁
       }
 
       // 上传完成后保存到数据库
@@ -238,15 +254,25 @@ const simulateFileUpload = async (file: UploadFile): Promise<void> => {
 };
 
 // 辅助函数：设置文件状态
-const setFileStatus = async (md5Hash: string, status: string, extendDBInfo: any, file: UploadFile) => {
+const setFileStatus = async (
+   md5Hash: string,
+   status: string,
+   extendDBInfo: any,
+   file: UploadFile
+) => {
    await $fetch('/api/back/arts-management/set-status', {
       method: 'POST',
-      body: { fileWholeMd5: md5Hash, status },
+      body: { fileWholeMd5: md5Hash, status }
    });
 };
 
 // 辅助函数：上传文件到数据库
-const uploadFileToDB = async (md5Hash: string, file: UploadFile, totalChunks: number, extendDBInfo: any) => {
+const uploadFileToDB = async (
+   md5Hash: string,
+   file: UploadFile,
+   totalChunks: number,
+   extendDBInfo: any
+) => {
    const uploadRes = await $fetch<ApiResponse<boolean>>('/api/back/arts-management/upload-db', {
       method: 'POST',
       body: {
@@ -257,8 +283,8 @@ const uploadFileToDB = async (md5Hash: string, file: UploadFile, totalChunks: nu
          projectName: extendDBInfo.projectName ?? file.name,
          productType: extendDBInfo.productType,
          targetId: extendDBInfo.targetId,
-         targetName: extendDBInfo.targetName,
-      },
+         targetName: extendDBInfo.targetName
+      }
    });
 
    return uploadRes.status === HTTPStatus.OK && uploadRes.data === true;
@@ -284,15 +310,12 @@ export async function computeFileWholeMD5(
 ): Promise<string> {
    return new Promise<string>((resolve, reject) => {
       // 创建 Worker
-      const computeMD5Thread = new Worker(
-         new URL('./md5Worker.js', import.meta.url),
-         {
-            type: 'module',
-         }
-      );
+      const computeMD5Thread = new Worker(new URL('./md5Worker.js', import.meta.url), {
+         type: 'module'
+      });
 
       // 监听 Worker 返回的 MD5 结果
-      computeMD5Thread.onmessage = event => {
+      computeMD5Thread.onmessage = (event) => {
          const { fileHash } = event.data;
          if (fileHash) {
             resolve(fileHash); // 计算完成，返回结果
@@ -302,7 +325,7 @@ export async function computeFileWholeMD5(
          computeMD5Thread.terminate(); // 计算完成后终止 Worker
       };
 
-      computeMD5Thread.onerror = err => {
+      computeMD5Thread.onerror = (err) => {
          reject(new Error('Worker error: ' + err.message));
          computeMD5Thread.terminate(); // 发生错误时终止 Worker
       };
@@ -327,11 +350,11 @@ export async function computeFileWholeMD5(
 
       // 等待所有分片的 ArrayBuffer 完成后再传递给 Worker
       Promise.all(chunkPromises)
-         .then(chunks => {
+         .then((chunks) => {
             // 将所有分片（ArrayBuffer）传递给 Worker
             computeMD5Thread.postMessage({ chunks }, chunks);
          })
-         .catch(error => {
+         .catch((error) => {
             reject(error);
             computeMD5Thread.terminate(); // Terminate Worker on error
          });
@@ -348,7 +371,7 @@ export async function computeChunkMD5(chunk: Blob): Promise<string> {
       const fileReader = new FileReader();
       const spark = new SparkMD5.ArrayBuffer();
 
-      fileReader.onload = event => {
+      fileReader.onload = (event) => {
          try {
             if (!event.target?.result) {
                throw new Error('FileReader failed to read chunk');
@@ -396,7 +419,6 @@ self.onmessage = function (e) {
       self.close();
    }
 };
-
 ```
 
 </details>
@@ -499,8 +521,8 @@ header.payload.signature【以base64进行网络传输，遵循RFC标准】
 
 - 当请求/api的时候，会进入服务端的中间件，这里可以做jwt令牌验证。`【/server/middle/jwt.server.ts】验证完后，可以对server中上下文设置user,然后向外暴露一个/api,以me.get.ts为例，每次调用都会先走服务端中间件，进行验证token，没有通过可以重定位到登录路由。【出错直接进入nitro错误处理即可，通过可以从上下文获取user来判断是否验证通过】`  
   注意应该要游览器携带cookie，存放cookie的原因使得用户无需反复登录，直接可以用token进行认证）(如果考虑refresh_token的情况下也即access_token可以刷新，**依赖jwt的无状态认证**，进行认证和刷新，可以存入cookie进行短期验证。  
-  <span class=" text-red-400">注：安全考虑可以设置`http:only`,阻止js访问，但是还是能被游览器获取，用户可以在开发者工具查看</span>
-- 这里可以做client验证，因为要调用`me.get.ts`客户端来判断有没有登录，<span class=" text-blue-400">同时对出错情况，和token过期等情况进行处理</span>。
+span red注：安全考虑可以设置`http:only`,阻止js访问，但是还是能被游览器获取，用户可以在开发者工具查看/span
+- 这里可以做client验证，因为要调用`me.get.ts`客户端来判断有没有登录，span blue同时对出错情况，和token过期等情况进行处理/span。
 - 登录之后，token存入cookie,以后发送token进行验证，过期在返回error,直接弹窗回到登录即可，过期清空cookie
 
 ### 注意问题
@@ -528,11 +550,9 @@ header.payload.signature【以base64进行网络传输，遵循RFC标准】
 这里刷新token采用单例刷新，下一个请求来时等待promise单例完成，拿结果就返回 。
 最后单例清空promise状态，留给下一次并发请求。
 **由于这里并发请求的驼峰性，这里设置cache的过期时间几秒钟就可以了（也不会有那么多并发请求需要验证）**
- <details>
- <summary class=" bg-blue-400  text-white cursor-pointer select-none
-  text-center active:scale-95">
-  01.jwt.server.ts（服务端——自动调试模式）
- </summary>
+
+<details>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">01.jwt.server.ts（服务端——自动调试模式）</summary>
 
 ```ts
 // 服务端 JWT 认证中间件——jwt 令牌 token 验证
@@ -750,10 +770,7 @@ export default defineEventHandler(async (event) => {
 **并发请求时，这里需要做防抖，缓存处理。【缓存时间不能太长2~5秒即可】**
 
 <details>
-<summary class=" bg-blue-400  text-white cursor-pointer select-none
- text-center active:scale-95">
-01.auth.client.ts（客户端验证服务端有没有成功）
-</summary>
+<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">01.auth.client.ts（客户端验证服务端有没有成功）</summary>
 
 ```ts
 import { whiteRoute } from '~~/shared/whiteRoute';
@@ -894,8 +911,6 @@ export default defineNuxtPlugin(() => {
 
 </details>
 
-
-
 ## 动态数据渲染CLS问题
 
 在初次渲染数据时，如果采用骨架屏去占位，**如果采用简单宽度占位**，此时如果有footer页脚的话，在数据初始化完后渲染时，footer会被大量内容推下去，产生CLS（cumulative layout shift累计布局偏移）的值会迅速升高。
@@ -912,9 +927,9 @@ export default defineNuxtPlugin(() => {
 
 ```vue
 <script setup lang="ts">
-import {Button} from 'ant-design-vue';
-import {getCurrentInstance, h,  type ComponentPublicInstance} from 'vue';
-import type { ButtonProps } from 'ant-design-vue'
+import { Button } from 'ant-design-vue';
+import { getCurrentInstance, h, type ComponentPublicInstance } from 'vue';
+import type { ButtonProps } from 'ant-design-vue';
 
 /**
  * 组件的二次封装
@@ -925,23 +940,22 @@ import type { ButtonProps } from 'ant-design-vue'
  * 5、类型
  */
 
-
-type ButtonInstance = ComponentPublicInstance<ButtonProps>
+type ButtonInstance = ComponentPublicInstance<ButtonProps>;
 const vm = getCurrentInstance();
 
 //将事件方法暴露给父组件，供其ref（父组件）调用
 function changeRef(expose: Element | ButtonInstance | null) {
-    if (vm) {
-        vm.exposed = expose
-    }
+   if (vm) {
+      vm.exposed = expose;
+   }
 }
 
 //ts 提示
-defineExpose({} as ButtonInstance)
+defineExpose({} as ButtonInstance);
 </script>
 <template>
-<!-- 注意这里不能用div或者容器包裹，否则事件会冒泡会被重复执行 -->
-   <component :is="h(Button,{...$attrs,ref:changeRef},$slots)">
-   </component>
+   <!-- 注意这里不能用div或者容器包裹，否则事件会冒泡会被重复执行 -->
+   <component :is="h(Button, { ...$attrs, ref: changeRef }, $slots)"> </component>
 </template>
 ```
+

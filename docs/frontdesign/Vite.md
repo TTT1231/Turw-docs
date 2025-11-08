@@ -139,7 +139,7 @@ function recurseAddRoutes(routes: RoutesType[]) {
          //空字符说明不要加载组件,这里就不需要做任何操作
       } else {
          route.component = components[`../../views/${route.component}.vue`];
-     
+
         }
       // 递归处理子路由
       if (route.children.length > 0 && route.children) {
@@ -157,6 +157,7 @@ function recurseAddRoutes(routes: RoutesType[]) {
 ## 代码分割
 
 针对代码分割，这里可以调整vite中Rollup打包中的output中manualChunks(id)函数，其中id是模块的绝对路径，以此来半自动进行代码打包后分割。例如：
+
 ```js
  manualChunks(id) {
           // id 是模块的绝对路径
@@ -174,34 +175,34 @@ function recurseAddRoutes(routes: RoutesType[]) {
 
 sourceMap（源映射）是一种映射文件，主要用于调试。它可以将编译、打包、压缩后的代码映射到源代码位置，及其方便进行调试。**但是它文件体积大，如果直接应用到实际环境会有源码泄露风险**。  
 在打包时可以启动代码压缩`Minify`的功能，同时也要关闭sourceMap映射，如果用于调试上线则不用。具体配置如下
+
 ```js
 // vite.config.js
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  build: {
-    minify: 'esbuild', // 启用代码压缩，默认就是 'esbuild',速度快，也可用 'terser'
-    sourcemap: false   // 关闭 sourceMap 映射，防止源码泄露
-  }
-})
+   build: {
+      minify: 'esbuild', // 启用代码压缩，默认就是 'esbuild',速度快，也可用 'terser'
+      sourcemap: false // 关闭 sourceMap 映射，防止源码泄露
+   }
+});
 ```
 
 ## vite dev tools 和 增强import.meta提示
 
-`import vueDevTools from 'vite-plugin-vue-devtools'`  
+`import vueDevTools from 'vite-plugin-vue-devtools'`
 
 `pnpm add vite-plugin-vue-devtools -D`
 
 ```ts
 import vueDevTools from 'vite-plugin-vue-devtools';
 export default defineConfig({
-   plugins: [
-   +  vueDevTools()
-   ],
-})
+   plugins: [+vueDevTools()]
+});
 ```
 
 **增强提示（类型安全）**
+
 ```js
 /// <reference types="vite/client" />
 //加上上面那个进行类型提示增强
@@ -217,11 +218,11 @@ interface ImportMeta {
 
 ```ts
 interface ImportMetaEnv extends Record<ImportMetaEnvFallbackKey, any> {
-  BASE_URL: string
-  MODE: string
-  DEV: boolean
-  PROD: boolean
-  SSR: boolean
+   BASE_URL: string;
+   MODE: string;
+   DEV: boolean;
+   PROD: boolean;
+   SSR: boolean;
 }
 ```
 
@@ -240,7 +241,7 @@ export default defineConfig(({mode})=>{
 
    //validate env config
    validateEnv(env)
-   
+
    return {
       plugins:[
          vue()
@@ -251,6 +252,7 @@ export default defineConfig(({mode})=>{
 ```
 
 同时为了更好的类型安全，这里的类型要手动定义，会导致重复定义了类型(例如，在env.d.ts中的`ImportMeta`的全局拓展env类型，但是也有解决方案，就是将需要的`envConfig`直接定义为全局类型，然后嵌入到`ImportMeta`中，`vite.config.ts`直接使用即可，就避免了重复类型定义，和维护多个类型问题)，例如:
+
 ```ts
 //这是全局类型，这里是局部类型定义
 type RequiredEnv = {

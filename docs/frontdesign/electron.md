@@ -103,7 +103,6 @@ type FuncArgs<F> = F extends (...args: infer Args) => any ? Args : never;
  * type ReturnType = FuncReturn<FuncType>; // string
  */
 type FuncReturn<F> = F extends (...args: any[]) => infer R ? R : never;
-
 ```
 
 **模拟ipcRenderer.invoke(也即模仿原生ipcRenderer.invoke行为，防止类型出错)**
@@ -131,7 +130,7 @@ import { ipcRenderer } from 'electron/renderer';
  * ipcRendererInvoke<IpcQuery>('user-getUserData');  // 自动推断 chunnel
  * ipcRendererInvoke<IpcQuery>('user-requireParam', 'abc123');  // 自动推断args类型
  *
- * //这里会报错，显示number不能赋值给string 
+ * //这里会报错，显示number不能赋值给string
  * //这时就避免了ipcRenderer.invoke('user-requireParam',123)，其中key写错还有arg类型错误
  */
 export function ipcRendererInvoke<T extends Record<string, any>, P extends Paths<T> = Paths<T>>(
@@ -140,7 +139,6 @@ export function ipcRendererInvoke<T extends Record<string, any>, P extends Paths
 ): FuncReturn<GetFunc<T, P>> {
    return ipcRenderer.invoke(path as string, ...args) as FuncReturn<GetFunc<T, P>>;
 }
-
 ```
 
 ### preload自动桥接
@@ -235,7 +233,10 @@ import { ipcRenderer } from 'electron/renderer';
  * //   }
  * // }
  */
-export function autoAssembleBridge<T extends Record<string, any>>(config: Record<string, any>, prefix: string = ''): T {
+export function autoAssembleBridge<T extends Record<string, any>>(
+   config: Record<string, any>,
+   prefix: string = ''
+): T {
    const result: any = {};
 
    for (const key in config) {
@@ -264,7 +265,7 @@ const apiConfig: IElectronApiConfig = {
    query: {
       user: {
          getUserData: true,
-       - nihao:false //这里为false会报错 
+       - nihao:false //这里为false会报错
       }
    },
 };
