@@ -8,19 +8,17 @@ outline: deep
 
 ## 大文件分片上传
 
-**思路**：获取文件信息，然后进行分片，分片使用form表单上传（前端）  
-后端接受分片存储在一个临时目录中（可以按文件id进行临时存储）  
-最后存储完毕，对所有分片结果进行合并
+快速概览：分片上传一般分三步 — 前端分片并上传、后端临时存储、完成后合并。
+
+> [!IMPORTANT] 提示
+> 常见要点：断点续传、分片哈希校验、使用 AbortController 终止请求、把耗时计算交给 Web Worker。
 
 ### 分片断点终止上传
 
 主要实现用户可以对大文件请求进行终止和根据文件内容hash去判断在服务端有没有分片  
 对之前上传的分片继续上传，提高上传速率和容错率。
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-    分片上传
-</summary>
+::: details 分片上传
 
 ```ts
 //===========================前端================================
@@ -76,28 +74,18 @@ export default defineEventHandler(async (event) => {
 //合并分片就简单多了，主要逻辑是获取分片的目标位置，然后读取所有分片数据(注意排序)，最后写入
 ```
 
-</details>
+:::
 
-**分片断点上传思路**：
+### 要点速览
 
-**前端：**
-在上传文件时根据文件内容计算整体md5 hash 这里为了优化采用worker和控制分片策略（**主线程负责分片，worker负责计算hash**）【主线程将每个文件分片ArrayBuffer给Worker,worker计算每个分片md5，最后合并所有分片hash结果，汇总成整个文件内容的md5 hash】，在发送前要进行预检实现断点上传，也即检查服务器中文件hash的目录内容  
-前端重新上传时会发送整个文件的md5 hash给后端，后端根据这个hash去临时目录中去找分片数，然后返回给前端，前端就可以知道之前上传了多少<span class="text-red-400">
-为了前后端统一，和防止上传过程中被修改和丢包，每次上传前应该计算分片hash后端也计算进行比对，保证文件的一致性
-</span>
+- 前端：主线程分片、Worker 计算哈希、预检断点续传、使用 AbortController 终止上传
+- 后端：接收分片、校验分片哈希、临时保存并在完成后合并
 
-**后端：**
-后端主要负责接受分片，并计算分片hash与前端比对，最后进行汇总将数据存储到服务器中，也可以存储到数据库中都可以。前端下载功能直接设置http header启用流失传输，将文件流逐步推送到客户端即可
+::: info 注意
+为保证一致性，前后端应使用相同的分片/文件哈希算法；大文件优先传 ArrayBuffer 给 Worker
+:::
 
-**注意**
-
-- 前端如果时fetch请求，由于fetch不支持终止，但是可以使用终止器（AbortController），要将**终止器信号signal**传递给fetch，这样当外部调用终止器的abort时候，就可以终止请求，多次调用没有效果，注意垃圾清理
-- 前端在worker计算md5的时候，不能接受File(**worker在独立线程中，与主线测不共享内存**)，这里可以传递ArrayBuffer或Blob，也可以通过结构化克隆机制（structuredClone）传入File对象。**前者性能更优、后者代码简洁，大文件用前者**
-
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   断点上传实现(前端)
-</summary>
+::: details 断点上传实现(前端)
 
 ```ts
 //单个文件上传
@@ -421,26 +409,24 @@ self.onmessage = function (e) {
 };
 ```
 
-</details>
+:::
 
 ## 响应式对象数据性能问题
 
-如果一个对象有很多属性在内部使用响应式深度追踪，定义一个数组，  
-这个数组中加入很多个这样的对象，在游览器去渲染的时候会卡顿。  
-vue3内部对响应式数据做了数据代理和追踪【主要在这里卡顿】，  
-如果不需要修改对象**取消响应式或者冻结对象**。  
-vue3在定义响应式对象之前，通过原生API判断是否为freeze
+问题概述：大量深层响应式对象会触发过多依赖追踪，渲染时会卡顿。
+
+::: tip 解决方案
+使用 shallowReactive / shallowRef、markRaw、Object.freeze 或 readonly 来避免不必要的响应式追踪；列表建议使用虚拟列表按需渲染。
+:::
 
 ## 下拉组件下拉效果不显示及其动画问题
 
-在封装下拉组件时，如果动画过渡不对就触发不了下拉动画  
-例如`h-0 group-hover:max-h-12`就没有效果，改成**group-hover:h-12或max-h-0**（需要1-1对应，**也即[h]-[h],[max-h]-[max-h]**）就有效。  
-如果过渡目标到h-auto，由于动画只支持插值数值，这里会不生效，可以通过js计算获取，然后赋值。【js改写style，必须要手动写transition内联样式，同时js实现下拉动画也即改写style时要触发强制重排，否则动画就没有效果】
+要点：动画类**必须配对**（例如 h 与 h，或 max-h 与 max-h），不能以 `h-auto` 作为过渡目标。常用解决：
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-  插值过渡（要借助js去计算比较麻烦）
-</summary>
+- 使用 JS 动态计算高度并设置内联 transition（注意触发重排）
+- 或使用 CSS transform scaleY（origin-top）实现无回流的平滑动画
+
+::: details 插值过渡（要借助js去计算比较麻烦）
 
 ```vue
 <script lang="ts" setup>
@@ -483,17 +469,17 @@ onMounted(() => {
 </template>
 ```
 
-</details>
+:::
 
 还有一种方案不使用js使用css中scale实现，对内容进行y轴缩放实现动画效果。  
-效率很高不会触发游览器重排，动画更流畅，性能更好。  
-注：**由于scale操作的时transform所以动画效果要用transform效果**。  
+效率很高不会触发游览器重排，动画更流畅，性能更好。
+
+> [!WARNING] 效果对比
+> 由于 scale 是 transform 的子属性（操作的是 transform 变换），所以动画效果要基于 transform 属性实现，而非直接操作 `width/height` 等布局属性
+
 这里效果是从上到下（默认中间散开）所以需要origin-top`transform-origin: top;`设置动画起点
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-  缩放过渡（平滑过渡，要注意方向）
-</summary>
+::: details 缩放过渡（平滑过渡，要注意方向）
 
 ```html
 <!-- tailwind css 写法 -->
@@ -510,55 +496,63 @@ onMounted(() => {
 </div>
 ```
 
-</details>
+:::
 
-## NUXT中JWT认证问题
+## NUXT 中的 JWT 认证（概览）
 
-header.payload.signature【以base64进行网络传输，遵循RFC标准】
-**nuxt插件先于中间件执行**
+快速说明：后端中间件负责验证 Access Token，失败时使用 Refresh Token 刷新；为避免并发刷新冲突，应使用单例刷新（promise 单例或短期缓存）。
 
-### 实现逻辑
+要点：
 
-- 当请求/api的时候，会进入服务端的中间件，这里可以做jwt令牌验证。`【/server/middle/jwt.server.ts】验证完后，可以对server中上下文设置user,然后向外暴露一个/api,以me.get.ts为例，每次调用都会先走服务端中间件，进行验证token，没有通过可以重定位到登录路由。【出错直接进入nitro错误处理即可，通过可以从上下文获取user来判断是否验证通过】`  
-  注意应该要游览器携带cookie，存放cookie的原因使得用户无需反复登录，直接可以用token进行认证）(如果考虑refresh_token的情况下也即access_token可以刷新，**依赖jwt的无状态认证**，进行认证和刷新，可以存入cookie进行短期验证。  
-span red注：安全考虑可以设置`http:only`,阻止js访问，但是还是能被游览器获取，用户可以在开发者工具查看/span
-- 这里可以做client验证，因为要调用`me.get.ts`客户端来判断有没有登录，span blue同时对出错情况，和token过期等情况进行处理/span。
-- 登录之后，token存入cookie,以后发送token进行验证，过期在返回error,直接弹窗回到登录即可，过期清空cookie
+- 中间件验证：服务端验证 token 并将 user 放入上下文
+- 并发刷新：使用单例 promise 或短期缓存，保证只有一次刷新请求
+- 路由白名单：对登录接口/页面放行，避免重定向死循环
 
-### 注意问题
+### 实现流程
 
-**1、为避免死循环问题要将登录api和登录界面设置路由白名单处理**
+| 环节             | 职责                                  | 关键点                                              |
+| ---------------- | ------------------------------------- | --------------------------------------------------- |
+| **服务端中间件** | 验证 JWT、刷新 token                  | 进入 `/api/*` 时触发，验证失败用 Refresh Token 刷新 |
+| **客户端中间件** | 调用 `/api/user/auth/me` 验证登录状态 | 处理 401 错误、token 过期情况                       |
+| **插件拦截**     | 全局拦截 401 响应                     | 弹窗提示并跳转登录页                                |
 
-- /login.post.ts：不设置会导致没有token一直跳转到登录界面的死循环
-- 登录界面，解决用户登录情况，设置jwt令牌。  
-  **同时需要注意如果并发调用api，考虑验证token复用情况（只有一次请求去刷新token，其他请求等待，刷新token后其他请求直接复用。【考虑请求防抖情况下，可以使用cache进行缓存token，考虑安全性要设置这个token的过期时间】**
+> [!NOTE]
+> **Cookie 存储**：Token 存入 Cookie（`httpOnly` 保护），浏览器自动携带，避免重复登录。注意：`httpOnly` 可防 JS 访问，但开发者工具仍可查看。
 
-**2、并发请求，Token同时刷新逻辑重复导致反复更新验证token问题**
+### 核心要点
 
-- 界面在onMounted并发请求数据时，重复验证token导致token被覆盖。  
-  **并发量不是很大时采用单例promise，只刷新一次Token。很大时可以采用promise pool或者请求去重等。特别注意并发请求到来后，验证期间再次来的请求，此时应该是等待**
+#### 🔄 并发刷新问题
 
-### 实现步骤
+| 问题                   | 解决方案                                     |
+| ---------------------- | -------------------------------------------- |
+| 多个请求同时刷新 token | 使用单例 Promise，只刷新一次，其他请求等待   |
+| 高并发场景             | Promise Pool 或请求去重 + 短期缓存（2-5 秒） |
 
-======注意路由白名单放行=======
+#### ⚠️ 路由白名单
 
-- 有accessToken没有过期，放行（refresh失不失效没有关系，这里都会放行）
-- 没有任何cookie（未登录情况）
-- accessToken过期，进入尝试刷新token阶段
-- 【这里就需要解决多并发请求的多次更新替换token问题,这里采用promise单例模式】
-- refreshToken没有过期，使用refreshToken刷新accessToken，  
-这里刷新token采用单例刷新，下一个请求来时等待promise单例完成，拿结果就返回 。
-最后单例清空promise状态，留给下一次并发请求。
-**由于这里并发请求的驼峰性，这里设置cache的过期时间几秒钟就可以了（也不会有那么多并发请求需要验证）**
+| 必须放行的路由          | 原因                     |
+| ----------------------- | ------------------------ |
+| `/login` (登录页面)     | 避免未登录时无限重定向   |
+| `/api/login` (登录接口) | 允许用户登录并获取 token |
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">01.jwt.server.ts（服务端——自动调试模式）</summary>
+### 验证流程（简化）
+
+<JwtValProcess/>
+
+**状态判断逻辑**：
+
+1. ✅ AccessToken 未过期 → 直接放行
+2. ⏰ AccessToken 过期 + RefreshToken 有效 → 刷新后放行
+3. ❌ 无 Token 或 RefreshToken 过期 → 401 错误处理
+
+::: details 01.jwt.server.ts（服务端——自动调试模式）
 
 ```ts
 // 服务端 JWT 认证中间件——jwt 令牌 token 验证
 // 存储用户上下文对象，避免在同一请求反复验证
 // 请求结束时 event.context.user 自动销毁
-
+//[!code warning]
+//并发请求时，这里需要做防抖，缓存处理。【缓存时间不能太长2~5秒即可】
 import { JWTExpired, JWTInvalid } from 'jose/errors';
 import { HTTPStatus } from '~~/shared/enums/httpEnums';
 import { whiteRoute } from '~~/shared/whiteRoute';
@@ -765,12 +759,9 @@ export default defineEventHandler(async (event) => {
 });
 ```
 
-</details>
+:::
 
-**并发请求时，这里需要做防抖，缓存处理。【缓存时间不能太长2~5秒即可】**
-
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">01.auth.client.ts（客户端验证服务端有没有成功）</summary>
+::: details 01.auth.client.ts（客户端验证服务端有没有成功）
 
 ```ts
 import { whiteRoute } from '~~/shared/whiteRoute';
@@ -803,17 +794,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 });
 ```
 
-</details>
+:::
 
 fetch-interceptor.ts插件拦截$fetch响应  
 **解决token过期401不解决，导致api一直在刷新等待问题，错误没处理，抛出401错误直接弹窗**
 
-<details>
-<summary class=" bg-blue-400  text-white cursor-pointer select-none
- text-center active:scale-95">
-fetch-interceptor.ts（插件）
-
-</summary>
+::: details fetch-interceptor.ts（插件）
 
 ```ts
 import { Modal } from 'ant-design-vue';
@@ -909,15 +895,17 @@ export default defineNuxtPlugin(() => {
 });
 ```
 
-</details>
+:::
 
 ## 动态数据渲染CLS问题
 
-在初次渲染数据时，如果采用骨架屏去占位，**如果采用简单宽度占位**，此时如果有footer页脚的话，在数据初始化完后渲染时，footer会被大量内容推下去，产生CLS（cumulative layout shift累计布局偏移）的值会迅速升高。
+在初次渲染数据时，如果采用骨架屏去占位，
 
-所以**解决方案**是：动态预估实际内容数量、或者预留合适空间避免布局偏移。
+> [!WARNING]
+> **如果采用简单宽度占位**，此时如果有footer页脚的话，在数据初始化完后渲染时，footer会被大量内容推下去，产生CLS（cumulative layout shift累计布局偏移）的值会迅速升高。
 
-如果是在第一个数据已经知道的情况下，预估第一个数据的布局所占用的长和宽，然后根据总数据的length去动态设置骨架屏的占位
+> [!IMPORTANT]
+> **解决方案**：动态预估实际内容数量、或者预留合适空间避免布局偏移。如果是在第一个数据已经知道的情况下，预估第一个数据的布局所占用的长和宽，然后根据总数据的length去动态设置骨架屏的占位
 
 **还有一种方法就是虚拟滚动**，以vueuse中useVirtualList为例，也差不多，但是要限制容器高度触发滚动。
 
@@ -959,3 +947,6 @@ defineExpose({} as ButtonInstance);
 </template>
 ```
 
+## DevTools 和 Env提示
+
+[详情见](./Vite.md#vite-dev-tools-和-增强import-meta提示)

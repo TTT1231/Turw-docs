@@ -1,11 +1,12 @@
 # vue核心
 
 针对定义对象vue2抛出错误的问题，vue3结合使用**ES6**中的Reflect（对象操作工具箱），  
-相比Object.defineProperty()【vue2】成功返回对象，失败抛出错的头疼问题，  
+相比Object.defineProperty()【vue2】成功返回对象，失败抛出错的头疼问题。
+
 该结合Reflect.get/set直接返回true or false这样就让错误处理更加优雅  
 提升数据劫持的灵活性和安全性。同时也完美解决了this指向windows或undefined错误。
 
-```js
+```js{3}
 const obj = { name: 'testname' };
 const proxy = new Proxy(obj, {
    //使得receiver始终指向该代理对象proxy,避免指向问题
@@ -26,35 +27,37 @@ const proxy = new Proxy(obj, {
 // ===== 核心数据结构详解 =====
 // 第三层：Dep - 依赖集合（最内层）
 // 就是一个装副作用函数的盒子
-type Dep = Set<Function>
+type Dep = Set<Function>                 // [!code warning]
 // 例子：假设有3个副作用函数都用到了 obj.name
-const nameDepSet = new Set()
-nameDepSet.add(effect1)  // 副作用函数1
-nameDepSet.add(effect2)  // 副作用函数2  
-nameDepSet.add(effect3)  // 副作用函数3
+const nameDepSet = new Set()             // [!code warning]
+nameDepSet.add(effect1)  // 副作用函数1   // [!code warning]
+nameDepSet.add(effect2)  // 副作用函数2   // [!code warning]
+nameDepSet.add(effect3)  // 副作用函数3   // [!code warning]
 // 现在 nameDepSet 就是 obj.name 属性的依赖集合
 // 第二层：KeyToDepMap - 属性映射表（中间层）
 // 一个对象有多个属性，每个属性都有自己的依赖集合
-type KeyToDepMap = Map<string, Dep>
+type KeyToDepMap = Map<string, Dep>     // [!code warning]
 // 例子：obj 对象有 name 和 age 两个属性
-const objDepsMap = new Map()
-objDepsMap.set('name', nameDepSet)    // name属性 -> 它的依赖集合
-objDepsMap.set('age', ageDepSet)      // age属性 -> 它的依赖集合
+const objDepsMap = new Map()           // [!code warning]
+objDepsMap.set('name', nameDepSet)    // name属性 -> 它的依赖集合  // [!code warning]
+objDepsMap.set('age', ageDepSet)      // age属性 -> 它的依赖集合   // [!code warning]
 // 第一层：targetMap - 对象映射表（最外层）  
 // 全局可能有多个响应式对象，每个对象都有自己的属性映射表
-const targetMap = new WeakMap<object, KeyToDepMap>()
+const targetMap = new WeakMap<object, KeyToDepMap>()              // [!code warning]
 ```
 
 ## 游览器重绘和回流对响应式数据影响
 
-当响应式数据发送变化，然后需要实时渲染页面,vue就会发生重绘，使得数据能够实时展示。  
-而回流只是css外观风格发生改变，不会受到响应式数据的影响。
+当响应式数据发生变化，然后需要实时渲染页面,vue就会发生**重绘**，使得数据能够实时展示。  
+而**回流**只是css外观风格发生改变，不会受到响应式数据的影响。
 
 ## Suspense消除异步传染核心
 
-核心针对**异步源头中的Promise**将异步转化同步，以此来消除异步传染性。  
-但是会使的同步代码逻辑执行两次。也即第一段同步代码执行到目标【异步改同步】直接抛出promise中断同步执行队列，  
-第二段重新执行同步代码【此时这里已经出结果了，就屏蔽了异步特性】。示例：
+核心针对**异步源头中的Promise**将异步转化同步，以此来消除异步传染性。
+
+::: warning
+但是会使的同步代码逻辑执行两次。也即第一段同步代码执行到目标【异步改同步】直接抛出promise中断同步执行队列,第二段重新执行同步代码,此时这里已经出结果了，就屏蔽了异步特性
+:::
 
 ```ts
 //Promise缓存
@@ -69,7 +72,7 @@ const cache: {
 //当前正在进行的Promise
 let currentPromise: Promise<any> | null = null;
 
-//异步源头，转化同步代码===========主要解决这里=========
+//异步源头，转化同步代码===========主要解决这里========= // [!code warning]
 function asyncToSync() {
    const targetRequestPromise = () => $fetch('example', { method: '[target]' }); //nuxt
 

@@ -2,9 +2,11 @@
 import { computed, onMounted, ref } from 'vue';
 import { Skeleton as ASkeleton } from 'ant-design-vue';
 
+type ShowImgType = 'APP-ERROR' | 'FRONTEND-ERROR' | 'LAYERS-STRUCT';
+
 const props = defineProps({
    showImg: {
-      type: String,
+      type: String as () => ShowImgType,
       required: true,
       validator: (value: string) => {
          return ['APP-ERROR', 'FRONTEND-ERROR', 'LAYERS-STRUCT'].includes(value);
