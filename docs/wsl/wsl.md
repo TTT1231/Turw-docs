@@ -1,6 +1,6 @@
 # WSL
 
-wsl2 在windows集成 linux。
+wsl2 在windows集成 linux，主要就是解决网络代理问题，docker能够访问外网拉取镜像。
 
 ## Quick Start
 
@@ -20,6 +20,8 @@ sudo apt update && sudo apt install openssh-server
 
 **4、修改 SSH 配置并添加以下内容**
 
+使得能够**允许通过密码验证登录 SSH 服务器**。
+
 ```terminal
 sudo nano /etc/ssh/sshd_config
 ```
@@ -36,25 +38,38 @@ PasswordAuthentication yes
 sudo service ssh start
 ```
 
-## network proxy(Ubnutu为例)
+## 网络代理 (Ubuntu 为例)
 
-WSL2默认网关（该网关充当linux与windows通信桥梁，linux所有流量都会经过这个网关，然后转化到实机windows发送请求）-【Ubnutu】,**下面这个默认网关，会在系统重启会重新分配要注意**，`用于WSL2访问windows`
+::: warning 特别注意
+下面代理，属于`VPN`网络代理请求转发，本质上还是`VPN`。
+:::
 
-```terminal
+**1. 获取默认网关（让 WSL2 访问 Windows）**
+
+- 默认网关负责在 Linux 与 Windows 之间转发网络流量
+- **重启 Windows 后网关地址会重新分配**
+
+```bash
 ip route show default
 ```
 
-WSL2的IP地址（inet第一个地址就是），也就是WSL2在windows下IP地址，windows只能通过这个IP访问WSL2，重启这个地址会**重新分配**，`用于windows访问WSL2`
+**2. 获取 WSL2 的 IP（让 Windows 访问 WSL2）**
 
-```terminal
+- `eth0` 网卡中的 `inet` 字段即为当前 WSL2 IP
+- **每次重启都会变动**
+
+```bash
 ip addr show eth0
 ```
 
-**WSL代理**，这里我将是windows代理，所以我将WSL2访问windows地址代理到我在windows下的代理地址（我是windows端口9876代理）,这里是临时配置由于我本机的代理会关闭，所以要的时候打开一下即可【**windows代理要开启允许局域网连接**】，类似网络请求转发。
+**3. 配置 WSL 代理（将流量转发至 Windows 代理端口 9876）**
 
-```terminal
+- 确保 Windows 代理已开启并勾选「允许局域网连接」
+- 以下为临时设置，关闭终端或代理后需重新执行
+
+```bash
 export WIN_IP=$(ip route show default | awk '{print $3}')
-export http_proxy="http://$WIN_IP:9876"
-export https_proxy="http://$WIN_IP:9876"
-export all_proxy="socks5://$WIN_IP:9876"
+export http_proxy="http://${WIN_IP}:9876"
+export https_proxy="http://${WIN_IP}:9876"
+export all_proxy="socks5://${WIN_IP}:9876"
 ```

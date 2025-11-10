@@ -74,7 +74,7 @@ export default defineConfig({
          {
             text: 'electron',
             collapsed: true,
-            link: '/frontdesign/electron'
+            link: '/electron'
          },
          {
             text: '代码风格和规范',

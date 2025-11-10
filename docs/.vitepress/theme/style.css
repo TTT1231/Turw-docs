@@ -197,3 +197,68 @@
    color: var(--vp-button-nest-active-text);
    background: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%);
 }
+
+/* Code Group: 在标签前显示语言徽标（基于 data-title 后缀匹配） */
+.vp-code-group .tabs label {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.vp-code-group .tabs label::before {
+   content: attr(data-lang);
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   padding: 2px 6px;
+   border-radius: 4px;
+   font-size: 12px;
+   font-weight: 600;
+   text-transform: uppercase;
+   line-height: 1;
+   background: var(--vp-c-default-soft);
+   color: var(--vp-c-default-1);
+   border: 1px solid var(--vp-c-default-2);
+}
+
+/* 通过属性选择器匹配文件后缀，设置不同语言的徽标内容与颜色 */
+.vp-code-group .tabs label[data-title$=".js"]::before {
+   content: "JS";
+   background: rgba(247, 223, 30, 0.18);
+   color: #a78900;
+}
+.vp-code-group .tabs label[data-title$=".ts"]::before {
+   content: "TS";
+   background: rgba(65, 132, 245, 0.12);
+   color: #1b6ae6;
+}
+.vp-code-group .tabs label[data-title$=".vue"]::before {
+   content: "VUE";
+   background: rgba(65, 184, 131, 0.12);
+   color: #3fb27f;
+}
+.vp-code-group .tabs label[data-title$=".json"]::before {
+   content: "JSON";
+   background: rgba(255, 159, 67, 0.1); /* 柑橘色背景 */
+   color: #b45309; /* 暗橙色文字 */
+}
+.vp-code-group .tabs label[data-title$=".md"]::before {
+   content: "MD";
+   background: rgba(168, 85, 247, 0.12); /* 紫色背景 */
+   color: #7c3aed; /* 紫色文字 */
+}
+/* 支持 .sh 和 .bash，两者都需要 ::before */
+.vp-code-group .tabs label[data-title$=".sh"]::before,
+.vp-code-group .tabs label[data-title$=".bash"]::before {
+   content: "SH";
+   background: rgba(100, 116, 139, 0.08); /* 中性灰背景 */
+   color: #374151; /* 深灰文字 */
+}
+/*  .d.ts 徽章，美观且与 TS 有区别 */
+.vp-code-group .tabs label[data-title$=".d.ts"]::before {
+   content: ".DTS";
+   background: rgba(14, 165, 233, 0.1); /* 青蓝背景 */
+   color: #0369a1; /* 深青文字 */
+   padding: 2px 8px; /* 稍微加宽以适配点号 */
+   font-weight: 700;
+}
