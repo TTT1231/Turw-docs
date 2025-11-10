@@ -14,7 +14,7 @@ hero:
         link: /frontdesign/common-problems
       - theme: alt
         text: Nuxt FAQ
-        link: /frontdesign/nuxt/config-solutions
+        link: /nuxt/config-solutions
       - theme: nest
         text: Nest FAQ
         link: /server/Nestjs

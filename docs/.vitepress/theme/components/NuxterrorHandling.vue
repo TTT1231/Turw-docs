@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
-import { Skeleton as ASkeleton } from 'ant-design-vue';
+import { Skeleton as ASkeleton, Image as AImage } from 'ant-design-vue';
 
 type ShowImgType = 'APP-ERROR' | 'FRONTEND-ERROR' | 'LAYERS-STRUCT';
 
@@ -34,12 +34,28 @@ onMounted(() => {
 
 <template>
    <a-skeleton :loading="isLoading" active>
-      <!-- 第三张图片的特殊布局 -->
-      <div v-if="isLayersStruct" class="min-h-[800px] aspect-[12/8] relative">
-         <img :src="currentImgSrc" :alt="showImg" class="h-[300px] max-w-[300px] object-cover" />
+      <!-- 第三张图片使用预览功能 -->
+      <div v-if="isLayersStruct" class="w-full flex justify-center">
+         <a-image
+            :src="currentImgSrc"
+            :alt="showImg"
+            :preview="{
+               maskClassName: 'custom-preview-mask'
+            }"
+            class="max-w-full h-auto cursor-pointer"
+         />
       </div>
 
-      <!-- 其他图片的默认显示方式 -->
-      <img v-else :src="currentImgSrc" :alt="showImg" />
+      <!-- 其他图片也使用预览功能，体验更统一 -->
+      <div v-else class="w-full flex justify-center">
+         <a-image
+            :src="currentImgSrc"
+            :alt="showImg"
+            :preview="{
+               maskClassName: 'custom-preview-mask'
+            }"
+            class="max-w-full h-auto cursor-pointer"
+         />
+      </div>
    </a-skeleton>
 </template>
