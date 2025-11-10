@@ -6,6 +6,7 @@ export default defineConfig({
    base: '/Turw-docs/', // Set to your desired base path
    title: '我的文档',
    description: '日常学习',
+   lastUpdated: true,
    head: [['link', { rel: 'icon', href: '/Turw-docs/assets/favicon.ico' }]],
    themeConfig: {
       logo: '/assets/logo.svg',
@@ -19,6 +20,10 @@ export default defineConfig({
             ]
          }
       ],
+      lastUpdated: {
+         text: '最后更新于'
+      },
+      search: { provider: 'local' },
 
       sidebar: [
          {
