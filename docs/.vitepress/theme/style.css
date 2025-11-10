@@ -143,10 +143,10 @@
 /* 侧边栏文字不可选中 */
 .VPSidebar .VPSidebarItem .text,
 .VPSidebar .VPSidebarGroup .title {
-   user-select: none;
    -webkit-user-select: none;
    -moz-user-select: none;
    -ms-user-select: none;
+   user-select: none;
 }
 
 /* Enhanced button effects for all themes */
