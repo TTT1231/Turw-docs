@@ -2,13 +2,11 @@
 
 编译器爱好设置**settings.json**。
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   .vscode/settings.json
-</summary>
+::: details .vscode/settings.json
 
 ```json
 {
+   //[!code warning]
    // =============================== 编辑器爱好设置 ================================
    // 缩进与格式化
    "editor.tabSize": 3, // 制表符宽度为3空格（匹配 Prettier）
@@ -25,7 +23,8 @@
    "editor.cursorBlinking": "expand", // 光标闪烁带扩展效果
    "editor.cursorSmoothCaretAnimation": "on", // 启用平滑光标移动动画
    "editor.largeFileOptimizations": true, // 优化大文件编辑性能
-   // ===== 代码辅助功能 =====
+   //[!code warning]
+   // =============================== 代码辅助功能 ================================
    // 智能建议
    "editor.inlineSuggest.enabled": true, // 启用内联代码建议（如Copilot）
    "editor.suggestSelection": "recentlyUsedByPrefix", // 根据前缀推荐最近使用的补全
@@ -34,7 +33,8 @@
    "editor.bracketPairColorization.enabled": true, // 彩色括号配对
    "editor.autoClosingBrackets": "beforeWhitespace", // 智能括号闭合
    "editor.autoClosingOvertype": "always", // 自动覆盖闭合符号
-   // ===== TypeScript专项优化 =====
+   //[!code warning]
+   // ========================== TypeScript专项优化 ===============================
    "typescript.inlayHints.enumMemberValues.enabled": true, // 显示枚举值提示
    "typescript.preferences.preferTypeOnlyAutoImports": true, // 优先使用import type
    "typescript.preferences.includePackageJsonAutoImports": "on", //允许从package.json的依赖中自动导入模块
@@ -75,6 +75,7 @@
       "vite.renderer.config.ts": "vite.*.config.ts",
       "forge.config.ts": "forge.env.d.ts"
    },
+   //[!code warning]
    // =============================== 插件配置 ================================
    "better-comments.tags": [
       {
@@ -143,14 +144,11 @@
 }
 ```
 
-</details>
+:::
 
 vscode插件推荐
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   .vscode/extensions.json
-</summary>
+::: details .vscode/extensions.json
 
 ```json
 {
@@ -188,20 +186,26 @@ vscode插件推荐
       // Git 相关插件
       "mhutchie.git-graph",
       // 自动重命名标签
-      "formulahendry.auto-rename-tag"
+      "formulahendry.auto-rename-tag",
+      //pnpm版本
+      "pflannery.vscode-versionlens"
    ]
 }
 ```
 
-</details>
+:::
 
+::: warning
 由于这里使用的是`vscode-icons`插件，因此所支持的图标如下:
 
-[文件夹图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFolders){target="\_blank" rel="noopener noreferrer"}
+[文件夹图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFolders)
 
-[文件图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFiles){target="\_blank" rel="noopener noreferrer"}
+[文件图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFiles)
 
-保存文件vscode自动格式化配置 **editorconfig**
+没有的话，就只能按照文档自己配置自定义的文件夹图标和文件图标
+:::
+
+跨编译器风格统一 **.editorconfig**
 
 ```json
 root = true
@@ -218,7 +222,7 @@ quote_type = single
 
 [*.{yml,yaml,json}]
 indent_style = space
-indent_size = 3
+indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
