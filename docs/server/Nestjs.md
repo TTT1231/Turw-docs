@@ -8,17 +8,32 @@ outline: deep
 
 ### 响应Observable流程
 
-整个响应流程指：**真正开始处理请求到返回响应数据结束**，考虑一个请求生命周期如下：
+整个响应流程指：**真正开始处理请求到返回响应数据结束**的完整过程。
 
-1、请求进入 → 2、中间件 → 3、守卫 → 4、拦截器（Before） → 5、管道 → 6、控制器方法（业务） → 7、拦截器（After） → 8、响应发出
+#### 请求生命周期
 
-**这里就是从4→7这个过程，也就是响应式编程流程**，其他的算http生命周期。
+```
+请求进入 → 中间件 → 守卫 → 拦截器(Before) → 管道 → 控制器 → 拦截器(After) → 异常过滤器 → 响应发出
+```
 
-**Nestjs**使用Observable 来统一内部处理的**所有的抽象模型和流程**【统一输出，例如输出一个number,Promise,Observer等等，nest统一使用Observable处理，特别是`微服务`、`WebSocket`、`流操作`等等】，内部使用**RxJS**的解决**异步操作**的便利性和功能强大性。
+#### 响应式编程流程
 
-考虑这样一个`RxJS`中的of
+- **核心阶段**：拦截器(Before) → 管道 → 控制器 → 拦截器(After)
+- **其他阶段**：属于HTTP生命周期范畴
 
-```ts
+#### Observable 在 NestJS 中的作用
+
+**NestJS** 使用 **Observable** 统一处理所有抽象模型和流程：
+
+- 统一输出格式（number、Promise、Observer等）
+- 特别适用于：微服务、WebSocket、流操作等
+- 内部借助 **RxJS** 解决异步操作的便利性和强大功能
+
+看下面的代码，Nestjs响应式设计与下面类似。
+
+::: code-group
+
+```ts [of.ts]
 //RxJX of
 //from方法跟of类似，不过from可以从数组、迭代对象、Promise或者类Observable的数据源创建一个Observable
 function of(value: any): Observable {
@@ -38,9 +53,7 @@ observables.subscribe({
 });
 ```
 
-那么`Nestjs`响应式设计类似，我们看看这个拦截器的内部自动实现,**核心实现与上诉类似**
-
-```ts
+```ts [handle.ts]
 //抽象类型
 export interface CallHandler<T = any> {
    /**
@@ -89,7 +102,11 @@ return next.handle().pipe(
 );
 ```
 
-**在Controller方法中，最后的结果也会被Observable包裹，统一返回格式，统一拦截器的Obserable和管道的链式调用触发**
+:::
+
+::: tip 提示
+在Nestjs中Controller方法中，最后的结果也会被Observable包裹，统一返回格式，统一拦截器的Obserable和管道的链式调用触发
+:::
 
 ### DI思想
 
@@ -103,9 +120,18 @@ return next.handle().pipe(
 - 方法装饰器,接受类的原型、方法名、方法描述符作为参数，`修改方法实现`
 - 属性装饰器,接受类的原型和属性名作为参数，可以对属性进行元数据`标记`
 
-<span class=" text-red-400">注意：</span>截至`2025/10/12` Nestjs还是使用stage2写法，因此它会自动添加元数据`design:paramtypes`但这种不安全，同时由于是stage2写法所有在tsconfig.json中必须要配置`emitDecoratorMetadata`和`experimentalDecorators`**值为true**，否则其内部提供的元数据会失效，DI和AOP会失效，工厂函数创建实例失败。
+::: warning 注意
+截至`2025/10/12` Nestjs还是使用stage2写法，因此它会自动添加元数据`design:paramtypes`但这种不安全，它试图将静态拓展到动态违背了TS设计原则，因此在stage3中被移除了。
 
-**使用示例:【ts5标准 (Stage 3 Decorators)】**
+同时由于是stage2写法所有在tsconfig.json中必须要配置`emitDecoratorMetadata`和`experimentalDecorators`**值为true**，否则其内部提供的元数据会失效，DI和AOP会失效，工厂函数创建实例失败。
+:::
+
+> TS5+版本默认是开启stage3的，因此如果想要使用stage3就需要关闭stage2的tsconfig，也就是`experimentalDecorators`和`emitDecoratorMetadata`
+
+> [!IMPORTANT]
+> 截止2025/11月份，nestjs目前还是使用stage2
+
+::: details stage3示例用法
 
 ````ts
 /**
@@ -283,6 +309,8 @@ export function propertyDecorator<T extends Object, Value>() {
 ```ts
 ````
 
+:::
+
 ## 元数据处理实践
 
 针对**Nestjs**提供的两种元数据处理`Reflector`和`MetadataScanner`两者侧重点不同，虽然都是简化元数据处理，两者在使用场景和侧重点不同。
@@ -297,12 +325,16 @@ export function propertyDecorator<T extends Object, Value>() {
 
 - 关注：**方法元数据**获取，倾向结构化和静态的扫描
 - 主要用在静态扫描和自动化注册以及模块化和配置
-- **现在只保留了getAllMethodNames**，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
+
+::: tip
+MetadataScanner现在只保留了getAllMethodNames，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
+:::
 
 ## 缓存监控与埋点
 
-详情代码：[stackblitz](https://stackblitz.com/edit/ttt1231-nestjs-cachemonoitor?file=README.md){target="\_blank" rel="noopener noreferrer"}  
-详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor){target="\_blank" rel="noopener noreferrer"}
+> 详情代码：[stackblitz](https://stackblitz.com/edit/ttt1231-nestjs-cachemonoitor?file=README.md)
+
+> 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor)
 
 ## 动态模块配置验证与实现
 
@@ -316,47 +348,45 @@ export function propertyDecorator<T extends Object, Value>() {
 | register |    注册     | 强调行为和灵活性 |
 |  Async   |    异步     |  强调时机和依赖  |
 
-考虑下面几种模块配置方法**forRoot**和**register**以及**asyncRegister**
-
-- forRoot:为根模块进行配置,通常只在AppModule中调用一次,配合@Global将其provider配置到全局完成全局provider的提供，也可以使用动态模块的global属性
-- register:为需要功能的模块中调用,需要提供moduleId用来标识不同实例,交由nestjs容器来管理.
-- asyncRegister:异步配置,可以使用其他提供者的provider进行配置,注意如果声明了global那么其内部提供的moduleId中token会被覆盖,也即是这个moduleId的token被全局注册了,显然违背了模块设计思想,因为根本用不着,全局模块提供的服务应该是唯一的单例的可复用的.
+> [!IMPORTANT] 模块配置方法
+>
+> - forRoot:为根模块进行配置,通常只在AppModule中调用一次,配合@Global将其provider配置到全局完成全局provider的提供，也可以使用动态模块的global属性
+> - register:为需要功能的模块中调用,需要提供moduleId用来标识不同实例,交由nestjs容器来管理.
+> - asyncRegister:异步配置,可以使用其他提供者的provider进行配置.
+>
+> 注意这个asyncRegister，如果声明了global那么其内部提供的moduleId中token会被覆盖,也即是这个moduleId的token被全局注册了,显然违背了模块设计思想,因为根本用不着,全局模块提供的服务应该是唯一的单例的可复用的
 
 ### 实际使用
 
-详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-dynamicmodule-rte9xnqd){target="\_blank" rel="noopener noreferrer"}  
-详情Github仓库：[Github](https://github.com/TTT1231/nestjs-dynamicmodule-rte9xnqd){target="\_blank" rel="noopener noreferrer"}
+> 详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-dynamicmodule-rte9xnqd)
+
+> 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-dynamicmodule-rte9xnqd)
 
 ## passport策略与webSocket
 
-详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-passport-websocket-zwhyb6vz?file=README.md){target="\_blank" rel="noopener noreferrer"}  
-详情Github仓库：[Github](https://github.com/TTT1231/nestjs-passport-websocket-zwhyb6vz){target="\_blank" rel="noopener noreferrer"}
+> 详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-passport-websocket-zwhyb6vz?file=README.md)
+
+> 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-passport-websocket-zwhyb6vz)
 
 ## redis多节点部署
 
-详情Github仓库：[Github](https://github.com/TTT1231/redis-single-deploy){target="\_blank" rel="noopener noreferrer"}
+> 详情Github仓库：[Github](https://github.com/TTT1231/redis-single-deploy)
 
-## ws适配器
+## ws适配器使用
 
-**main.ts**
+::: code-group
 
-```ts
+```ts [main.ts]
 import { WsAdapter } from '@nestjs/platform-ws';
 async function bootstrap() {
    const app = await NestFactory.create(AppModule);
-   //+
-   app.useWebSocketAdapter(new WsAdapter(app));
+   app.useWebSocketAdapter(new WsAdapter(app)); //[!code ++]
    await app.listen(process.env.PORT ?? 3000);
    console.log(`Application is running on: ${await app.getUrl()}`);
 }
 ```
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   Usages in gateway
-</summary>
-
-```ts
+```ts [usage-gateway.ts]
 import {
    WebSocketGateway,
    SubscribeMessage,
@@ -443,11 +473,7 @@ export class WsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 }
 ```
 
-</details>
-
-**use in frontend**
-
-```ts
+```ts [usage-frontend.ts]
 const ws = new WebSocket('ws://localhost:3001/ws');
 ws.onopen = () => {
    console.log('WebSocket 连接已建立');
@@ -468,6 +494,8 @@ ws.onmessage = (event) => {
    }
 };
 ```
+
+:::
 
 ## 实用工具函数
 
@@ -510,9 +538,9 @@ export function extractConfigFromKeys<T>(
 
 ### cookies
 
-**express版本**
+::: code-group
 
-```ts
+```ts [express-V.ts]
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
 
@@ -596,9 +624,7 @@ export const Cookies = createParamDecorator(
 );
 ```
 
-**fastify版本**
-
-```ts
+```ts [fastify-V.ts]
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 
@@ -689,9 +715,9 @@ export const Cookies = createParamDecorator(
 );
 ```
 
-**跨平台通用（注意类型安全）**
-
-```ts
+```ts [common-V.ts]
+//[!code warning]
+//特别要注意类型安全
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 type CookieOptions<T = string> = {
@@ -772,3 +798,5 @@ export const Cookies = createParamDecorator(
    }
 );
 ```
+
+:::
