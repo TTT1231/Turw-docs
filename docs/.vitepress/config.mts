@@ -13,15 +13,24 @@ export default defineConfig({
       nav: [
          { text: '主页', link: '/' },
          {
-            text: '前端',
+            text: '快速访问',
             items: [
-               { text: 'FAQ', link: '/frontdesign/common-problems' },
-               { text: 'Nuxt全栈', link: '/api-examples' }
+               { text: '前端FAQ', link: '/frontdesign/common-problems' },
+               { text: 'NuxtFAQ', link: '/nuxt/config-solutions' },
+               { text: 'electron', link: '/electron' },
+               { text: 'Node', link: '/server/Nodejs' },
+               { text: 'Nest', link: '/server/Nestjs' },
+               { text: 'vscode配置', link: '/code-style/eslint-format' },
+               { text: '代码格式化', link: '/code-style/vscode-setting' }
             ]
          }
       ],
       lastUpdated: {
          text: '最后更新于'
+      },
+      editLink: {
+         pattern: 'https://github.com/TTT1231/Turw-docs/edit/main/docs/:path',
+         text: '在 GitHub 上编辑此页面'
       },
       search: { provider: 'local' },
 
