@@ -1,12 +1,11 @@
 # VSCode设置
 
-编译器爱好设置**settings.json**。
+## 配置文件配置
 
-::: details .vscode/settings.json
+::: code-group
 
-```json
+```json{2,18,27,68} [settings.json]
 {
-   //[!code warning]
    // =============================== 编辑器爱好设置 ================================
    // 缩进与格式化
    "editor.tabSize": 3, // 制表符宽度为3空格（匹配 Prettier）
@@ -23,7 +22,6 @@
    "editor.cursorBlinking": "expand", // 光标闪烁带扩展效果
    "editor.cursorSmoothCaretAnimation": "on", // 启用平滑光标移动动画
    "editor.largeFileOptimizations": true, // 优化大文件编辑性能
-   //[!code warning]
    // =============================== 代码辅助功能 ================================
    // 智能建议
    "editor.inlineSuggest.enabled": true, // 启用内联代码建议（如Copilot）
@@ -33,7 +31,6 @@
    "editor.bracketPairColorization.enabled": true, // 彩色括号配对
    "editor.autoClosingBrackets": "beforeWhitespace", // 智能括号闭合
    "editor.autoClosingOvertype": "always", // 自动覆盖闭合符号
-   //[!code warning]
    // ========================== TypeScript专项优化 ===============================
    "typescript.inlayHints.enumMemberValues.enabled": true, // 显示枚举值提示
    "typescript.preferences.preferTypeOnlyAutoImports": true, // 优先使用import type
@@ -75,7 +72,6 @@
       "vite.renderer.config.ts": "vite.*.config.ts",
       "forge.config.ts": "forge.env.d.ts"
    },
-   //[!code warning]
    // =============================== 插件配置 ================================
    "better-comments.tags": [
       {
@@ -144,13 +140,7 @@
 }
 ```
 
-:::
-
-vscode插件推荐
-
-::: details .vscode/extensions.json
-
-```json
+```json [extensions.json]
 {
    "recommendations": [
       // vue 支持
@@ -195,6 +185,8 @@ vscode插件推荐
 
 :::
 
+## 插件注意
+
 ::: warning
 由于这里使用的是`vscode-icons`插件，因此所支持的图标如下:
 
@@ -205,9 +197,11 @@ vscode插件推荐
 没有的话，就只能按照文档自己配置自定义的文件夹图标和文件图标
 :::
 
-跨编译器风格统一 **.editorconfig**
+## 跨编译器风格统一
 
-```json
+::: code-group
+
+```json[.editorconfig]
 root = true
 
 [*]
@@ -228,3 +222,5 @@ indent_size = 2
 trim_trailing_whitespace = false
 
 ```
+
+:::

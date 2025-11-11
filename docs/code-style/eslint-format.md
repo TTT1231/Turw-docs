@@ -18,13 +18,11 @@ pnpm add -D eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-
 
 ```
 
-## 配置eslint
+## 配置eslint和prettier
 
-创建**eslint.config.mjs**配置文件，并配置如下内容
+::: code-group
 
-::: details eslint.config.mjs配置
-
-```ts
+```ts [eslint.config.mjs]
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import prettierConfig from 'eslint-config-prettier';
@@ -83,15 +81,7 @@ export default [
 ];
 ```
 
-:::
-
-## 配置prettier
-
-创建`.prettierrc.json`和`.prettierignore`并做如下配置
-
-::: details .prettierrc.json
-
-```json
+```json [.prettierrc.json]
 {
    "semi": true,
    "trailingComma": "all",
@@ -111,11 +101,7 @@ export default [
 }
 ```
 
-:::
-
-::: details .prettierignore
-
-```
+```[.prettierignore]
 # Dependencies
 node_modules/
 pnpm-lock.yaml
