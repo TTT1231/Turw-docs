@@ -10,11 +10,13 @@ outline: deep
 
 Prisma将表看成一个对象(model)，所有操作都看作对象的操作，将SQL操作表迁移到对象操作，如果考虑**性能优化** 的情况下，使用`prisma`会有性能损失，因为它会将对象操作转化SQL有性能损失，同时如果涉及子查询、复杂SQL编写，其缺点显著。
 
-**简单查询用ORM，复杂查询考虑性能的话回退SQL编写的混合策略**
+::: tip 提示
+简单查询用ORM，复杂查询考虑性能的话回退SQL编写的混合策略
+:::
 
 ### prisma使用
 
-为了迁移的SQL迁移文件有更好的注释和简化注释操作，这里用husky对迁移文件自动注入**SQL头**注释信息，对于一些自定义注释则使用bash手动编写
+为了迁移的SQL迁移文件有更好的注释和简化注释操作，这里用husky对迁移文件自动注入**SQL头**注释信息，对于一些自定义注释则使用bash手动编写。
 
 **Install husky**
 
@@ -28,14 +30,10 @@ pnpm add --save-dev husky
 pnpm exec husky init
 ```
 
-**然后编辑git commit提交之前的hook（pre-commit）**
+**然后编辑.husky的git commit提交之前的hook（pre-commit）**
+::: code-group
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   pre-commit内容
-</summary>
-
-```sh
+```sh [pre-commit]
 # .husky/pre-commit
 
 # Prettier 格式化
@@ -64,14 +62,12 @@ done
 git update-index --again
 ```
 
-</details>
+:::
 
-**创建自定义的sh，在生成迁移完后执行自动添加自定义信息**
+**创建自定义的sh，在生成迁移完后执行自动添加自定义信息**，这里主要就是执行脚本添加头部信息，
+脚本是手动执行，如果要自动执行直接在`package.json`配置命令即可。
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   自定义头配合github commit
-</summary>
+> 但是具体的详细信息要手动添加，因为这是不清晰的模糊的。
 
 ```sh
 #!/bin/bash
@@ -106,11 +102,10 @@ find "$MIGRATIONS_DIR" -name "migration.sql" | while read -r file; do
 done
 ```
 
-</details>
+> [!IMPORTANT] 注意
+> 上面两个插入SQL头注释的prisma目录，按照实际目录进行更改，这里是以prisma/migrations（项目根目录下）。
 
-<span class="text-red-400">
-   注意上面两个插入SQL头注释的prisma目录，按照实际目录进行更改，这里是以prisma/migrations（项目根目录下）
-</span>
+> 上面配置`sh`目的就是为了在进入prisma迁移文件中，能够一眼就能看到所改动的内容
 
 **安装prisma**
 
@@ -141,19 +136,25 @@ npx prisma migrate deploy
 
 针对prisma中迁移历史，可以进行更改，但是前提是要保证该更改不会影响其它表，这样做会造成历史混乱，所以直接使用**前驱**修改，也即增加一个前驱历史这个历史删除或者修改之前的表。
 
-**注意：**，由于prisma7中output必填，导致**Prisma客户端**被生成到了指定的ouput目录中，而每次npx prisma generate 的时候会变化，当使用自定义引入类型文件时注意引入的生成路径。该方法解决客户端类型报错问题。`import { PrismaClient } from '../generated/prisma/index';`其中**后面的from对应output中的路径**
+> [!IMPORTANT]
+> 由于prisma7+中output必填，导致**Prisma客户端**被生成到了指定的ouput目录中，而每次npx prisma generate 的时候会变化，当使用自定义引入类型文件时注意引入的生成路径。该方法解决客户端类型报错问题。
+>
+> 例如`import { PrismaClient } from '../generated/prisma/index';`其中后面的from对应output中的路径，此时就是依赖动态生成的客户端。
 
 ### prisma打包问题
 
 **esbuild打包问题**
 
-如果在prisma手动配置了output位置不是`node_modules`，`@prisma/client`包在运行时动态查找时会导致找不到这个模块，**同时在项目中直接引入@prisma/client包找不到任何东西**
+> [!CAUTION]
+> 如果在prisma手动配置了output位置不是`node_modules`，`@prisma/client`包在运行时动态查找时会导致找不到这个模块，导致直接引入@prisma/client包找不到任何东西，也即类型错误。
 
-虽然可以手动引入prisma生成的client但是esbuild进行打包运行就会报错模块找不到问题，一个简单方法**直接默认或者手动生成进node_modules目录**与@prisma/client动态查找包就会生效，esbuild配置也简单。<span class="text-red-400">但是打包后的dist目录不能脱离`node_modules`,因为SQL的执行依赖prisma client，脱离node引入模块时就会失败。</span>
+虽然可以手动引入prisma生成的client但是esbuild进行打包运行就会报错模块找不到问题，一个简单方法**直接默认或者手动生成进node_modules目录**与@prisma/client动态查找包就会生效，esbuild配置也简单。
 
-**schema.prisma**
+但是打包后的dist目录不能脱离`node_modules`,因为SQL的执行依赖prisma client，脱离node引入模块时就会失败。
 
-```ts
+::: code-group
+
+```ts [schema.prisma]
 
 generator client {
   provider = "prisma-client-js"
@@ -166,21 +167,21 @@ generator client {
 
 ```
 
+:::
+
 **import type问题**
 
 `import {PrismaClient} from '@prisma/client'`这里会出错，连接问题，解决方案时在`package.json`中的dependencies中添加:
 
 ```json
 "dependencies": {
-   //....
-   +
-   "prisma-client": "file:./generated/prisma"
+   "prisma-client": "file:./generated/prisma" //[!code ++]
 },
 ```
 
 然后执行`pnpm i`链接到这个包既可以正常导入了
 
-如果嫌弃上诉过程麻烦，也可以在构建时执行`pnpm add <url>`,这个url指向构建好的PrismaClient，注意地址问题，也就是这个url工作目录也就是当前工作目录是处于`项目根目录的`
+如果嫌弃手动dependencies过程麻烦，也可以在构建时执行`pnpm add <url>`,这个url指向构建好的PrismaClient，注意地址问题，也就是这个url工作目录也就是当前工作目录是处于`项目根目录的`
 
 ### 部署
 

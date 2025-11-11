@@ -289,6 +289,31 @@
    height: 20px;
    margin-right: 4px;
 }
+.vp-code-group .tabs label[data-title$=".prisma"]::before {
+   content: "";
+   background-image: url("/Turw-docs/assets/images/prisma.svg");
+   background-size: contain;
+   background-repeat: no-repeat;
+   background-color: #ffffff;
+   background-position: center;
+   display: inline-block;
+   width: 20px;
+   height: 20px;
+   margin-right: 4px;
+}
+
+.vp-code-group .tabs label[data-title$="pre-commit"]::before {
+   content: "";
+   background-image: url("/Turw-docs/assets/images/husky.svg");
+   background-size: contain;
+   background-repeat: no-repeat;
+   background-color: #ffffff;
+   background-position: center;
+   display: inline-block;
+   width: 20px;
+   height: 20px;
+   margin-right: 4px;
+}
 
 .vp-code-group .tabs label[data-title$=".editorconfig"]::before {
    content: "";
