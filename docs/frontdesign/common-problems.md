@@ -950,3 +950,483 @@ defineExpose({} as ButtonInstance);
 ## DevTools 和 Env提示
 
 [详情见](./Vite.md#vite-dev-tools-和-增强import-meta提示)
+
+## Axios封装
+
+### 参数序列化
+
+| 格式名   | 示例 URL 查询参数                                 | 预期解析结果:smiley:       |
+| -------- | ------------------------------------------------- | -------------------------- |
+| indices  | http://localhost:3000/?ids[0]=1&ids[1]=2&ids[2]=3 | `{ ids: ["1", "2", "3"] }` |
+| brackets | http://localhost:3000/?ids[]=1&ids[]=2&ids[]=3    | `{ ids: ["1", "2", "3"] }` |
+| comma    | http://localhost:3000/?ids=1,2,3                  | `{ ids: "1,2,3" }`         |
+| repeat   | http://localhost:3000/?ids=1&ids=2&ids=3          | `{ ids: ["1", "2", "3"] }` |
+
+#### 框架参数序列化支持
+
+|         框架/格式         |      brackets      |      indices       |       comma        |       repeat       |
+| :-----------------------: | :----------------: | :----------------: | :----------------: | :----------------: |
+| NestJS（Express+fastify） |        :x:         |        :x:         | :white_check_mark: | :white_check_mark: |
+|       Node Express        | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+|          Fastify          |        :x:         |        :x:         | :white_check_mark: | :white_check_mark: |
+
+### 实现
+
+::: code-group
+
+```ts [request-client.ts]
+import type { AxiosInstance, AxiosResponse } from 'axios';
+import { InterceptorManager } from './modules/interceptor';
+import type { RequestClientConfig, RequestClientOptions, RequestContentType } from './types';
+import { bindMethods } from '../../utils/utils';
+import { defu as merge } from 'defu';
+import qs from 'qs';
+import axios from 'axios';
+import { FileDownloader } from './modules/downloader';
+import { FileUploader } from './modules/uploader';
+
+//参数序列化
+function getParamsSerializer(paramsSerializer: RequestClientOptions['paramsSerializer']) {
+   if (typeof paramsSerializer === 'string') {
+      switch (paramsSerializer) {
+         case 'brackets': {
+            return (params: any) => qs.stringify(params, { arrayFormat: 'brackets' });
+         }
+         case 'comma': {
+            return (params: any) => qs.stringify(params, { arrayFormat: 'comma' });
+         }
+         case 'indices': {
+            return (params: any) => qs.stringify(params, { arrayFormat: 'indices' });
+         }
+         case 'repeat': {
+            return (params: any) => qs.stringify(params, { arrayFormat: 'repeat' });
+         }
+      }
+   }
+   return paramsSerializer;
+}
+//请求客户端类
+class RequestClient {
+   public addRequestInterceptor: InterceptorManager['addRequestInterceptor'];
+   public addResponseInterceptor: InterceptorManager['addResponseInterceptor'];
+
+   public readonly instance: AxiosInstance;
+
+   public download: FileDownloader['download'];
+   public upload: FileUploader['upload'];
+
+   /**
+    * 构造函数，用于创建Axios实例
+    * @param options - Axios请求配置，可选
+    */
+   constructor(options: RequestClientOptions = {}) {
+      const defaultConfig: RequestClientOptions = {
+         headers: {
+            'Content-Type': 'application/json;charset=utf-8' as const satisfies RequestContentType
+         },
+         responseReturn: 'raw',
+         //默认超时时间10s
+         timeout: 10_000
+      };
+      const { ...axiosConfig } = options;
+      const requestConfig = merge(axiosConfig, defaultConfig);
+
+      // 仅在存在 paramsSerializer 时进行规范化，避免将 undefined 赋值导致类型错误
+      // 没有就是用axios默认
+      const normalizedParamsSerializer = getParamsSerializer(requestConfig.paramsSerializer);
+      if (normalizedParamsSerializer !== undefined) {
+         requestConfig.paramsSerializer = normalizedParamsSerializer;
+      }
+      this.instance = axios.create(requestConfig);
+
+      bindMethods(this);
+
+      //实例化拦截器管理器
+      const interceptorManager = new InterceptorManager(this.instance);
+      this.addRequestInterceptor =
+         interceptorManager.addRequestInterceptor.bind(interceptorManager);
+      this.addResponseInterceptor =
+         interceptorManager.addResponseInterceptor.bind(interceptorManager);
+
+      // 实例化文件上传和下载器
+      const fileUploader = new FileUploader(this);
+      this.upload = fileUploader.upload.bind(fileUploader);
+      const fileDownloader = new FileDownloader(this);
+      this.download = fileDownloader.download.bind(fileDownloader);
+   }
+
+   /**
+    * DELETE 请求
+    */
+   public delete<T = any>(url: string, config?: RequestClientConfig): Promise<T> {
+      return this.request<T>(url, { ...config, method: 'DELETE' });
+   }
+
+   /**
+    * GET请求
+    */
+   public get<T = any>(url: string, config?: RequestClientConfig): Promise<T> {
+      return this.request<T>(url, { ...config, method: 'GET' });
+   }
+
+   /**
+    * POST请求
+    */
+   public post<T = any>(url: string, data?: any, config?: RequestClientConfig): Promise<T> {
+      return this.request<T>(url, { ...config, data, method: 'POST' });
+   }
+   /**
+    * PUT请求方法
+    */
+   public put<T = any>(url: string, data?: any, config?: RequestClientConfig): Promise<T> {
+      return this.request<T>(url, { ...config, data, method: 'PUT' });
+   }
+   /**
+    * request请求
+    */
+   public async request<T = any>(url: string, config: RequestClientConfig): Promise<T> {
+      try {
+         /**
+          * ...(config.paramsSerializer ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) } : {})
+          * 如果在某次请求的config提供了paramsSerializer会覆盖全局设置;
+          * 没有提供就默认采用RequestClient实例化的config，没有提供就是axios默认
+          */
+         const response: AxiosResponse<T> = await this.instance.request({
+            url,
+            ...config,
+            ...(config.paramsSerializer
+               ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) }
+               : {})
+         } as any);
+         return response as T;
+      } catch (error: any) {
+         throw error.response ? error.response.data : error;
+      }
+   }
+
+   /**
+    * 获取基础URL
+    */
+   public getBaseUrl() {
+      return this.instance.defaults.baseURL;
+   }
+}
+
+export { RequestClient };
+```
+
+```ts [intercepeor.ts]
+import type { AxiosInstance, AxiosResponse } from 'axios';
+import type { RequestInterceptorConfig, ResponseInterceptorConfig } from '../types';
+
+//==================== 默认拦截器配置====================
+//解决只定义一个导致的问题
+const defaultRequestInterceptorConfig: RequestInterceptorConfig = {
+   fulfilled: (config) => config,
+   rejected: (error) => Promise.reject(error)
+};
+const defaultResponseInterceptorConfig: ResponseInterceptorConfig = {
+   fulfilled: (response: AxiosResponse) => response,
+   rejected: (error) => Promise.reject(error)
+};
+
+//==================== 拦截器管理类====================
+class InterceptorManager {
+   private axiosInstance: AxiosInstance;
+
+   constructor(instance: AxiosInstance) {
+      this.axiosInstance = instance;
+   }
+
+   addRequestInterceptor({
+      fulfilled,
+      rejected
+   }: RequestInterceptorConfig = defaultRequestInterceptorConfig) {
+      this.axiosInstance.interceptors.request.use(fulfilled, rejected);
+   }
+
+   addResponseInterceptor<T = any>({
+      fulfilled,
+      rejected
+   }: ResponseInterceptorConfig<T> = defaultResponseInterceptorConfig) {
+      this.axiosInstance.interceptors.response.use(fulfilled, rejected);
+   }
+}
+
+export { InterceptorManager };
+```
+
+```ts [preset-interceptor.ts]
+import { isFunction } from '../../utils/utils';
+import type { ResponseInterceptorConfig } from './types';
+
+//默认响应拦截器
+export const defaultResponseInterceptor = ({
+   codeField = 'code',
+   dataField = 'data',
+   successCode = 0
+}: {
+   /**代表访问结果的字段名，默认为code */
+   //!注意，这个要和后端返回的字段名一致
+   codeField: string;
+   /**响应数据中实际装载数据的字段名默认为data,或者提供自定义解析函数返回解析数据，函数接受response.data */
+   //!注意，这个要和后端返回的数据字段名一致
+   dataField: string | ((data: any) => any);
+   /**
+    * @description 找字段
+    * 当codeField和successCode相同，代表接口访问成功 如果提供了一个函数返回true代表接口访问成功。
+    * successCode: 'success' or 0 or (code) => code === 'success'
+    */
+   //!注意，这个的值要和codeField对应的后端返回值一致，或者提供一个函数来判断
+   successCode: ((code: any) => boolean) | number | string;
+}): ResponseInterceptorConfig => {
+   return {
+      fulfilled: (response) => {
+         const { config, data: responseData, status } = response;
+
+         if (config.responseReturn === 'raw') {
+            return response;
+         }
+
+         //这个·responseData[codeField]·表示从data中取对应字段的值
+         if (status >= 200 && status < 400) {
+            if (config.responseReturn === 'body') {
+               return responseData;
+            } else if (
+               isFunction(successCode)
+                  ? successCode(responseData[codeField])
+                  : responseData[codeField] === successCode
+            ) {
+               return isFunction(dataField) ? dataField(responseData) : responseData[dataField];
+            }
+         }
+         throw Object.assign({}, response, { response });
+      }
+   };
+};
+```
+
+```ts [downloader.ts]
+import type { RequestClientConfig } from '../types';
+import type { RequestClient } from '../request-client';
+
+type DownloadRequestConfig = {
+   /**
+    * 定义期望获得的数据类型。
+    * raw: 原始的AxiosResponse，包括headers、status等。
+    * body: 只返回响应数据的BODY部分(Blob)
+    */
+   responseReturn?: 'raw' | 'body';
+} & Omit<RequestClientConfig, 'responseType'>;
+
+class FileDownloader {
+   private client: RequestClient;
+   constructor(client: RequestClient) {
+      this.client = client;
+   }
+
+   /**
+    * 下载文件
+    * @param url - 文件下载的URL地址
+    * @param config - 配置信息，可选
+    * @return 如果config.responseReturn为'body'，则返回Blob(默认)，否则返回RequestResponse<Blob>
+    */
+   public async download<T = Blob>(url: string, config?: DownloadRequestConfig): Promise<T> {
+      const finalConfig: RequestClientConfig = {
+         ...config,
+         responseType: 'blob'
+      };
+
+      return await this.client.get<T>(url, finalConfig);
+   }
+}
+export { FileDownloader };
+```
+
+```ts [uploader.ts]
+import { isUndefined } from '../../../utils/utils';
+import type { RequestClient } from '../request-client';
+import type { RequestClientConfig, RequestContentType } from '../types';
+
+class FileUploader {
+   private client: RequestClient;
+   constructor(client: RequestClient) {
+      this.client = client;
+   }
+
+   async upload<T = any>(
+      url: string,
+      data: Record<string, any> & { file: File | Blob },
+      config?: RequestClientConfig
+   ): Promise<T> {
+      const formData = new FormData();
+
+      /**
+     * @rawdata 
+      const data = {
+         name: 'John',
+         age: 30,
+         hobbies: ['reading', 'gaming'],
+         file: new Blob(['file content'], { type: 'text/plain' }),
+      };
+      @transformdata
+      name: John
+      age: 30
+      hobbies[0]: reading
+      hobbies[1]: gaming
+      file: [object Blob]
+     */
+      Object.entries(data).forEach(([key, value]) => {
+         if (Array.isArray(value)) {
+            value.forEach((item, index) => {
+               !isUndefined(item) && formData.append(`${key}[${index}]`, item);
+            });
+         } else {
+            !isUndefined(value) && formData.append(key, value);
+         }
+      });
+
+      const finalConfig: RequestClientConfig = {
+         ...config,
+         headers: {
+            'Content-Type':
+               'multipart/form-data;charset=utf-8' as const satisfies RequestContentType,
+            ...config?.headers
+         }
+      };
+
+      return this.client.post<T>(url, formData, finalConfig);
+   }
+}
+
+export { FileUploader };
+```
+
+```ts [type.ts]
+/**
+ * @param CreateAxiosDefaults 使用axios.create时传入的配置类型
+ * @param InternalAxiosRequestConfig 相比配置多了一个headers属性
+ *
+ */
+import type {
+   AxiosRequestConfig,
+   AxiosResponse,
+   CreateAxiosDefaults,
+   InternalAxiosRequestConfig
+} from 'axios';
+
+type ExtendOptions<T = any> = {
+   /**
+    * 主要就是解决param在各个框架中不一致的问题，导致识别不到参数
+    * 参数序列化方式。预置的有
+    * - brackets: ids[]=1&ids[]=2&ids[]=3
+    * - comma: ids=1,2,3
+    * - indices: ids[0]=1&ids[1]=2&ids[2]=3
+    * - repeat: ids=1&ids=2&ids=3
+    *
+    * 最后一个AxiosRequestConfig<D>["paramsSerializer"];允许自定义参数序列化逻辑
+    * 特别是当预置的几种方式不符合需求的时候
+    */
+   paramsSerializer?:
+      | 'brackets'
+      | 'comma'
+      | 'indices'
+      | 'repeat'
+      | AxiosRequestConfig<T>['paramsSerializer'];
+
+   /**
+    * 响应数据的返回方式。
+    * - raw: 原始的AxiosResponse，包括headers、status等，不做是否成功请求的检查。
+    * - body: 返回响应数据的BODY部分（只会根据status检查请求是否成功，忽略对code的判断，这种情况下应由调用方检查请求是否成功）。
+    * - data: 解构响应的BODY数据，只返回其中的data节点数据（会检查status和code是否为成功状态）。
+    */
+   responseReturn?: 'body' | 'data' | 'raw';
+};
+
+type RequestClientConfig<T = any> = AxiosRequestConfig<T> & ExtendOptions<T>;
+
+type RequestResponse<T = any> = AxiosResponse<T> & {
+   config: RequestClientConfig<T>;
+};
+
+type RequestContentType =
+   | 'application/json;charset=utf-8'
+   | 'application/octet-stream;charset=utf-8'
+   | 'application/x-www-form-urlencoded;charset=utf-8'
+   | 'multipart/form-data;charset=utf-8';
+
+//请求options
+type RequestClientOptions = CreateAxiosDefaults & ExtendOptions;
+
+interface RequestInterceptorConfig {
+   fulfilled: (
+      config: InternalAxiosRequestConfig & ExtendOptions
+   ) =>
+      | (InternalAxiosRequestConfig<any> & ExtendOptions)
+      | Promise<InternalAxiosRequestConfig<any> & ExtendOptions>;
+
+   rejected?: (error: any) => any;
+}
+
+interface ResponseInterceptorConfig<T = any> {
+   fulfilled: (response: RequestResponse<T>) => RequestResponse | Promise<RequestResponse>;
+   rejected?: (error: any) => any;
+}
+
+export type {
+   RequestClientConfig,
+   RequestClientOptions,
+   RequestContentType,
+   RequestInterceptorConfig,
+   RequestResponse,
+   ResponseInterceptorConfig
+};
+```
+
+<!-- prettier-ignore-start -->
+```md [project-project.md]
+# 文件目录结构
+📂 request-client/
+  📂 src/
+    📂 modules/                  
+      📄downloader.ts           下载
+      📄uploader.ts             上传
+      📄interceptor.ts          拦截器
+   📄preset-interceptor.ts      预置拦截器，用于配置响应拦截器
+   📄request-client.ts          请求客户端
+   📄types.ts                   类型
+   📄index.ts                   统一出口
+```
+<!-- prettier-ignore-end -->
+
+:::
+
+### 使用
+
+#### 参数序列化
+
+```ts
+const client = new RequestClient({
+   baseURL: '/api',
+   responseReturn: 'body',
+   //brackets,comma,indices,repeat
+   //都不符合时自定义函数实现，来模拟参数序列化
+   paramsSerializer: 'indices' //[!code ++]
+});
+client.addResponseInterceptor(
+   defaultResponseInterceptor({
+      codeField: 'code',
+      dataField: 'data',
+      successCode: 0
+   })
+);
+client
+   .get('/', {
+      params: {
+         a: [1, 2, 3]
+      }
+   })
+   .then((res) => {
+      console.log('GET / response:', res);
+   });
+```

@@ -1,0 +1,160 @@
+{
+   "code-group": {
+      "scope": "markdown",
+      "prefix": [
+         ":::code-group"
+      ],
+      "body": [
+         "::: code-group",
+         "$1",
+         ":::"
+      ],
+      "description": "代码组"
+   },
+   "code++":{
+      "scope": "typescript",
+      "prefix": [
+         "!code++"
+      ],
+      "body": [
+         "[!code ++]"
+      ],
+      "description": "代码块++"
+   },
+   "code--":{
+      "scope": "typescript",
+      "prefix": [
+         "!code--"
+      ],
+      "body": [
+         "[!code --]"
+      ],
+      "description": "代码块--"
+   },
+   "info-vitepress": {
+      "scope": "markdown",
+      "prefix": [
+         ":::info"
+      ],
+      "body": [
+         "::: info",
+         "$1",
+         ":::"
+      ],
+      "description": "通知",
+   },
+   "tip-vitepress": {
+      "scope": "markdown",
+      "prefix": [
+         ":::tip"
+      ],
+      "body": [
+         "::: tip",
+         "$1",
+         ":::"
+      ],
+      "description": "提示"
+   },
+   "warning-vitepress": {
+      "scope": "markdown",
+      "prefix": [
+         ":::warning"
+      ],
+      "body": [
+         "::: warning",
+         "$1",
+         ":::"
+      ],
+      "description": "注意"
+   },
+   "danger-vitepress": {
+      "scope": "markdown",
+      "prefix": [
+         ":::danger"
+      ],
+      "body": [
+         "::: danger",
+         "$1",
+         ":::"
+      ],
+      "description": "危险"
+   },
+   "NOTE-Github": {
+      "scope": "markdown",
+      "prefix": [
+         "!NOTE"
+      ],
+      "body": [
+         "> [!NOTE]",
+         "$1",
+         ">"
+      ],
+      "description": "笔记"
+   },
+   "TIP-Github": {
+      "scope": "markdown",
+      "prefix": [
+         "!TIP"
+      ],
+      "body": [
+         "> [!TIP]",
+         "$1",
+         ">"
+      ],
+      "description": "提示"
+   },
+   "IMPORTANT-Github": {
+      "scope": "markdown",
+      "prefix": [
+         "!IMPORTANT"
+      ],
+      "body": [
+         "> [!IMPORTANT]",
+         "$1",
+         ">"
+      ],
+      "description": "重要"
+   },
+   "WARNING-Github": {
+      "scope": "markdown",
+      "prefix": [
+         "!WARNING"
+      ],
+      "body": [
+         "> [!WARNING]",
+         "$1",
+         ">"
+      ],
+      "description": "注意"
+   },
+   "CAUTION-Github": {
+      "scope": "markdown",
+      "prefix": [
+         "!CAUTION"
+      ],
+      "body": [
+         "> [!CAUTION]",
+         "$1",
+         ">"
+      ],
+      "description": "小心"
+   },
+   "vue-script-setup": {
+      "scope": "vue",
+      "prefix": "!vue",
+      "body": [
+         "<script setup lang=\"ts\">",
+         "const props = defineProps<{",
+         "  modelValue?: boolean,",
+         "}>()",
+         "$1",
+         "</script>",
+         "",
+         "<template>",
+         "  <div>",
+         "    <slot/>",
+         "  </div>",
+         "</template>",
+      ],
+   },
+}

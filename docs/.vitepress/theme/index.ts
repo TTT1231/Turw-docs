@@ -7,6 +7,7 @@ import './../../public/assets/css/tailwind.css';
 import FlexProperty from './components/FlexProperty.vue';
 import GridProperty from './components/GridProperty.vue';
 import JwtValProcess from './components/JwtValProcess.vue';
+import Tip from './components/Tip.vue';
 import { messageKey } from './types/injectionKey';
 
 import {
@@ -35,5 +36,6 @@ export default {
       app.component('GridProperty', GridProperty);
       app.component('NuxterrorHandling', NuxterrorHandling);
       app.component('JwtValProcess', JwtValProcess);
+      app.component('Tip', Tip);
    }
 } satisfies Theme;
