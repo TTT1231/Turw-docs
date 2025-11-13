@@ -12,6 +12,19 @@ withDefaults(defineProps<Props>(), {
 const contentRef = ref<HTMLElement>();
 
 const processMarkdown = (html: string): string => {
+   // 处理代码块 ```lang\ncode\n``` -> <div class="code-block-wrapper">...</div>
+   html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      const language = lang || 'plaintext';
+      const escapedCode = code
+         .trim()
+         .replace(/&/g, '&amp;')
+         .replace(/</g, '&lt;')
+         .replace(/>/g, '&gt;')
+         .replace(/"/g, '&quot;')
+         .replace(/'/g, '&#039;');
+      return `<div class="code-block-wrapper"><div class="code-block-lang">${language}</div><pre class="language-${language}"><code>${escapedCode}</code></pre></div>`;
+   });
+
    // 处理加粗 **text** -> <strong>text</strong>
    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
@@ -123,19 +136,47 @@ onMounted(() => {
    transition: background 0.2s;
 }
 
+/* 代码块容器 */
+.tip-blue-content :deep(.code-block-wrapper) {
+   position: relative;
+   margin: 12px 0;
+}
+
+/* 语言标签 */
+.tip-blue-content :deep(.code-block-lang) {
+   position: absolute;
+   top: 8px;
+   right: 12px;
+   font-size: 11px;
+   color: #6b7280;
+   font-weight: 500;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   z-index: 1;
+   font-family:
+      'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+}
+
 .tip-blue-content :deep(pre) {
-   background-color: rgba(0, 119, 255, 0.05);
-   border: 1px solid rgba(0, 119, 255, 0.2);
+   background-color: #f6f8fa;
+   border: 1px solid #d0d7de;
    border-radius: 6px;
-   padding: 12px;
+   padding: 16px;
+   padding-top: 32px; /* 为语言标签留出空间 */
    overflow-x: auto;
-   margin: 8px 0;
+   margin: 0;
+   font-family:
+      'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
 }
 
 .tip-blue-content :deep(pre code) {
    background-color: transparent;
    padding: 0;
-   color: #333;
+   color: #24292f;
+   font-size: 13px;
+   line-height: 1.6;
+   box-shadow: none;
+   font-family: inherit;
 }
 
 .tip-blue-content :deep(a) {

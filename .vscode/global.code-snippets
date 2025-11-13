@@ -1,4 +1,16 @@
 {
+   "tip-custom": {
+      "scope": "markdown",
+      "prefix": [
+         "<Tip"
+      ],
+      "body": [
+         "<Tip>",
+         "$1",
+         "</Tip>"
+      ],
+      "description": "代码组"
+   },
    "code-group": {
       "scope": "markdown",
       "prefix": [
@@ -11,7 +23,7 @@
       ],
       "description": "代码组"
    },
-   "code++":{
+   "code++": {
       "scope": "typescript",
       "prefix": [
          "!code++"
@@ -21,7 +33,7 @@
       ],
       "description": "代码块++"
    },
-   "code--":{
+   "code--": {
       "scope": "typescript",
       "prefix": [
          "!code--"
@@ -30,6 +42,26 @@
          "[!code --]"
       ],
       "description": "代码块--"
+   },
+   "code-warning": {
+      "scope": "typescript",
+      "prefix": [
+         "!codewarning"
+      ],
+      "body": [
+         "[!code warning]"
+      ],
+      "description": "代码块警告"
+   },
+   "code-error": {
+      "scope": "typescript",
+      "prefix": [
+         "!codeerror"
+      ],
+      "body": [
+         "[!code error]"
+      ],
+      "description": "代码块错误"
    },
    "info-vitepress": {
       "scope": "markdown",

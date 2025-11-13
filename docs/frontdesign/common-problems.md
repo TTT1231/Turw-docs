@@ -1411,6 +1411,25 @@ const client = new RequestClient({
    responseReturn: 'body',
    //brackets,comma,indices,repeat
    //都不符合时自定义函数实现，来模拟参数序列化
+   /**
+    * @example                     
+    *                              [!code ++]
+    * paramsSerializer: 'brackets' [!code ++]
+    * paramsSerializer: 'comma'    [!code ++]
+    * paramsSerializer: 'repeat'   
+    * or function [!code ++]
+    * paramsSerializer: (params) => { 
+    *   // 这里以简单的 key=value&key2=value2 形式序列化
+    *   return Object.entries(params)
+         .map(([key, value]) => {
+            if (Array.isArray(value)) {
+               return value.map(v => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`).join('&');
+            }
+            return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+         })
+         .join('&');   
+    * }
+    */
    paramsSerializer: 'indices' //[!code ++]
 });
 client.addResponseInterceptor(
@@ -1430,3 +1449,75 @@ client
       console.log('GET / response:', res);
    });
 ```
+
+#### 请求响应
+
+::: code-group
+
+```ts{24} [test.ts]
+const client = new RequestClient({
+   baseURL: '/api',
+   responseReturn: 'raw', //你可以在这设置`body`和`data` [!code ++]
+   paramsSerializer: 'indices'
+});
+//预置的响应拦截器
+client.addResponseInterceptor(
+   defaultResponseInterceptor({
+      codeField: 'code',
+      dataField: 'data1',
+      successCode: 200
+   })
+);
+
+//实际调用，可以添加responseReturn来覆盖全局配置 [!code ++]
+client.get('/', {responseReturn: 'data',//或者一些axios配置选项})
+   .then(res => {
+      console.log(res); // 现在会输出: "Hello World!"
+   });
+
+//返回类型约束
+client.post<string>('/test-post',{responseReturn: 'data'})
+   .then(res => {
+      console.log(res); //res被ts推断string
+   });
+
+```
+
+```ts [file-upload.ts]
+//文件上传
+client
+   .upload('/upload', {
+      file: file,
+      name: encodeURIComponent(file.name) //解决中文乱码问题，后端接受要解码[!code warning]
+   })
+   .then((res) => {
+      console.log('File uploaded successfully:', res);
+   })
+   .catch((err) => {
+      console.error('File upload failed:', err);
+   });
+```
+
+```ts [file-download.ts]
+//获取的是文件blob
+const fileBlob1 = await client.download(`/download/test.txt`);
+
+//当然也可以配置第二个参数
+const fileBlob2Body = await client.download(`/download/test.txt`, {
+   responseReturn: 'body'
+});
+```
+
+:::
+
+<Tip title="后端返回以下数据类型">
+
+```json
+{
+   "code": 200,
+   "data1": "Hello World!",
+   "message": "success"
+}
+```
+
+</Tip>
