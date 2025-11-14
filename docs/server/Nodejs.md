@@ -25,11 +25,11 @@ outline: deep
 
 ## 中间件
 
-请求 → 中间件1 → 中间件2 → 中间件3 → 路由处理 → 中间件3 → 中间件2 → 中间件1 → 响应  
-<span>
-<label class=" bg-red-200">注: </label>
-<label>需要注意定义顺序</label>
-</span>
+请求 → 中间件1 → 中间件2 → 中间件3 → 路由处理 → 中间件3 → 中间件2 → 中间件1 → 响应
+
+<Warning title="注意">
+需要注意定义**顺序**
+</Warning>
 
 - 应用级别中间件（app.use），为应用或路由添加通用功能。
 - 路由级别中间件（app.get、app.post），匹配方法和路径请求。
@@ -182,7 +182,9 @@ export {};
 
 **ts-node是为了让 Node.js 能够直接运行 TypeScript 文件（.ts），而无需先手动编译成 JavaScript。**
 
-<span class=" text-red-400">注意：生产模式还是tsc编译成 JavaScript，再用 node运行【这样保险些】</span>
+<Warning title="注意">
+生产模式还是tsc编译成`JavaScript`，再用 node运行，这样**保险些**。
+</Warning>
 
 ```ts
   /* ts-node 配置，输入编译选项外 */
@@ -194,16 +196,21 @@ export {};
 
 其中files只会加载项目文件，此时必须通过`include`显示指定哪些文件属于项目中的一部分 。
 
-**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件,例如（**第一个是默认，后面一个是自定义的**）：  
- ` "typeRoots": [                                    
+<Tip title="提示">
+**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件,例如（**第一个是默认，后面一个是自定义的**）：
+
+`"typeRoots": [                                    
     "./node_modules/@types",               
     "./server/types"
-  ],`
+  ]`
+
+</Tip>
 
 ## 约定式路由实现
 
-这里打包要**特别注意**，路由定义要存储全局，要不然打包就不会共享  
-这里的约定是文件必须按照Nuxt中api一样配置【约定即配置核心】，这里约定函数为**defineNodeRoute**,可以自行定义。
+<Warning title="注意">
+路由定义要存储全局，要不然打包就不会共享  这里的约定是文件必须按照Nuxt中api一样配置【约定即配置核心】，这里约定函数为**defineNodeRoute**,可以自行定义。
+</Warning>
 
 ### 实现
 
@@ -657,8 +664,10 @@ export default defineRouterPlugin;
 
 ### 打包
 
+<Tip title="提示">
 这里以esbuild打包为例，因为esbuild非常适合**中小型RESTful API**项目打包  
 其速度快、简洁，符合实际实践
+</Tip>
 
 <details>
 <summary class=" bg-blue-400  text-white cursor-pointer select-none
@@ -746,10 +755,15 @@ console.log('✅ Build completed successfully!');
 - gip适合http传输，**游览器兼容**
 - deflate适合嵌入式设备、低延迟通信（**大文件下1gb以上，比gzip压缩时间快15%**）
 
-<span class=" text-red-400">注：大文件下，为了避免文件一次性加载要使用流失处理（Stream + Pipeline）</span>
+<Warning title="注意">
+大文件下，为了避免文件一次性加载要使用流失处理（Stream + Pipeline）
+</Warning>
 
-**为了保证生产者和消费者的平衡，也即内存安全，所以使用流失处理最好（pipe管道不会处理错误，会导致读或者写流永远挂起，因而这里使用pipeline最好）**  
+<Tip title="提示">
+**为了保证生产者和消费者的平衡，也即内存安全，所以使用流失处理最好（pipe管道不会处理错误，会导致读或者写流永远挂起，因而这里使用pipeline最好）**
+
 pipeline相比pipe，引入了错误处理机制，当错误发生时会销毁管道中的所有流，其位于**stream**包下，node内部包
+</Tip>
 
 ```ts
 //大文件流失处理，返回前端
@@ -824,11 +838,15 @@ export const setupDefaultRoute = (router: Router) => {
 
 ## ESM or Commonjs?
 
-由于**nodejs**已全面转向了ESM模块作为未来发展方向，因而从最佳实践和现代化做法中，选择ESM。Nodejs和ts编译器职责分离，nodejs只执行js，而ts编译器只编译ts。因而引入ts文件必须要.js拓展名即使是ts，主要原因是：**但esm模块解析时，nodejs不会像commonjs自动查找.js、.json扩展名，省略.js就node找不到该模块**
+<Tip title="提示">
+由于**nodejs**已全面转向了ESM模块作为未来发展方向，因而从最佳实践和现代化做法中，选择ESM。Nodejs和ts编译器职责分离，nodejs只执行js，而ts编译器只编译ts。因而引入ts文件必须要.js拓展名即使是ts。
+
+原因：**但esm模块解析时，nodejs不会像commonjs自动查找.js、.json扩展名，省略.js就node找不到该模块**。
 
 之所以必须是`.js`而不是`.ts`因为node是运行时，而ts是编译时类似源文件，所以在nodejs引入或者使用模块就必须引入编译后的`.js`文件
 
-在vite+vue+ts的官方项目中vite+ts编译器自动处理了ts文件，隐藏了编译过程，从而导入文件时不用关心拓展名。
+在vue官方脚手架项目中`vite`编译器自动处理了ts文件，隐藏了编译过程，从而导入文件时不用关心拓展名。
+</Tip>
 
 **配置：**  
 在`package.json`显示声明`"type":"module"`即可，然后就是配置`tsconfig.json`让ts如何解析该模块，
@@ -853,32 +871,41 @@ export const setupDefaultRoute = (router: Router) => {
 }
 ```
 
-然后就是`package.json`启动命令的配置，这里使用更加现代的ts编译器`tsx`。
+然后就是`package.json`启动命令的配置，这里使用更加现代的ts编译器`tsx`。其他的也可以，根据实际情况使用即可。
 
-```
-<!-- 1、install tsx -->
+::: code-group
+
+```sh [install.sh]
 pnpm i tsx -D
-<!-- 2、setting command(默认src/main.ts为入口) -->
+```
+
+```json [package.json]
 "scripts": {
    "start": "node --import tsx src/main.ts",
    "dev": "nodemon --watch \"src/**/*.ts\" -e ts,json --exec \"node --import tsx src/main.ts\""
 },
 ```
 
+:::
+
 ## 打包
 
-打包nodejs常见的有两个一个是`esbuild`另外一个是`webpack`，esbuild构建速度快，配置简单易用性高，但是在一些复杂项目中没有webpack好用，因而**复杂项目使用webpack，快速上线中小项目使用esbuild**
+<Tip title="提示">
+打包nodejs常见的有两个一个是`esbuild`另外一个是`webpack`，esbuild构建速度快，配置简单易用性高。
+
+但是在一些复杂项目中没有webpack好用，因而**复杂项目使用webpack，快速上线中小项目使用esbuild**
+</Tip>
 
 ### esbuild打包
 
-```terminal
+安装`esbuild`并设置配置文件
+::: code-group
+
+```terminal [install.sh]
 pnpm i esbuild -D
 ```
 
-**setting config file(esbuild.config.mjs)**
-
-```ts
-const// esbuild.config.mjs
+```ts [esbuild.config.mjs]
 import { build } from 'esbuild';
 import { rmSync, existsSync } from 'fs';
 import glob from 'fast-glob';
@@ -925,3 +952,5 @@ await build({
 });
 
 ```
+
+:::

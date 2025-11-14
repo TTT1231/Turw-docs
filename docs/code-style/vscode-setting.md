@@ -187,15 +187,14 @@
 
 ## 插件注意
 
-::: warning
+<Warning title="注意">
 由于这里使用的是`vscode-icons`插件，因此所支持的图标如下:
 
-[文件夹图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFolders)
-
-[文件图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFiles)
+- [文件夹图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFolders)
+- [文件图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFiles)
 
 没有的话，就只能按照文档自己配置自定义的文件夹图标和文件图标
-:::
+</Warning>
 
 ## 跨编译器风格统一
 

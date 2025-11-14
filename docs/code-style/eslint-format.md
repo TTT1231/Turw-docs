@@ -7,13 +7,13 @@
 | `@typescript-eslint/eslint-plugin` | TS 规则   | 处理类型注解、接口、泛型等 TypeScript 语法 |
 | `@typescript-eslint/parser`        | TS 解析器 | 让 ESLint 能解析 TypeScript 代码           |
 
-::: warning
+<Warning title="注意">
 @typescript-eslint/parser 必须与 @typescript-eslint/eslint-plugin 配合使用。前者负责解析 TypeScript 代码，后者负责执行具体的 linting 规则。
-:::
+</Warning>
 
 ## 安装
 
-```cmd
+```sh
 pnpm add -D eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-config-prettier eslint-plugin-prettier
 
 ```
@@ -157,9 +157,9 @@ pnpm-workspace.yaml
 
 **然后设置package.json命令**
 
-::: info 注
+<Warning title="注意">
 server这里是示例名，类似项目src可以自定义
-:::
+</Warning>
 
 | 脚本命令                                                           | 描述                             |
 | ------------------------------------------------------------------ | -------------------------------- |

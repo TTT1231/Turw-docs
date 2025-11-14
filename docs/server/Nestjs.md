@@ -104,9 +104,9 @@ return next.handle().pipe(
 
 :::
 
-::: tip 提示
+<Tip title="提示">
 在Nestjs中Controller方法中，最后的结果也会被Observable包裹，统一返回格式，统一拦截器的Obserable和管道的链式调用触发
-:::
+</Tip>
 
 ### DI思想
 
@@ -120,20 +120,24 @@ return next.handle().pipe(
 - 方法装饰器,接受类的原型、方法名、方法描述符作为参数，`修改方法实现`
 - 属性装饰器,接受类的原型和属性名作为参数，可以对属性进行元数据`标记`
 
-::: warning 注意
+<Warning title="注意">
 截至`2025/10/12` Nestjs还是使用stage2写法，因此它会自动添加元数据`design:paramtypes`但这种不安全，它试图将静态拓展到动态违背了TS设计原则，因此在stage3中被移除了。
 
 同时由于是stage2写法所有在tsconfig.json中必须要配置`emitDecoratorMetadata`和`experimentalDecorators`**值为true**，否则其内部提供的元数据会失效，DI和AOP会失效，工厂函数创建实例失败。
-:::
+</Warning>
 
-> TS5+版本默认是开启stage3的，因此如果想要使用stage3就需要关闭stage2的tsconfig，也就是`experimentalDecorators`和`emitDecoratorMetadata`
+<Tip title="提示">
+TS5+版本默认是开启stage3的，因此如果想要使用stage3就需要关闭stage2的tsconfig，也就是`experimentalDecorators`和`emitDecoratorMetadata`
 
-> [!IMPORTANT]
-> 截止2025/11月份，nestjs目前还是使用stage2
+截止**2025/11**月，nestjs目前还是使用**stage2**
+</Tip>
 
-::: details stage3示例用法
+**details stage3示例用法:**
 
-````ts
+::: code-group
+
+<!-- prettier-ignore-start -->
+```ts [class-decorator.ts]
 /**
  * @description 类装饰器 - 新标准 (Stage 3 Decorators)
  * @returns 返回一个类装饰器函数
@@ -142,41 +146,45 @@ return next.handle().pipe(
  * @returns @param context - 类装饰器上下文，包含类的元数据和初始化器
  */
 export function classDecorator(token?: string) {
-    return function <T extends abstract new (...args: any[]) => any>(
-        target: T,
-        context: ClassDecoratorContext<T>
-    ): T | void {
-        /**
-         * !获取不了参数名称，这里是编译时，运行时会被删除所以获取不到
-         * @description 获取构造函数参数类型数组
-         * @deprecated 这里ts编译器在新的版本中，由于违反了职责单一原则，不再自动添加设计时元数据
-         */
-        // Reflect.getMetadata('design:paramtypes', target) || [];
+   return function <T extends abstract new (...args: any[]) => any>(
+      target: T,
+      context: ClassDecoratorContext<T>
+   ): T | void {
+      /**
+       * !获取不了参数名称，这里是编译时，运行时会被删除所以获取不到
+       * @description 获取构造函数参数类型数组
+       * @deprecated 这里ts编译器在新的版本中，由于违反了职责单一原则，不再自动添加设计时元数据
+       */
+      // Reflect.getMetadata('design:paramtypes', target) || [];
 
-        /**
-         * TODO: 设置类修饰器自定义元数据
-         * !特别注意，context.addInitializer在类装饰器和方法装饰器还有属性装饰器中的行为不同，体现在
-         *    - 类装饰器中，addInitializer的回调在类定义完成时执行，this指向类的构造函数（类本身）
-         *    - 方法装饰器中，addInitializer的回调在类实例化时执行，this指向类的实例对象
-         *    - 属性装饰器中，同方法装饰器类似，其必须要初始化类实例才能执行
-         * @example @usage
-         * ```ts
-         * @classDecorator()
-         * class A {}
-         * const class_value = Reflect.getMetadata('custom:class', A);
-         * //打印：类元数据，不用实例化类
-         * console.log('类元数据：', class_value);
-         * ```ts
-         */
-        context.addInitializer(function (this: T) {
-            Reflect.defineMetadata("custom:class", "类元数据，不用实例化类", target);
-        });
+      /**
+       * TODO: 设置类修饰器自定义元数据
+       * !特别注意，context.addInitializer在类装饰器和方法装饰器还有属性装饰器中的行为不同，体现在
+       *    - 类装饰器中，addInitializer的回调在类定义完成时执行，this指向类的构造函数（类本身）
+       *    - 方法装饰器中，addInitializer的回调在类实例化时执行，this指向类的实例对象
+       *    - 属性装饰器中，同方法装饰器类似，其必须要初始化类实例才能执行
+       * @example @usage
+       * ```ts
+       * @classDecorator()
+       * class A {}
+       * const class_value = Reflect.getMetadata('custom:class', A);
+       * //打印：类元数据，不用实例化类
+       * console.log('类元数据：', class_value);
+       * ```ts
+       */
+      context.addInitializer(function (this: T) {
+         Reflect.defineMetadata('custom:class', '类元数据，不用实例化类', target);
+      });
 
-        //不对类进行修改，返回undefined
-        return undefined;
-    };
+      //不对类进行修改，返回undefined
+      return undefined;
+   };
 }
+```
+<!-- prettier-ignore-end -->
 
+<!-- prettier-ignore-start -->
+```ts [method-decorator.ts]
 /**
  * @description 方法装饰器 - 新标准 (Stage 3 Decorators)
  * @returns 返回一个方法装饰器函数
@@ -188,76 +196,76 @@ export function classDecorator(token?: string) {
  * @returns @param context - 方法装饰器上下文，包含方法的元数据
  */
 export function methodDecorator<T>() {
-    return function <This extends Object, Args extends any[], Return>(
-        target: (this: This, ...args: Args) => Return,
-        context: ClassMethodDecoratorContext<
-            This,
-            (this: This, ...args: Args) => Return
-        >
-    ) {
-        /**
-         * @description 类定义时执行，直接在target（原方法）上设置元数据，将元数据附加到原方法中,
-         *              可以通过 A.prototype.[methodName] 访问，然后获取元数据
-         * @usage       用于不用实例化类就能获取元数据
-         * !注意: 如果是在context.addInitializer中定义元数据，则在类实例化时执行,
-         *              !该方法中的回调是在类实例化阶段执行的，不是在定义阶段
-         * @usage       然后如果想要在实例化时获取元数据可以将元数据绑定到类实例上，必须在context.addInitializer中定义
-         *
-         * @example
-         * ```ts
-         * class A {
-         *   @methodDecorator()
-         *   say() {console.log('say'); }
-         * }
-         * const method_value = Reflect.getMetadata('custom:method:noInit', A.prototype.say, 'say');
-         * //打印：类不用初始化就能获取元数据
-         * console.log('方法元数据：', method_value);
-         * ```ts
-         */
-        Reflect.defineMetadata(
-            "custom:method:noInit",
-            "类不用初始化就能获取元数据",
-            target,
+   return function <This extends Object, Args extends any[], Return>(
+      target: (this: This, ...args: Args) => Return,
+      context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+   ) {
+      /**
+       * @description 类定义时执行，直接在target（原方法）上设置元数据，将元数据附加到原方法中,
+       *              可以通过 A.prototype.[methodName] 访问，然后获取元数据
+       * @usage       用于不用实例化类就能获取元数据
+       * !注意: 如果是在context.addInitializer中定义元数据，则在类实例化时执行,
+       *              !该方法中的回调是在类实例化阶段执行的，不是在定义阶段
+       * @usage       然后如果想要在实例化时获取元数据可以将元数据绑定到类实例上，必须在context.addInitializer中定义
+       *
+       * @example
+       * ```ts
+       * class A {
+       *   @methodDecorator()
+       *   say() {console.log('say'); }
+       * }
+       * const method_value = Reflect.getMetadata('custom:method:noInit', A.prototype.say, 'say');
+       * //打印：类不用初始化就能获取元数据
+       * console.log('方法元数据：', method_value);
+       * ```ts
+       */
+      Reflect.defineMetadata(
+         'custom:method:noInit',
+         '类不用初始化就能获取元数据',
+         target,
+         context.name
+      );
+
+      /**
+       * @description 在运行阶段获取元数据，编译时必须要写在context.addInitializer回调中
+       * @note 注意this 指向问题
+       * @example @usage
+       * ```ts
+       * class A {
+       *   @methodDecorator()
+       *   say() {console.log('say'); }
+       * }
+       * const a = new A();
+       * const method_value = Reflect.getMetadata('custom:method:mustInit', a, 'say');
+       * //打印：类必须要初始化才能获取元数据
+       * console.log('方法元数据：', method_value);
+       * ```ts
+       */
+      context.addInitializer(function (this: This) {
+         Reflect.defineMetadata(
+            'custom:method:mustInit',
+            '类必须要初始化才能获取元数据',
+            this.constructor.prototype,
             context.name
-        );
+         );
+      });
 
+      // 在新标准中,方法装饰器返回新的方法实现或 undefined，同类装饰器返回类似
+      //TODO 不修改方法实现，返回undefined
+      return undefined;
 
-        /**
-         * @description 在运行阶段获取元数据，编译时必须要写在context.addInitializer回调中
-         * @note 注意this 指向问题
-         * @example @usage
-         * ```ts
-         * class A {
-         *   @methodDecorator()
-         *   say() {console.log('say'); }
-         * }
-         * const a = new A();
-         * const method_value = Reflect.getMetadata('custom:method:mustInit', a, 'say');
-         * //打印：类必须要初始化才能获取元数据
-         * console.log('方法元数据：', method_value);
-         * ```ts
-         */
-        context.addInitializer(function (this: This) {
-            Reflect.defineMetadata(
-                "custom:method:mustInit",
-                "类必须要初始化才能获取元数据",
-                this.constructor.prototype,
-                context.name
-            )
-        })
-
-        // 在新标准中,方法装饰器返回新的方法实现或 undefined，同类装饰器返回类似
-        //TODO 不修改方法实现，返回undefined
-        return undefined;
-
-        //TODO 修改方法实现
-        // return function (this: This, ...args: Args): Return {
-        //     console.log(`Calling method: ${String(context.name)}`);
-        //     return target.apply(this, args);
-        // };
-    };
+      //TODO 修改方法实现
+      // return function (this: This, ...args: Args): Return {
+      //     console.log(`Calling method: ${String(context.name)}`);
+      //     return target.apply(this, args);
+      // };
+   };
 }
+```
+<!-- prettier-ignore-end -->
 
+<!-- prettier-ignore-start -->
+```ts
 /**
  * @description 属性装饰器 - 新标准 (Stage 3 Decorators)
  * @template T - 指向类类型
@@ -306,8 +314,8 @@ export function propertyDecorator<T extends Object, Value>() {
     };
 }
 
-```ts
-````
+```
+<!-- prettier-ignore-end -->
 
 :::
 
@@ -326,9 +334,9 @@ export function propertyDecorator<T extends Object, Value>() {
 - 关注：**方法元数据**获取，倾向结构化和静态的扫描
 - 主要用在静态扫描和自动化注册以及模块化和配置
 
-::: tip
-MetadataScanner现在只保留了getAllMethodNames，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
-:::
+<Tip title="提示">
+MetadataScanner现在只保留了**getAllMethodNames**，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
+</Tip>
 
 ## 缓存监控与埋点
 
@@ -540,7 +548,7 @@ export function extractConfigFromKeys<T>(
 
 ::: code-group
 
-```ts [express-V.ts]
+```ts [V.express.ts]
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
 
@@ -624,7 +632,7 @@ export const Cookies = createParamDecorator(
 );
 ```
 
-```ts [fastify-V.ts]
+```ts [V.fastify.ts]
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 
@@ -715,7 +723,7 @@ export const Cookies = createParamDecorator(
 );
 ```
 
-```ts [common-V.ts]
+```ts [V.common.ts]
 //[!code warning]
 //特别要注意类型安全
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';

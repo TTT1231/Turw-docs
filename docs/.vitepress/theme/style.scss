@@ -258,15 +258,8 @@
    background: rgba(168, 85, 247, 0.12); /* 紫色背景 */
    color: #7c3aed; /* 紫色文字 */
 }
-/* 支持 .sh 和 .bash，两者都需要 ::before */
-.vp-code-group .tabs label[data-title$=".sh"]::before,
-.vp-code-group .tabs label[data-title$=".bash"]::before {
-   content: "SH";
-   background: rgba(100, 116, 139, 0.08); /* 中性灰背景 */
-   color: #374151; /* 深灰文字 */
-}
 
-/* .prettierignore , .prettierrc和Prettier配置文件徽标样式：使用 Prettier 官方图标 */
+//=================================== 图标支持 ===================================//
 .vp-code-group .tabs label[data-title$=".prettierignore"]::before,
 .vp-code-group .tabs label[data-title$=".prettierrc"]::before,
 .vp-code-group .tabs label[data-title$=".prettierrc.json"]::before {
@@ -292,4 +285,14 @@
 
 .vp-code-group .tabs label[data-title$=".editorconfig"]::before {
    @include code-group-icon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
+}
+.vp-code-group .tabs label[data-title$="esbuild.config.mjs"]::before {
+   @include code-group-icon("/Turw-docs/assets/images/esbuild.svg");
+}
+.vp-code-group .tabs label[data-title$=".sh"]::before,
+.vp-code-group .tabs label[data-title$=".bash"]::before {
+   @include code-group-icon("/Turw-docs/assets/images/shell.svg");
+}
+.vp-code-group .tabs label[data-title$=".fastify.ts"]::before {
+   @include code-group-icon("/Turw-docs/assets/images/fastify.svg");
 }

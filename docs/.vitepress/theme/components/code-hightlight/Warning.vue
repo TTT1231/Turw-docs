@@ -44,7 +44,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .warning-content code {
-   background-color: #fff4d2 !important;
+   background-color: #fdf0d2 !important;
    padding: 2px 6px;
    border-radius: 4px;
    font-family:
@@ -73,39 +73,40 @@ withDefaults(defineProps<Props>(), {
    box-shadow: none !important;
 }
 
-.warning-content :deep(a) {
+.warning-content a {
    color: #907b3f;
    text-decoration: underline;
    transition: opacity 0.2s ease;
 }
 
-.warning-content :deep(a:hover) {
+.warning-content a:hover {
    opacity: 0.8;
 }
 
-.warning-content :deep(strong) {
-   color: #7a8487;
+.warning-content strong {
+   color: #333;
    font-weight: 700;
+   font-size: 1.002rem;
 }
 
-.warning-content :deep(em) {
+.warning-content em {
    color: #907b3f;
    font-style: italic;
 }
 
-.warning-content :deep(em strong),
-.warning-content :deep(strong em) {
+.warning-content em strong,
+.warning-content strong em {
    color: #907b3f;
    font-weight: 700;
    font-style: italic;
 }
 
-.warning-content :deep(blockquote) {
+.warning-content blockquote {
    border-left: 3px solid #907b3f;
    color: #7a8487;
 }
 
-.warning-content :deep(hr) {
+.warning-content hr {
    border-top: 1px solid rgba(144, 123, 63, 0.2);
 }
 </style>

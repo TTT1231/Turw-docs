@@ -40,9 +40,9 @@ sudo service ssh start
 
 ## 网络代理 (Ubuntu 为例)
 
-::: warning 特别注意
+<Warning title="注意">
 下面代理，属于`VPN`网络代理请求转发，本质上还是`VPN`。
-:::
+</Warning>
 
 **1. 获取默认网关（让 WSL2 访问 Windows）**
 

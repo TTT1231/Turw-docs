@@ -73,39 +73,40 @@ withDefaults(defineProps<Props>(), {
    box-shadow: none !important;
 }
 
-.tip-blue-content :deep(a) {
+.tip-blue-content a {
    color: #0077ff;
    text-decoration: underline;
    transition: opacity 0.2s ease;
 }
 
-.tip-blue-content :deep(a:hover) {
+.tip-blue-content a:hover {
    opacity: 0.8;
 }
 
-.tip-blue-content :deep(strong) {
+.tip-blue-content strong {
    color: #333;
    font-weight: 700;
+   font-size: 1.001rem;
 }
 
-.tip-blue-content :deep(em) {
+.tip-blue-content em {
    color: #0077ff;
    font-style: italic;
 }
 
-.tip-blue-content :deep(em strong),
-.tip-blue-content :deep(strong em) {
+.tip-blue-content em strong,
+.tip-blue-content strong em {
    color: #0077ff;
    font-weight: 700;
    font-style: italic;
 }
 
-.tip-blue-content :deep(blockquote) {
+.tip-blue-content blockquote {
    border-left: 3px solid #0077ff;
    color: #666;
 }
 
-.tip-blue-content :deep(hr) {
+.tip-blue-content hr {
    border-top: 1px solid rgba(0, 119, 255, 0.2);
 }
 </style>
