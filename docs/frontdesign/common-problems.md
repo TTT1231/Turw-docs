@@ -958,12 +958,12 @@ defineExpose({} as ButtonInstance);
 
 ### 参数序列化
 
-| 格式名   | 示例 URL 查询参数                                 | 预期解析结果:smiley:       |
-| -------- | ------------------------------------------------- | -------------------------- |
-| indices  | http://localhost:3000/?ids[0]=1&ids[1]=2&ids[2]=3 | `{ ids: ["1", "2", "3"] }` |
-| brackets | http://localhost:3000/?ids[]=1&ids[]=2&ids[]=3    | `{ ids: ["1", "2", "3"] }` |
-| comma    | http://localhost:3000/?ids=1,2,3                  | `{ ids: "1,2,3" }`         |
-| repeat   | http://localhost:3000/?ids=1&ids=2&ids=3          | `{ ids: ["1", "2", "3"] }` |
+| 格式名   | 示例 URL 查询参数                                   | 预期解析结果:smiley:       |
+| -------- | --------------------------------------------------- | -------------------------- |
+| indices  | `http://localhost:3000/?ids[0]=1&ids[1]=2&ids[2]=3` | `{ ids: ["1", "2", "3"] }` |
+| brackets | `http://localhost:3000/?ids[]=1&ids[]=2&ids[]=3`    | `{ ids: ["1", "2", "3"] }` |
+| comma    | `http://localhost:3000/?ids=1,2,3`                  | `{ ids: "1,2,3" }`         |
+| repeat   | `http://localhost:3000/?ids=1&ids=2&ids=3`          | `{ ids: ["1", "2", "3"] }` |
 
 #### 框架参数序列化支持
 

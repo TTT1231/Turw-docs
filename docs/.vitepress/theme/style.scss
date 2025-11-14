@@ -4,7 +4,7 @@
  */
 
 // 导入 mixins
-@import "../css/mixins.scss";
+@use "../css/mixins.scss" as codeIconNameSpace;
 
 /**
  * Colors
@@ -258,42 +258,42 @@
 .vp-code-group .tabs label[data-title$=".prettierignore"]::before,
 .vp-code-group .tabs label[data-title$=".prettierrc"]::before,
 .vp-code-group .tabs label[data-title$=".prettierrc.json"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/prettier.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prettier.svg");
 }
 
 .vp-code-group .tabs label[data-title$="eslint.config.mjs"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/eslint.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/eslint.svg");
 }
 .vp-code-group .tabs label[data-title$="vite.config.ts"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/vite.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vite.svg");
 }
 .vp-code-group .tabs label[data-title$=".prisma"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/prisma.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prisma.svg");
 }
 .vp-code-group .tabs label[data-title$=".html"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/html.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/html.svg");
 }
 
 .vp-code-group .tabs label[data-title$="pre-commit"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/husky.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/husky.svg");
 }
 
 .vp-code-group .tabs label[data-title$=".editorconfig"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
 }
 .vp-code-group .tabs label[data-title$="esbuild.config.mjs"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/esbuild.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/esbuild.svg");
 }
 .vp-code-group .tabs label[data-title$=".sh"]::before,
 .vp-code-group .tabs label[data-title$=".bash"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/shell.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/shell.svg");
 }
 .vp-code-group .tabs label[data-title$=".fastify.ts"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/fastify.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/fastify.svg");
 }
 .vp-code-group .tabs label[data-title$=".json"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/json.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json.svg");
 }
 .vp-code-group .tabs label[data-title$="global.code-snippets"]::before {
-   @include code-group-icon("/Turw-docs/assets/images/vscode.svg");
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vscode.svg");
 }

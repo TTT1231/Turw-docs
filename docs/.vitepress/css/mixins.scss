@@ -1,5 +1,5 @@
 // 代码组图标
-@mixin code-group-icon($bg-image-url, $bg-color: #ffffff, $size: 20px) {
+@mixin applyIcon($bg-image-url, $bg-color: #ffffff, $size: 20px) {
    content: "";
    background-image: url($bg-image-url);
    background-size: contain;
