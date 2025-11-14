@@ -1,15 +1,47 @@
 {
+   //================================== vue快捷指令 ==================================//
+   "vue-script-setup": {
+      "scope": "vue",
+      "prefix": "!vue",
+      "body": [
+         "<script setup lang=\"ts\">",
+         "const props = defineProps<{",
+         "  modelValue?: boolean,",
+         "}>()",
+         "$1",
+         "</script>",
+         "",
+         "<template>",
+         "  <div>",
+         "    <slot/>",
+         "  </div>",
+         "</template>",
+      ],
+   },
+   //================================== 文档快捷键命令相关 ==================================//
    "tip-custom": {
       "scope": "markdown",
       "prefix": [
-         "<Tip"
+         "!TipCustom"
       ],
       "body": [
-         "<Tip>",
-         "$1",
+         "<Tip title=\"${1:提示}\">",
+         "$2",
          "</Tip>"
       ],
-      "description": "代码组"
+      "description": "自定义提示"
+   },
+   "warning-custom": {
+      "scope": "markdown",
+      "prefix": [
+         "!WarningCustom"
+      ],
+      "body": [
+         "<Warning title=\"${1:提示}\">",
+         "$2",
+         "</Warning>"
+      ],
+      "description": "自定义注意"
    },
    "code-group": {
       "scope": "markdown",
@@ -170,23 +202,5 @@
          ">"
       ],
       "description": "小心"
-   },
-   "vue-script-setup": {
-      "scope": "vue",
-      "prefix": "!vue",
-      "body": [
-         "<script setup lang=\"ts\">",
-         "const props = defineProps<{",
-         "  modelValue?: boolean,",
-         "}>()",
-         "$1",
-         "</script>",
-         "",
-         "<template>",
-         "  <div>",
-         "    <slot/>",
-         "  </div>",
-         "</template>",
-      ],
-   },
+   }
 }
