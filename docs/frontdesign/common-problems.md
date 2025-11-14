@@ -10,17 +10,18 @@ outline: deep
 
 快速概览：分片上传一般分三步 — 前端分片并上传、后端临时存储、完成后合并。
 
-> [!IMPORTANT] 提示
-> 常见要点：断点续传、分片哈希校验、使用 AbortController 终止请求、把耗时计算交给 Web Worker。
+<Tip title="提示}">
+常见要点：断点续传、分片哈希校验、使用 AbortController 终止请求、把耗时计算交给 Web Worker。
+</Tip>
 
 ### 分片断点终止上传
 
 主要实现用户可以对大文件请求进行终止和根据文件内容hash去判断在服务端有没有分片  
 对之前上传的分片继续上传，提高上传速率和容错率。
 
-::: details 分片上传
+::: code-group
 
-```ts
+```ts [slice-breakpoint.upload.ts]
 //===========================前端================================
 const handleUpLoadFiles = async (e: Event) => {
    const file = (e.target as HTMLInputElement).files![0];
@@ -415,9 +416,9 @@ self.onmessage = function (e) {
 
 问题概述：大量深层响应式对象会触发过多依赖追踪，渲染时会卡顿。
 
-::: tip 解决方案
+<Tip title="解决方案">
 使用 shallowReactive / shallowRef、markRaw、Object.freeze 或 readonly 来避免不必要的响应式追踪；列表建议使用虚拟列表按需渲染。
-:::
+</Tip>
 
 ## 下拉组件下拉效果不显示及其动画问题
 
@@ -474,14 +475,15 @@ onMounted(() => {
 还有一种方案不使用js使用css中scale实现，对内容进行y轴缩放实现动画效果。  
 效率很高不会触发游览器重排，动画更流畅，性能更好。
 
-> [!WARNING] 效果对比
-> 由于 scale 是 transform 的子属性（操作的是 transform 变换），所以动画效果要基于 transform 属性实现，而非直接操作 `width/height` 等布局属性
+<Warning title="注意">
+由于 scale 是 transform 的子属性（操作的是 transform 变换），所以动画效果要基于 transform 属性实现，而非直接操作 `width/height` 等布局属性
+</Warning>
 
 这里效果是从上到下（默认中间散开）所以需要origin-top`transform-origin: top;`设置动画起点
 
-::: details 缩放过渡（平滑过渡，要注意方向）
+::: code-group
 
-```html
+```html [usage.html]
 <!-- tailwind css 写法 -->
 <div class="relative inline-block group">
    鼠标移入显示下拉内容
@@ -904,8 +906,9 @@ export default defineNuxtPlugin(() => {
 > [!WARNING]
 > **如果采用简单宽度占位**，此时如果有footer页脚的话，在数据初始化完后渲染时，footer会被大量内容推下去，产生CLS（cumulative layout shift累计布局偏移）的值会迅速升高。
 
-> [!IMPORTANT]
-> **解决方案**：动态预估实际内容数量、或者预留合适空间避免布局偏移。如果是在第一个数据已经知道的情况下，预估第一个数据的布局所占用的长和宽，然后根据总数据的length去动态设置骨架屏的占位
+<Tip title="解决方案">
+动态预估实际内容数量、或者预留合适空间避免布局偏移。如果是在第一个数据已经知道的情况下，预估第一个数据的布局所占用的长和宽，然后根据总数据的length去动态设置骨架屏的占位
+</Tip>
 
 **还有一种方法就是虚拟滚动**，以vueuse中useVirtualList为例，也差不多，但是要限制容器高度触发滚动。
 

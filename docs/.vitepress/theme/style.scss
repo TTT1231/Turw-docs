@@ -3,6 +3,9 @@
  * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
  */
 
+// 导入 mixins
+@import "../css/mixins.scss";
+
 /**
  * Colors
  *
@@ -267,63 +270,26 @@
 .vp-code-group .tabs label[data-title$=".prettierignore"]::before,
 .vp-code-group .tabs label[data-title$=".prettierrc"]::before,
 .vp-code-group .tabs label[data-title$=".prettierrc.json"]::before {
-   content: "";
-   background-image: url("/Turw-docs/assets/images/prettier.svg");
-   background-size: contain;
-   background-repeat: no-repeat;
-   background-position: center;
-   display: inline-block;
-   width: 20px;
-   height: 20px;
-   margin-right: 4px;
+   @include code-group-icon("/Turw-docs/assets/images/prettier.svg");
 }
 
 .vp-code-group .tabs label[data-title$="eslint.config.mjs"]::before {
-   content: "";
-   background-image: url("/Turw-docs/assets/images/eslint.svg");
-   background-size: contain;
-   background-repeat: no-repeat;
-   background-position: center;
-   display: inline-block;
-   width: 20px;
-   height: 20px;
-   margin-right: 4px;
+   @include code-group-icon("/Turw-docs/assets/images/eslint.svg");
+}
+.vp-code-group .tabs label[data-title$="vite.config.ts"]::before {
+   @include code-group-icon("/Turw-docs/assets/images/vite.svg");
 }
 .vp-code-group .tabs label[data-title$=".prisma"]::before {
-   content: "";
-   background-image: url("/Turw-docs/assets/images/prisma.svg");
-   background-size: contain;
-   background-repeat: no-repeat;
-   background-color: #ffffff;
-   background-position: center;
-   display: inline-block;
-   width: 20px;
-   height: 20px;
-   margin-right: 4px;
+   @include code-group-icon("/Turw-docs/assets/images/prisma.svg");
+}
+.vp-code-group .tabs label[data-title$=".html"]::before {
+   @include code-group-icon("/Turw-docs/assets/images/html.svg");
 }
 
 .vp-code-group .tabs label[data-title$="pre-commit"]::before {
-   content: "";
-   background-image: url("/Turw-docs/assets/images/husky.svg");
-   background-size: contain;
-   background-repeat: no-repeat;
-   background-color: #ffffff;
-   background-position: center;
-   display: inline-block;
-   width: 20px;
-   height: 20px;
-   margin-right: 4px;
+   @include code-group-icon("/Turw-docs/assets/images/husky.svg");
 }
 
 .vp-code-group .tabs label[data-title$=".editorconfig"]::before {
-   content: "";
-   background-image: url("/Turw-docs/assets/images/editorconfig.svg");
-   background-size: contain;
-   background-color: #ffffff;
-   background-repeat: no-repeat;
-   background-position: center;
-   display: inline-block;
-   width: 22px;
-   height: 22px;
-   margin-right: 4px;
+   @include code-group-icon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
 }

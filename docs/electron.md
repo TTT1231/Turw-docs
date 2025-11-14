@@ -212,7 +212,7 @@ export function ipcMainHandleRemove<T extends Record<string, any>, P extends Pat
 
 :::
 
-::: tip 注意
+<Warning title="注意">
 由于ipcRenderer.invoke默认是`异步的`，因此完全不用担心在preload中前面加`async`是否有啥影响。
 
 核心就是preload只是负责转发，也是main和render的桥梁，因此它只是返回对应值，然后传递给render即可
@@ -224,7 +224,8 @@ contextBridge.exposeInMainWorld('electronApi', {
 });
 ```
 
-:::
+</Warning>
+
 ::: code-group
 
 ```ts [type.d.ts]

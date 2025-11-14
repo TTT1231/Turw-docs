@@ -4,7 +4,11 @@ js下一代标准，使得js可以编写复杂系统.
 
 ## Symbol
 
-Symbol() 会生成**全新且唯一**的值，核心作用是避免对象属性名冲突，默认无法通过 `for...in`、`Object.keys()` 等常规方式枚举，若需遍历需定义 `Symbol.iterator` 方法（支持 `for...of`、解构赋值等）；其唯一性体现在即使传入相同描述字符串，生成的 Symbol 也不相等（例：`Symbol('a') !== Symbol('a')`），字符串参数仅用于区分标识，不影响唯一性。
+Symbol() 会生成**全新且唯一**的值，核心作用是避免对象属性名冲突，默认无法通过 `for...in`、`Object.keys()` 等常规方式枚举，若需遍历需定义 `Symbol.iterator` 方法（支持 `for...of`、解构赋值等）。
+
+<Tip title="提示">
+其唯一性体现在即使传入相同描述字符串，生成的 Symbol 也不相等（例：`Symbol('a') !== Symbol('a')`），字符串参数仅用于区分标识，不影响唯一性。
+</Tip>
 
 ### Symbol.iterator 实现可迭代对象或者数组
 
@@ -31,9 +35,9 @@ let [a,b] = arr; //解构赋值
 for (const c of arr){} // for .. of
 ```
 
-::: tip
+<Tip title="提示">
 迭代器对象必须实现next方法，迭代协议要求。
-:::
+</Tip>
 
 #### Symbol属性或方法
 
@@ -93,9 +97,9 @@ const proxy = new Proxy(obj, {
 });
 ```
 
-::: tip
+<Tip title="提示">
 当代理用完不想用时，或者代理就使用一次，就可以**取消代理**Proxy.revocable revocable:可撤销的，可取消的
-:::
+</Tip>
 
 ## Promise并发处理
 

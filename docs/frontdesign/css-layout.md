@@ -19,10 +19,10 @@ flex布局默认方向是水平摆放即`flex-direction:row` 即主轴方向。�
 - `justify-content: space-around;` - `justify-around`（环绕对齐）
 - `justify-content: space-evenly;` - `justify-evenly`（平均分布）
 - `justify-content: stretch;` - `justify-stretch`（把内容拉伸）
-::: tip
+
+<Tip title="提示">
 后面有一个`safe`(css)，防止内容溢出容器，在css中直接加入即可`safe`，但是tailwindcss不支持。
-:::
-<div class=" justify-items-stretch justify-stretch"></div>
+</Tip>
 
 ### align-items (交叉轴对齐方式) - （tailwindcss写法）
 
@@ -93,8 +93,9 @@ grid布局是一个二维布局系统，同时处理多行多列。与flex布局
 
 ### grid-template-rows (定义行和行的宽度，与上诉的grid-template-cols类似)
 
-> [!TIP]
-> repeat(重复次数, 列宽度)，表示在列中重复多少次，简化重复列或者行的写法。例如repeat(4,1fr)表示4列，每列宽度都是1fr。
+<Tip title="提示">
+repeat(重复次数, 列宽度)，表示在列中重复多少次，简化重复列或者行的写法。例如repeat(4,1fr)表示4列，每列宽度都是1fr。
+</Tip>
 
 ## 图片清晰度问题
 
@@ -130,7 +131,9 @@ img还有一个size属性，目的时在告诉游览器在不同视口（viewpor
 
 ## CSS选择器-tailwind写法
 
-注意：**&**在tailwind中表父级
+<Warning title="注意">
+**&**在tailwind中表父级
+</Warning>
 
 ```css {3,7,11,15}
 /* 特定[target-element][attribute] 指定元素指定属性 */

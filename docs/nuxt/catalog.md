@@ -1,36 +1,36 @@
 # Nuxt目录
 
-::: details 示例目录结构
+::: code-group
 
 <!-- prettier-ignore-start -->
-```md
+```md [catalog.md]
 📂 my-nuxt-app/
-├─ 📂 app/
-│  ├─ 📂 assets/         // 存放静态资源文件，构建工具处理后会交给浏览器
-│  ├─ 📂 components/     // Vue组件，自动导入无需手动import，支持异步
-│  ├─ 📂 composables/    // 类似Vue中hooks
-│  ├─ 📂 layouts/        // 页面布局，主要包裹页面的外层框架，其中slot会明确内容插入位置
-│  ├─ 📂 middleware/     // 类似Node.js路由中间件，可在此进行权限校验或导航前执行代码
-│  ├─ 📂 pages/          // Vue Router自动生成路由，动态路由按pages/users/[id].vue格式定义
-│  ├─ 📂 plugins/        // 存放Nuxt插件，扩展Vue/Nuxt，应用启动时自动运行
-│  ├─ 📂 utils/          // 工具函数
-│  ├─ 📄 app.vue         // 主入口组件，类似Vue中App.vue
-│  ├─ 📄 app.config.ts   // 应用运行时配置，主要定义应用访问公共变量
-│  └─ 📄 error.vue       // 错误页面组件，类似Vue中404路由组件
-├─ 📂 content/           // 存放内容目录，适用于博客、文档等内容型网站
-├─ 📂 public/            // 直接提供给客户端的静态文件，不被构建工具处理，通过/根路径访问
-├─ 📂 shared/            // 存放前后端共享代码，如类型定义、常量、枚举等
-├─ 📂 server/            // 服务器目录
-│  ├─ 📂 api/            // API路由映射文件
-│  │  └─ 📄 hello.ts     // 映射到/api/hello可直接访问（示例）
-│  ├─ 📂 middleware/     // 服务器请求拦截，用于访问日志、鉴权等（示例）
-│  │  └─ 📄 auth.ts      // 鉴权逻辑（示例）
-│  ├─ 📂 plugins/        // 服务器插件，拓展Nuxt服务端功能（如注册数据库、三方库）
-│  │  └─ 📄 myPlugin.ts  // 插件定义逻辑（示例）
-│  ├─ 📂 utils/          // 服务端工具函数
-│  │  └─ 📄 db.ts        // 数据库工具参数（如连接、查询，示例）
-│  └─ 📄 index.ts        // 服务器入口文件，仅需对启动过程处理时使用（大部分场景无需）
-└─ 📄 nuxt.config.ts     // 配置整个Nuxt应用行为
+   📂 app/
+      📂 assets/         // 存放静态资源文件，构建工具处理后会交给浏览器
+      📂 components/     // Vue组件，自动导入无需手动import，支持异步
+      📂 composables/    // 类似Vue中hooks
+      📂 layouts/        // 页面布局，主要包裹页面的外层框架，其中slot会明确内容插入位置
+      📂 middleware/     // 类似Node.js路由中间件，可在此进行权限校验或导航前执行代码
+      📂 pages/          // Vue Router自动生成路由，动态路由按pages/users/[id].vue格式定义
+      📂 plugins/        // 存放Nuxt插件，扩展Vue/Nuxt，应用启动时自动运行
+      📂 utils/          // 工具函数
+      📄 app.vue         // 主入口组件，类似Vue中App.vue
+      📄 app.config.ts   // 应用运行时配置，主要定义应用访问公共变量
+     📄 error.vue       // 错误页面组件，类似Vue中404路由组件
+   📂 content/           // 存放内容目录，适用于博客、文档等内容型网站
+   📂 public/            // 直接提供给客户端的静态文件，不被构建工具处理，通过/根路径访问
+   📂 shared/            // 存放前后端共享代码，如类型定义、常量、枚举等
+   📂 server/            // 服务器目录
+      📂 api/            // API路由映射文件
+        📄 hello.ts     // 映射到/api/hello可直接访问（示例）
+      📂 middleware/     // 服务器请求拦截，用于访问日志、鉴权等（示例）
+        📄 auth.ts      // 鉴权逻辑（示例）
+      📂 plugins/        // 服务器插件，拓展Nuxt服务端功能（如注册数据库、三方库）
+        📄 myPlugin.ts  // 插件定义逻辑（示例）
+      📂 utils/          // 服务端工具函数
+        📄 db.ts        // 数据库工具参数（如连接、查询，示例）
+     📄 index.ts        // 服务器入口文件，仅需对启动过程处理时使用（大部分场景无需）
+  📄 nuxt.config.ts     // 配置整个Nuxt应用行为
 ```
 <!-- prettier-ignore-end -->
 
@@ -162,8 +162,12 @@
 
 定义一个.d.ts类型文件，重写ProcessEnv接口。例如：定义之后，可能不会自动导入，在**nuxt.config.ts**顶部引入ts类型。
 
+<Tip title="提示">
+这里其实也可以不用导入这个`.d.ts`，定义全局类型也是一样的，或者`import type`,然后该声明文件会变为局部声明文件，使用`export {}` 导出，变为全局声明文件也是一样可以的。
+</Tip>
+
 ```ts
-//下面这段ts类型需要在nuxt.config.ts顶部引入，类似ts import
+//下面这段ts类型需要在nuxt.config.ts顶部引入，类似ts import [!code ++]
 /// <reference path="./path-to/[custom-name].d.ts" />
 
 // [custom-name].d.ts

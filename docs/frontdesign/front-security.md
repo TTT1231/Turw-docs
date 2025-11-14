@@ -101,8 +101,9 @@ line-number：资源出现问题的代码行号。
 | **nuxt.config**       | ⭐⭐⭐ 高 | ⭐ 低     | ⭐ 简单   | 全局统一策略      |
 | **server middleware** | ⭐⭐ 中   | ⭐⭐⭐ 高 | ⭐⭐ 中等 | 页面级/权限级策略 |
 
-> [!TIP]
-> **推荐方案**：在 server middleware 中动态生成 nonce 和基础 CSP，结合 render hook 为脚本标签注入 nonce，代码最少、最好维护。
+<Tip title="提示">
+**推荐方案**：在 server middleware 中动态生成 nonce 和基础 CSP，结合 render hook 为脚本标签注入 nonce，代码最少、最好维护。
+</Tip>
 
 ### 演示代码（Nuxt为例）
 
@@ -208,44 +209,6 @@ export default defineNitroPlugin((nitroApp) => {
          .replace(/<style\b(?![^>]*\bnonce=)/g, `<style nonce="${nonce}"`);
    });
 });
-```
-
-:::
-
-## 反向代理
-
-反向代理就是代理服务器地址，充当中间商，隐藏真实的服务器地址，特别适合防范ddos攻击等。
-
-::: details vite反向代理config
-
-```ts
-//vite.config.ts config
-server:{
-  proxy:{
-  '/api':{
-    target: 'your-example.ip', // 动态设置代理目标
-    changeOrigin:true,
-    rewrite:(path)=>path.replace(/^\/api/,''),
-    // 添加更多配置选项
-    configure: (proxy) => {
-    //目标服务不可用情况
-    proxy.on('error', (err) => {
-      console.log('❌ 代理错误:', err.message);
-    });
-    //代理请求发出前，一般记录请求日志/修改请求头
-    proxy.on('proxyReq', (proxyReq, req) => {
-      console.log('📤 代理请求:', req.method, req.url, '→', proxyTarget);
-    });
-    //收到响应后，一般记录响应日志/修改响应数据
-    proxy.on('proxyRes', (proxyRes, req) => {
-      console.log('📥 代理响应:', proxyRes.statusCode, req.url);
-    });
-    }
-    },
-
-  }
-}
-
 ```
 
 :::

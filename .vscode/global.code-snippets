@@ -25,8 +25,8 @@
          "!TipCustom"
       ],
       "body": [
-         "<Tip title=\"${1:提示}\">",
-         "$2",
+         "<Tip title=\"提示\">",
+         "$1",
          "</Tip>"
       ],
       "description": "自定义提示"
@@ -37,8 +37,8 @@
          "!WarningCustom"
       ],
       "body": [
-         "<Warning title=\"${1:提示}\">",
-         "$2",
+         "<Warning title=\"注意\">",
+         "$1",
          "</Warning>"
       ],
       "description": "自定义注意"

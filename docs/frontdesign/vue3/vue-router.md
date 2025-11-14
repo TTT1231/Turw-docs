@@ -1,10 +1,10 @@
 # Vue-Router
 
-::: tip
-Hash:带#不美观，部署简单，刷新能正确加载  
-history模式，干净标准的url，直接访问子路由会404，需要配置try_files(刷新会报404)在niginx情况下:grinning:
+<Tip title="提示">
+Hash:带#不美观，部署简单，刷新能正确加载
 
-:::
+history模式，干净标准的url，直接访问子路由会404，需要配置try_files(刷新会报404)在niginx情况下
+</Tip>
 
 ## 路由元信息提示
 

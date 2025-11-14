@@ -12,8 +12,6 @@ outline: deep
 **SSR（服务端渲染）**  
 提高首屏加载速度，避免 SPA 中首屏白屏问题
 
----
-
 ## NUXT SEO
 
 > [!TIP]
