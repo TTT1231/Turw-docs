@@ -248,11 +248,6 @@
    background: rgba(65, 184, 131, 0.12);
    color: #3fb27f;
 }
-.vp-code-group .tabs label[data-title$=".json"]::before {
-   content: "JSON";
-   background: rgba(255, 159, 67, 0.1); /* 柑橘色背景 */
-   color: #b45309; /* 暗橙色文字 */
-}
 .vp-code-group .tabs label[data-title$=".md"]::before {
    content: "MD";
    background: rgba(168, 85, 247, 0.12); /* 紫色背景 */
@@ -295,4 +290,10 @@
 }
 .vp-code-group .tabs label[data-title$=".fastify.ts"]::before {
    @include code-group-icon("/Turw-docs/assets/images/fastify.svg");
+}
+.vp-code-group .tabs label[data-title$=".json"]::before {
+   @include code-group-icon("/Turw-docs/assets/images/json.svg");
+}
+.vp-code-group .tabs label[data-title$="global.code-snippets"]::before {
+   @include code-group-icon("/Turw-docs/assets/images/vscode.svg");
 }

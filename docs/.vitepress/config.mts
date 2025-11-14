@@ -20,8 +20,8 @@ export default defineConfig({
                { text: 'electron', link: '/electron' },
                { text: 'Node', link: '/server/Nodejs' },
                { text: 'Nest', link: '/server/Nestjs' },
-               { text: 'vscode配置', link: '/code-style/eslint-format' },
-               { text: '代码格式化', link: '/code-style/vscode-setting' }
+               { text: 'vscode配置', link: '/code-style/vscode-setting' },
+               { text: '代码格式化', link: '/code-style/eslint-format' }
             ]
          }
       ],
@@ -48,7 +48,7 @@ export default defineConfig({
                   link: '/frontdesign/ES6'
                },
                {
-                  text: 'Vite',
+                  text: 'Vite⚡',
                   link: '/frontdesign/Vite'
                },
                {

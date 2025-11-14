@@ -4,8 +4,9 @@
 
 ::: code-group
 
-```json{2,18,27,68} [settings.json]
+```json [settings.json]
 {
+   //[!code ++]
    // =============================== 编辑器爱好设置 ================================
    // 缩进与格式化
    "editor.tabSize": 3, // 制表符宽度为3空格（匹配 Prettier）
@@ -22,6 +23,7 @@
    "editor.cursorBlinking": "expand", // 光标闪烁带扩展效果
    "editor.cursorSmoothCaretAnimation": "on", // 启用平滑光标移动动画
    "editor.largeFileOptimizations": true, // 优化大文件编辑性能
+   //[!code ++]
    // =============================== 代码辅助功能 ================================
    // 智能建议
    "editor.inlineSuggest.enabled": true, // 启用内联代码建议（如Copilot）
@@ -31,12 +33,14 @@
    "editor.bracketPairColorization.enabled": true, // 彩色括号配对
    "editor.autoClosingBrackets": "beforeWhitespace", // 智能括号闭合
    "editor.autoClosingOvertype": "always", // 自动覆盖闭合符号
+   //[!code ++]
    // ========================== TypeScript专项优化 ===============================
    "typescript.inlayHints.enumMemberValues.enabled": true, // 显示枚举值提示
    "typescript.preferences.preferTypeOnlyAutoImports": true, // 优先使用import type
    "typescript.preferences.includePackageJsonAutoImports": "on", //允许从package.json的依赖中自动导入模块
    "typescript.preferences.importModuleSpecifier": "relative", // 使用相对路径导入
    "typescript.suggest.autoImports": true, // 启用自动导入建议
+   //[!code ++]
    // ===== 语言特定格式化 =====
    "[typescript]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -49,10 +53,12 @@
    "[json]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode"
    },
+   //[!code ++]
    // ===== 终端配置 =====
    "terminal.integrated.cursorBlinking": true, // 终端光标闪烁
    "terminal.integrated.tabs.enabled": true, // 启用终端标签页
    "terminal.integrated.scrollback": 10000, // 保留10000行历史记录
+   //[!code ++]
    //===== 折叠文件夹（美观优化） =====
    "explorer.fileNesting.enabled": true, // 启用文件嵌套功能
    "explorer.fileNesting.expand": false, // 默认折叠嵌套文件（不展开）
@@ -72,6 +78,7 @@
       "vite.renderer.config.ts": "vite.*.config.ts",
       "forge.config.ts": "forge.env.d.ts"
    },
+   //[!code ++]
    // =============================== 插件配置 ================================
    "better-comments.tags": [
       {
@@ -180,6 +187,141 @@
       //pnpm版本
       "pflannery.vscode-versionlens"
    ]
+}
+```
+
+```json [global.code-snippets]
+{
+   //[!code ++]
+   //============================== vue快捷指令 ==============================//
+   "vue-script-setup": {
+      "scope": "vue",
+      "prefix": "!vue",
+      "body": [
+         "<script setup lang=\"ts\">",
+         "const props = defineProps<{",
+         "  modelValue?: boolean,",
+         "}>()",
+         "$1",
+         "</script>",
+         "",
+         "<template>",
+         "  <div>",
+         "    <slot/>",
+         "  </div>",
+         "</template>"
+      ]
+   },
+   "import": {
+      "scope": "javascript,typescript",
+      "prefix": "im",
+      "body": ["import { $2 } from '$1';"],
+      "description": "Import a module"
+   },
+   "export-all": {
+      "scope": "javascript,typescript",
+      "prefix": "ex",
+      "body": ["export * from '$1';"],
+      "description": "Export a module"
+   },
+   //[!code ++]
+   //=========================== 文档快捷键命令相关 ==========================//
+   "tip-custom": {
+      "scope": "markdown",
+      "prefix": ["!TipCustom"],
+      "body": ["<Tip title=\"提示\">", "$1", "</Tip>"],
+      "description": "自定义提示"
+   },
+   "warning-custom": {
+      "scope": "markdown",
+      "prefix": ["!WarningCustom"],
+      "body": ["<Warning title=\"注意\">", "$1", "</Warning>"],
+      "description": "自定义注意"
+   },
+   "code-group": {
+      "scope": "markdown",
+      "prefix": [":::code-group"],
+      "body": ["::: code-group", "$1", ":::"],
+      "description": "代码组"
+   },
+   "code++": {
+      "scope": "typescript",
+      "prefix": ["!code++"],
+      "body": ["[!code ++]"],
+      "description": "代码块++"
+   },
+   "code--": {
+      "scope": "typescript",
+      "prefix": ["!code--"],
+      "body": ["[!code --]"],
+      "description": "代码块--"
+   },
+   "code-warning": {
+      "scope": "typescript",
+      "prefix": ["!codewarning"],
+      "body": ["[!code warning]"],
+      "description": "代码块警告"
+   },
+   "code-error": {
+      "scope": "typescript",
+      "prefix": ["!codeerror"],
+      "body": ["[!code error]"],
+      "description": "代码块错误"
+   },
+   "info-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::info"],
+      "body": ["::: info", "$1", ":::"],
+      "description": "通知"
+   },
+   "tip-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::tip"],
+      "body": ["::: tip", "$1", ":::"],
+      "description": "提示"
+   },
+   "warning-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::warning"],
+      "body": ["::: warning", "$1", ":::"],
+      "description": "注意"
+   },
+   "danger-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::danger"],
+      "body": ["::: danger", "$1", ":::"],
+      "description": "危险"
+   },
+   "NOTE-Github": {
+      "scope": "markdown",
+      "prefix": ["!NOTE"],
+      "body": ["> [!NOTE]", "$1", ">"],
+      "description": "笔记"
+   },
+   "TIP-Github": {
+      "scope": "markdown",
+      "prefix": ["!TIP"],
+      "body": ["> [!TIP]", "$1", ">"],
+      "description": "提示"
+   },
+   "IMPORTANT-Github": {
+      "scope": "markdown",
+      "prefix": ["!IMPORTANT"],
+      "body": ["> [!IMPORTANT]", "$1", ">"],
+      "description": "重要"
+   },
+   "WARNING-Github": {
+      "scope": "markdown",
+      "prefix": ["!WARNING"],
+      "body": ["> [!WARNING]", "$1", ">"],
+      "description": "注意"
+   },
+   "CAUTION-Github": {
+      "scope": "markdown",
+      "prefix": ["!CAUTION"],
+      "body": ["> [!CAUTION]", "$1", ">"],
+      "description": "小心"
+   }
 }
 ```
 
