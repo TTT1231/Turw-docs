@@ -265,7 +265,7 @@ export function methodDecorator<T>() {
 <!-- prettier-ignore-end -->
 
 <!-- prettier-ignore-start -->
-```ts
+```ts [property-decorator.ts]
 /**
  * @description 属性装饰器 - 新标准 (Stage 3 Decorators)
  * @template T - 指向类类型

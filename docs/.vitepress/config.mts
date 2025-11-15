@@ -2,6 +2,15 @@ import { defineConfig } from 'vitepress';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+   vite: {
+      css: {
+         preprocessorOptions: {
+            scss: {
+               api: 'modern-compiler' // 使用现代 Sass API
+            }
+         }
+      }
+   },
    lang: 'zh-CN',
    base: '/Turw-docs/', // Set to your desired base path
    title: '我的文档',
