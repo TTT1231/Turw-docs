@@ -268,6 +268,12 @@
       "body": ["[!code error]"],
       "description": "代码块错误"
    },
+   "details-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::details"],
+      "body": ["::: details", "$1", ":::"],
+      "description": "通知"
+   },
    "info-vitepress": {
       "scope": "markdown",
       "prefix": [":::info"],

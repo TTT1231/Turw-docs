@@ -297,3 +297,6 @@
 .vp-code-group .tabs label[data-title$="global.code-snippets"]::before {
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vscode.svg");
 }
+.vp-code-group .tabs label[data-title$="schema.json"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json-schema.svg");
+}
