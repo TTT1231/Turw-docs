@@ -14,7 +14,7 @@ wsl --install
 
 **3、配置ssh服务**
 
-```terminal
+```bash
 sudo apt update && sudo apt install openssh-server
 ```
 
@@ -22,11 +22,11 @@ sudo apt update && sudo apt install openssh-server
 
 使得能够**允许通过密码验证登录 SSH 服务器**。
 
-```terminal
+```bash
 sudo nano /etc/ssh/sshd_config
 ```
 
-```content
+```ini
 Port 22
 ListenAddress 0.0.0.0
 PasswordAuthentication yes
@@ -34,7 +34,7 @@ PasswordAuthentication yes
 
 **5、启动SSH服务**
 
-```terminal
+```bash
 sudo service ssh start
 ```
 

@@ -901,7 +901,7 @@ pnpm i tsx -D
 安装`esbuild`并设置配置文件
 ::: code-group
 
-```terminal [install.sh]
+```bash [install.sh]
 pnpm i esbuild -D
 ```
 

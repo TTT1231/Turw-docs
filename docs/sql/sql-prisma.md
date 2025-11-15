@@ -110,7 +110,7 @@ done
 
 **安装prisma**
 
-```terminal
+```bash
 pnpm install prisma -D
 
 <!-- init -->
