@@ -8,6 +8,38 @@
 {
    //[!code ++]
    // =============================== 编辑器爱好设置 ================================
+   //文件监听忽略
+   "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/.vscode/**": true,
+      "**/node_modules/**": true,
+      "**/tmp/**": true,
+      "**/bower_components/**": true,
+      "**/dist/**": true
+   },
+   //默认包管理工具
+   "npm.packageManager": "pnpm",
+   //文件搜索，排除以下文件
+   "search.exclude": {
+      "**/node_modules": true,
+      "**/*.log": true,
+      "**/*.log*": true,
+      "**/bower_components": true,
+      "**/dist": true,
+      "**/.git": true,
+      "**/.github": true,
+      "**/.gitignore": true,
+      "**/.vitepress/cache": true,
+      "**/.idea": true,
+      "**/.vscode": false,
+      "**/tmp": true,
+      "*.xml": true,
+      "out": true,
+      "dist": true,
+      "node_modules": true,
+      "**/pnpm-lock.yaml": true
+   },
    // 缩进与格式化
    "editor.tabSize": 3, // 制表符宽度为3空格（匹配 Prettier）
    "editor.detectIndentation": false, // 禁用自动检测缩进（强制使用tabSize）
@@ -40,6 +72,7 @@
    "typescript.preferences.includePackageJsonAutoImports": "on", //允许从package.json的依赖中自动导入模块
    "typescript.preferences.importModuleSpecifier": "relative", // 使用相对路径导入
    "typescript.suggest.autoImports": true, // 启用自动导入建议
+   "typescript.tsserver.exclude": ["**/node_modules", "**/dist", "**/.turbo"], //文件忽略
    //[!code ++]
    // ===== 语言特定格式化 =====
    "[typescript]": {
@@ -143,7 +176,18 @@
          "format": "svg"
       }
    ],
-   "workbench.iconTheme": "vscode-icons"
+   "workbench.iconTheme": "vscode-icons",
+   "versionlens.suggestions.showOnStartup": true,
+
+   //stylelint支持
+   "css.validate": false,
+   "less.validate": false,
+   "scss.validate": false,
+   "stylelint.enable": true,
+   "stylelint.packageManager": "pnpm",
+   "stylelint.validate": ["css", "scss", "vue"],
+   "stylelint.customSyntax": "postcss-html",
+   "stylelint.snippet": ["css", "scss", "vue"]
 }
 ```
 
@@ -184,8 +228,14 @@
       "mhutchie.git-graph",
       // 自动重命名标签
       "formulahendry.auto-rename-tag",
-      //pnpm版本
-      "pflannery.vscode-versionlens"
+      //package.json版本
+      "pflannery.vscode-versionlens",
+      //css搜索
+      "pranaygp.vscode-css-peek",
+      //version len
+      "pflannery.vscode-versionlens",
+      //stylelint
+      "stylelint.vscode-stylelint"
    ]
 }
 ```
