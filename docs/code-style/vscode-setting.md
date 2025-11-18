@@ -105,7 +105,7 @@
       ".env": ".env.*",
       //nest folder
       "*.controller.ts": "$(capture).controller.spec.ts",
-      "*.controller.ts": "$(capture).controller.spec.ts",
+      "*.server.ts": "$(capture).server.spec.ts",
 
       //electron folder
       "vite.renderer.config.ts": "vite.*.config.ts",
