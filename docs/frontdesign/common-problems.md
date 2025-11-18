@@ -981,8 +981,7 @@ defineExpose({} as ButtonInstance);
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import { InterceptorManager } from './modules/interceptor';
 import type { RequestClientConfig, RequestClientOptions, RequestContentType } from './types';
-import { bindMethods } from '../../utils/utils';
-import { defu as merge } from 'defu';
+import { bindMethods, merge } from './utils';
 import qs from 'qs';
 import axios from 'axios';
 import { FileDownloader } from './modules/downloader';
@@ -1160,7 +1159,7 @@ export { InterceptorManager };
 ```
 
 ```ts [preset-interceptor.ts]
-import { isFunction } from '../../utils/utils';
+import { isFunction } from './utils';
 import type { ResponseInterceptorConfig } from './types';
 
 //默认响应拦截器
@@ -1247,7 +1246,7 @@ export { FileDownloader };
 ```
 
 ```ts [uploader.ts]
-import { isUndefined } from '../../../utils/utils';
+import { isUndefined } from '../utils';
 import type { RequestClient } from '../request-client';
 import type { RequestClientConfig, RequestContentType } from '../types';
 
@@ -1386,6 +1385,63 @@ export type {
 };
 ```
 
+```ts [utils.ts]
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { defu as merge } from 'defu';
+
+/**
+ * bindMethods(this) 会遍历当前实例的原型方法，把每个“普通函数方法”都用 Function.prototype.bind 绑定到该实例上，确保方法里的 this 永远指向这个实例。
+ * 仅绑定“普通方法”，不会动构造函数、getter/setter、非函数属性。
+ * 其实现大致逻辑是：拿到原型 → 枚举属性 → 如果是函数且不是 constructor 、不是 getter/setter → method = method.bind(instance) 。
+ *
+ * 主要就是支持 const {method1} = instance; method1()不会出现this指向错误的问题。
+ */
+export function bindMethods<T extends object>(instance: T): void {
+   const prototype = Object.getPrototypeOf(instance);
+   const propertyNames = Object.getOwnPropertyNames(prototype);
+
+   propertyNames.forEach((propertyName) => {
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
+      const propertyValue = instance[propertyName as keyof T];
+
+      if (
+         typeof propertyValue === 'function' &&
+         propertyName !== 'constructor' &&
+         descriptor &&
+         !descriptor.get &&
+         !descriptor.set
+      ) {
+         instance[propertyName as keyof T] = propertyValue.bind(instance);
+      }
+   });
+}
+export { merge };
+
+/**
+ * 判断传入值是否为基础字符串类型（推荐日常使用）
+ * @param value 待判断的值
+ * @returns 布尔值：是 string 字面量返回 true，否则返回 false
+ */
+export function isString(value: unknown): value is string {
+   return typeof value === 'string';
+}
+
+//判断是否是函数
+export function isFunction(value: unknown): value is Function {
+   return typeof value === 'function';
+}
+
+//判断是否是undefined
+export function isUndefined(value: unknown): value is undefined {
+   return typeof value === 'undefined';
+}
+
+//判断是否为boolean
+export function isBoolean(value: unknown): value is boolean {
+   return typeof value === 'boolean';
+}
+```
+
 <!-- prettier-ignore-start -->
 ```md [project-project.md]
 # 文件目录结构
@@ -1399,6 +1455,7 @@ export type {
    📄request-client.ts          请求客户端
    📄types.ts                   类型
    📄index.ts                   统一出口
+   📄utils.ts                   工具
 ```
 <!-- prettier-ignore-end -->
 
