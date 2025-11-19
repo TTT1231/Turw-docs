@@ -142,9 +142,9 @@
 
 通过递归函数遍历路由配置，将组件字符串转换为异步导入函数，实现动态加载。
 
-<Tip title="提示">
+::: tip 提示
 **文件位置和名字需要约定**，保证 `components` 对象中的路径能正确对应到实际组件文件
-</Tip>
+:::
 
 #### 实现示例
 
@@ -190,10 +190,10 @@ function recurseAddRoutes(routes: RoutesType[]) {
 
 sourceMap（源映射）是一种映射文件，主要用于调试。它可以将编译、打包、压缩后的代码映射到源代码位置，及其方便进行调试。
 
-<Warning title="注意">
+::: warning 注意
 **它文件体积大，如果直接应用到实际环境会有源码泄露风险**。
 在打包时可以启动代码压缩`Minify`的功能，同时也要关闭sourceMap映射，如果用于调试上线则不用。具体配置如下
-</Warning>
+:::
 
 ```js
 // vite.config.js
@@ -238,9 +238,9 @@ interface ImportMeta {
 }
 ```
 
-<Tip title="提示">
+::: tip 提示
 这里其实也可以不用导入这个`.d.ts`，定义全局类型也是一样的，或者`import type`,然后该声明文件会变为局部声明文件，使用`export {}` 导出，变为全局声明文件也是一样可以的。
-</Tip>
+:::
 
 ## env配置验证注意
 
@@ -285,9 +285,9 @@ export default defineConfig(({mode})=>{
 
 为保障类型安全需手动定义相关类型，但易出现重复定义情况（例如在 `env.d.ts` 中拓展 `ImportMeta` 全局类型时，可能与其他位置类型冲突）。
 
-<Tip title="提示">
+::: tip 提示
 解决方案是将所需的 `envConfig` 直接定义为全局类型，再嵌入 `ImportMeta` 中，`vite.config.ts` 可直接使用，既避免重复定义，也解决了多位置维护类型的问题。
-</Tip>
+:::
 
 ::: tip
 上诉中这个`ImportMeta`是自定义的环境变量类型

@@ -6,6 +6,9 @@
 // 导入 mixins
 @use "../css/mixins.scss" as codeIconNameSpace;
 
+// 导入自定义容器样式
+@use "../css/highlight.scss";
+
 /**
  * Colors
  *

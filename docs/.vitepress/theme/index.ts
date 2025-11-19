@@ -8,8 +8,6 @@ import FlexProperty from './components/FlexProperty.vue';
 import GridProperty from './components/GridProperty.vue';
 import JwtValProcess from './components/JwtValProcess.vue';
 import { messageKey } from './types/injectionKey';
-import Tip from './components/code-hightlight/Tip.vue';
-import Warning from './components/code-hightlight/Warning.vue';
 
 import {
    Button as AButton,
@@ -37,7 +35,5 @@ export default {
       app.component('GridProperty', GridProperty);
       app.component('NuxterrorHandling', NuxterrorHandling);
       app.component('JwtValProcess', JwtValProcess);
-      app.component('Tip', Tip);
-      app.component('Warning', Warning);
    }
 } satisfies Theme;

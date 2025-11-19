@@ -19,30 +19,6 @@
       ],
    },
    //================================== 文档快捷键命令相关 ==================================//
-   "tip-custom": {
-      "scope": "markdown",
-      "prefix": [
-         "!TipCustom"
-      ],
-      "body": [
-         "<Tip title=\"提示\">",
-         "$1",
-         "</Tip>"
-      ],
-      "description": "自定义提示"
-   },
-   "warning-custom": {
-      "scope": "markdown",
-      "prefix": [
-         "!WarningCustom"
-      ],
-      "body": [
-         "<Warning title=\"注意\">",
-         "$1",
-         "</Warning>"
-      ],
-      "description": "自定义注意"
-   },
    "code-group": {
       "scope": "markdown",
       "prefix": [
@@ -113,7 +89,7 @@
          ":::info"
       ],
       "body": [
-         "::: info",
+         "::: info 通知",
          "$1",
          ":::"
       ],
@@ -125,7 +101,7 @@
          ":::tip"
       ],
       "body": [
-         "::: tip",
+         "::: tip 提示",
          "$1",
          ":::"
       ],
@@ -137,7 +113,7 @@
          ":::warning"
       ],
       "body": [
-         "::: warning",
+         "::: warning 注意",
          "$1",
          ":::"
       ],
@@ -149,7 +125,7 @@
          ":::danger"
       ],
       "body": [
-         "::: danger",
+         "::: danger 危险",
          "$1",
          ":::"
       ],
@@ -173,7 +149,7 @@
          "!TIP"
       ],
       "body": [
-         "> [!TIP]",
+         "> [!TIP] 提示",
          "$1",
          ">"
       ],
@@ -185,7 +161,7 @@
          "!IMPORTANT"
       ],
       "body": [
-         "> [!IMPORTANT]",
+         "> [!IMPORTANT] 重要",
          "$1",
          ">"
       ],
@@ -197,7 +173,7 @@
          "!WARNING"
       ],
       "body": [
-         "> [!WARNING]",
+         "> [!WARNING] 注意",
          "$1",
          ">"
       ],
@@ -209,7 +185,7 @@
          "!CAUTION"
       ],
       "body": [
-         "> [!CAUTION]",
+         "> [!CAUTION] 小心",
          "$1",
          ">"
       ],

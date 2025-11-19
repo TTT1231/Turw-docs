@@ -7,9 +7,9 @@
 | `@typescript-eslint/eslint-plugin` | TS 规则   | 处理类型注解、接口、泛型等 TypeScript 语法 |
 | `@typescript-eslint/parser`        | TS 解析器 | 让 ESLint 能解析 TypeScript 代码           |
 
-<Warning title="注意">
+::: warning 注意
 @typescript-eslint/parser 必须与 @typescript-eslint/eslint-plugin 配合使用。前者负责解析 TypeScript 代码，后者负责执行具体的 linting 规则。
-</Warning>
+:::
 
 ## 安装
 
@@ -157,9 +157,9 @@ pnpm-workspace.yaml
 
 **然后设置package.json命令**
 
-<Warning title="注意">
+::: warning 注意
 server这里是示例名，类似项目src可以自定义
-</Warning>
+:::
 
 | 脚本命令                                                           | 描述                             |
 | ------------------------------------------------------------------ | -------------------------------- |
@@ -433,16 +433,16 @@ npm install -g cspell
 
 :::
 
-| 说明                 | 命令                                                            |
-| :------------------- | :-------------------------------------------------------------- |
-| 检查所有文件         | **cspell \"\*\*\"**                                             |
-| 检查未暂存文件       | **git diff --name-only \| cspell --file-list stdin**            |
-| 检查已暂存文件       | **git diff --cached --name-only \| cspell --file-list stdin**   |
-| 查看上一次已提交文件 | **git diff HEAD^ HEAD --name-only \| cspell --file-list stdin** |
-| 检查指定文件         | `cspell check <filename>`                                       |
+| 说明                 | 命令                                                                       |
+| :------------------- | :------------------------------------------------------------------------- |
+| 检查所有文件         | **cspell \"\*\*\"**                                                        |
+| 检查未暂存文件       | **git diff --name-only \| cspell --file-list stdin**                       |
+| 检查已暂存文件       | **git diff --cached --name-only \| cspell --file-list stdin**              |
+| 查看上一次已提交文件 | **git diff HEAD^ HEAD --name-only \| cspell --file-list stdin**            |
+| 检查指定文件         | :heavy_exclamation_mark:`cspell check <filename>` :heavy_exclamation_mark: |
 
-<Warning title="注意">
+::: warning 注意
 
-在vscode中，`检查指定文件`,不推荐，直接使用vscode插件**Code Spell Checker**即可
+在vscode中，`检查指定文件`,**不推荐**，直接使用vscode插件**Code Spell Checker**即可
 
-</Warning>
+:::

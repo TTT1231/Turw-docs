@@ -104,9 +104,9 @@ return next.handle().pipe(
 
 :::
 
-<Tip title="提示">
+::: tip 提示
 在Nestjs中Controller方法中，最后的结果也会被Observable包裹，统一返回格式，统一拦截器的Obserable和管道的链式调用触发
-</Tip>
+:::
 
 ### DI思想
 
@@ -120,17 +120,17 @@ return next.handle().pipe(
 - 方法装饰器,接受类的原型、方法名、方法描述符作为参数，`修改方法实现`
 - 属性装饰器,接受类的原型和属性名作为参数，可以对属性进行元数据`标记`
 
-<Warning title="注意">
+::: warning 注意
 截至`2025/10/12` Nestjs还是使用stage2写法，因此它会自动添加元数据`design:paramtypes`但这种不安全，它试图将静态拓展到动态违背了TS设计原则，因此在stage3中被移除了。
 
 同时由于是stage2写法所有在tsconfig.json中必须要配置`emitDecoratorMetadata`和`experimentalDecorators`**值为true**，否则其内部提供的元数据会失效，DI和AOP会失效，工厂函数创建实例失败。
-</Warning>
+:::
 
-<Tip title="提示">
+::: tip 提示
 TS5+版本默认是开启stage3的，因此如果想要使用stage3就需要关闭stage2的tsconfig，也就是`experimentalDecorators`和`emitDecoratorMetadata`
 
 截止**2025/11**月，nestjs目前还是使用**stage2**
-</Tip>
+:::
 
 **details stage3示例用法:**
 
@@ -334,9 +334,9 @@ export function propertyDecorator<T extends Object, Value>() {
 - 关注：**方法元数据**获取，倾向结构化和静态的扫描
 - 主要用在静态扫描和自动化注册以及模块化和配置
 
-<Tip title="提示">
+::: tip 提示
 MetadataScanner现在只保留了**getAllMethodNames**，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
-</Tip>
+:::
 
 ## 缓存监控与埋点
 

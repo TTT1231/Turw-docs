@@ -40,9 +40,9 @@
 | **工程信息**      | `repository`               | object    | GitHub 链接                            | 便于团队协作与定位                            |
 |                   | `license`                  | string    | `"MIT"`                                | 开源协议声明                                  |
 
-<Warning title="注意">
-**为符合现代标准，**main**指向commonJs入口，而**module**指向esmodule入口
+::: warning 注意
+**为符合现代标准，**main**指向commonJs入口，而**module\*\*指向esmodule入口
 
 这里的双入口是为了适配require或者es格式，其实都差不多
 
-</Warning>
+:::

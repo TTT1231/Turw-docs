@@ -1367,12 +1367,12 @@
 
 ## 英文版
 
-<Tip title="提示">
+::: tip 提示
 
 "$schema": "https://json.schemastore.org/tsconfig.json"
 
 如果网络不好访问不到，就手动下载然后放到项目中，适合网络不好的情况。或者复制下面即可。
-</Tip>
+:::
 
 ::: code-group
 

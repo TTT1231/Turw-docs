@@ -317,18 +317,6 @@
    },
    //[!code ++]
    //=========================== 文档快捷键命令相关 ==========================//
-   "tip-custom": {
-      "scope": "markdown",
-      "prefix": ["!TipCustom"],
-      "body": ["<Tip title=\"提示\">", "$1", "</Tip>"],
-      "description": "自定义提示"
-   },
-   "warning-custom": {
-      "scope": "markdown",
-      "prefix": ["!WarningCustom"],
-      "body": ["<Warning title=\"注意\">", "$1", "</Warning>"],
-      "description": "自定义注意"
-   },
    "code-group": {
       "scope": "markdown",
       "prefix": [":::code-group"],
@@ -368,25 +356,25 @@
    "info-vitepress": {
       "scope": "markdown",
       "prefix": [":::info"],
-      "body": ["::: info", "$1", ":::"],
+      "body": ["::: info 通知", "$1", ":::"],
       "description": "通知"
    },
    "tip-vitepress": {
       "scope": "markdown",
       "prefix": [":::tip"],
-      "body": ["::: tip", "$1", ":::"],
+      "body": ["::: tip 提示", "$1", ":::"],
       "description": "提示"
    },
    "warning-vitepress": {
       "scope": "markdown",
       "prefix": [":::warning"],
-      "body": ["::: warning", "$1", ":::"],
+      "body": ["::: warning 注意", "$1", ":::"],
       "description": "注意"
    },
    "danger-vitepress": {
       "scope": "markdown",
       "prefix": [":::danger"],
-      "body": ["::: danger", "$1", ":::"],
+      "body": ["::: danger 危险", "$1", ":::"],
       "description": "危险"
    },
    "NOTE-Github": {
@@ -398,25 +386,25 @@
    "TIP-Github": {
       "scope": "markdown",
       "prefix": ["!TIP"],
-      "body": ["> [!TIP]", "$1", ">"],
+      "body": ["> [!TIP] 提示", "$1", ">"],
       "description": "提示"
    },
    "IMPORTANT-Github": {
       "scope": "markdown",
       "prefix": ["!IMPORTANT"],
-      "body": ["> [!IMPORTANT]", "$1", ">"],
+      "body": ["> [!IMPORTANT] 重要", "$1", ">"],
       "description": "重要"
    },
    "WARNING-Github": {
       "scope": "markdown",
       "prefix": ["!WARNING"],
-      "body": ["> [!WARNING]", "$1", ">"],
+      "body": ["> [!WARNING] 注意", "$1", ">"],
       "description": "注意"
    },
    "CAUTION-Github": {
       "scope": "markdown",
       "prefix": ["!CAUTION"],
-      "body": ["> [!CAUTION]", "$1", ">"],
+      "body": ["> [!CAUTION] 小心", "$1", ">"],
       "description": "小心"
    },
    //[!code ++]
@@ -452,14 +440,14 @@
 
 ## 插件注意
 
-<Warning title="注意">
+::: warning 注意
 由于这里使用的是`vscode-icons`插件，因此所支持的图标如下:
 
 - [文件夹图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFolders)
 - [文件图标](https://github.com/vscode-icons/vscode-icons/wiki/ListOfFiles)
 
 没有的话，就只能按照文档自己配置自定义的文件夹图标和文件图标
-</Warning>
+:::
 
 ## 跨编译器风格统一
 

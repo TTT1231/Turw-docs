@@ -162,9 +162,9 @@
 
 定义一个.d.ts类型文件，重写ProcessEnv接口。例如：定义之后，可能不会自动导入，在**nuxt.config.ts**顶部引入ts类型。
 
-<Tip title="提示">
+::: tip 提示
 这里其实也可以不用导入这个`.d.ts`，定义全局类型也是一样的，或者`import type`,然后该声明文件会变为局部声明文件，使用`export {}` 导出，变为全局声明文件也是一样可以的。
-</Tip>
+:::
 
 ```ts
 //下面这段ts类型需要在nuxt.config.ts顶部引入，类似ts import [!code ++]

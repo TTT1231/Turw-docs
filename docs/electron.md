@@ -204,15 +204,15 @@ export function ipcMainHandleRemove<T extends Record<string, any>, P extends Pat
 
 ### preload自动桥接
 
-<Tip title="自动装配">
+::: tip 自动装配
 在`contextBridge`方法中的`exposeXXX`，第二个参数api是一个对象，并且preload在electron只是做转发的话，那么完全可以自动装配这个对象
 
 - ts类型安全，不用在意chunnel的写错了
 - 避免繁杂的转发方法的编写
 
-</Tip>
+:::
 
-<Warning title="注意">
+::: warning 注意
 由于ipcRenderer.invoke默认是`异步的`，因此完全不用担心在preload中前面加`async`是否有啥影响。
 
 核心就是preload只是负责转发，也是main和render的桥梁，因此它只是返回对应值，然后传递给render即可
@@ -224,7 +224,7 @@ contextBridge.exposeInMainWorld('electronApi', {
 });
 ```
 
-</Warning>
+:::
 
 ::: code-group
 

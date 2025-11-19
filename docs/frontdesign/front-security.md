@@ -101,9 +101,9 @@ line-number：资源出现问题的代码行号。
 | **nuxt.config**       | ⭐⭐⭐ 高 | ⭐ 低     | ⭐ 简单   | 全局统一策略      |
 | **server middleware** | ⭐⭐ 中   | ⭐⭐⭐ 高 | ⭐⭐ 中等 | 页面级/权限级策略 |
 
-<Tip title="提示">
+::: tip 提示
 **推荐方案**：在 server middleware 中动态生成 nonce 和基础 CSP，结合 render hook 为脚本标签注入 nonce，代码最少、最好维护。
-</Tip>
+:::
 
 ### 演示代码（Nuxt为例）
 

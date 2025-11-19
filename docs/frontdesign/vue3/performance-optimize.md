@@ -1,8 +1,8 @@
 # 性能优化
 
-<Tip title="提示">
+::: tip 提示
 格式优化、懒加载、CDN、代码压缩、请求合并（可以使用es6特性allSettled并发）、以及缓存策略、代码分割、Tree Shaking
-</Tip>
+:::
 
 ## vite构建优化
 
@@ -108,9 +108,9 @@ ViteImagemin({
 - **原理** - 基于内容哈希计算，变化即改变
 - **精确度** - 高（内容级别）
 
-<Tip title="提示">
+::: tip 提示
 两种方式可配对使用，服务器会根据 `If-Modified-Since` 或 `If-None-Match` 判断资源是否变化
-</Tip>
+:::
 
 ::: code-group
 
@@ -160,9 +160,9 @@ app.get('/api/data', (req, res, next) => {
 
 :::
 
-<Tip title="提示">
+::: tip 提示
 Cache-Control中，public表示任何服务器都可以缓存，而private只能游览器缓存不包含代理服务器，当设置`Cache-Control: no-cache` 则表示**不用强缓存**，当`·`Cache-Control`与`Expires`同时存在时，游览器会以Cache-Control为准
-</Tip>
+:::
 
 ::: code-group
 
