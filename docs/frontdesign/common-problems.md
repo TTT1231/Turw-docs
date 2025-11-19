@@ -10,7 +10,7 @@ outline: deep
 
 快速概览：分片上传一般分三步 — 前端分片并上传、后端临时存储、完成后合并。
 
-::: tip 提示}
+::: tip 提示
 常见要点：断点续传、分片哈希校验、使用 AbortController 终止请求、把耗时计算交给 Web Worker。
 :::
 
@@ -82,7 +82,7 @@ export default defineEventHandler(async (event) => {
 - 前端：主线程分片、Worker 计算哈希、预检断点续传、使用 AbortController 终止上传
 - 后端：接收分片、校验分片哈希、临时保存并在完成后合并
 
-::: info 注意
+::: warning 注意
 为保证一致性，前后端应使用相同的分片/文件哈希算法；大文件优先传 ArrayBuffer 给 Worker
 :::
 

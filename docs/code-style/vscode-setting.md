@@ -17,7 +17,9 @@
    "editor.defaultFormatter": "esbenp.prettier-vscode", // 默认使用Prettier格式化
    "editor.formatOnSave": true, // 保存时自动格式化
    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit" // 保存时自动修复ESLint错误
+      "source.fixAll.eslint": "explicit", // 保存时自动修复ESLint错误
+      "source.fixAll.stylelint": "explicit", //保存时自动修复stylelint错误
+      "source.organizeImports": "never" // 保存时不自动组织导入
    },
    // 光标与动画
    "editor.cursorBlinking": "expand", // 光标闪烁带扩展效果
@@ -69,25 +71,30 @@
    "terminal.integrated.tabs.enabled": true, // 启用终端标签页
    "terminal.integrated.scrollback": 10000, // 保留10000行历史记录
    //[!code ++]
-   //文件监听忽略
+   //======= 文件 =========
    "files.watcherExclude": {
       "**/.git/objects/**": true,
       "**/.git/subtree-cache/**": true,
       "**/.vscode/**": true,
       "**/node_modules/**": true,
       "**/tmp/**": true,
-      "**/bower_components/**": true,
       "**/dist/**": true
    },
-   //默认包管理工具
-   "npm.packageManager": "pnpm",
-   //[!code ++]
+   //隐藏文件
+   "files.exclude": {
+      "**/.eslintcache": true,
+      "**/.turbo": true,
+      "**/.vitepress": true,
+      "**/tmp": true,
+      "**/.git": true,
+      "**/.stylelintcache": true,
+      "**/vite.config.mts.*": true
+   },
    //文件搜索，排除以下文件
    "search.exclude": {
       "**/node_modules": true,
       "**/*.log": true,
       "**/*.log*": true,
-      "**/bower_components": true,
       "**/dist": true,
       "**/.git": true,
       "**/.github": true,
@@ -102,6 +109,8 @@
       "node_modules": true,
       "**/pnpm-lock.yaml": true
    },
+   //默认包管理工具
+   "npm.packageManager": "pnpm",
    //[!code ++]
    //===== 折叠文件夹（美观优化） =====
    "explorer.fileNesting.enabled": true, // 启用文件嵌套功能

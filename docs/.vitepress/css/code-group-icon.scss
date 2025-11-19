@@ -1,0 +1,107 @@
+// 导入 mixins
+@use "../css/mixins.scss" as codeIconNameSpace;
+/* Code Group: 在标签前显示语言徽标（基于 data-title 后缀匹配） */
+.vp-code-group .tabs label {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.vp-code-group .tabs label::before {
+   content: attr(data-lang);
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   padding: 2px 6px;
+   border-radius: 4px;
+   font-size: 12px;
+   font-weight: 600;
+   text-transform: uppercase;
+   line-height: 1;
+   background: var(--vp-c-default-soft);
+   color: var(--vp-c-default-1);
+   border: 1px solid var(--vp-c-default-2);
+}
+
+/* 通过属性选择器匹配文件后缀，设置不同语言的徽标内容与颜色 */
+.vp-code-group .tabs label[data-title$=".js"]::before {
+   content: "JS";
+   background: rgba(247, 223, 30, 0.18);
+   color: #a78900;
+}
+.vp-code-group .tabs label[data-title$=".ts"]::before {
+   content: "TS";
+   background: rgba(213, 219, 230, 0.12);
+   color: #1261e1;
+   font-weight: 700;
+}
+/*  .d.ts 徽章，美观且与 TS 有区别 */
+.vp-code-group .tabs label[data-title$=".d.ts"]::before {
+   content: ".TS";
+   background: #ffffff; /* 白色背景 */
+   color: #00b347; /* 绿色文字 */
+   font-weight: 700;
+}
+.vp-code-group .tabs label[data-title$=".vue"]::before {
+   content: "VUE";
+   background: rgba(65, 184, 131, 0.12);
+   color: #3fb27f;
+}
+.vp-code-group .tabs label[data-title$=".md"]::before {
+   content: "MD";
+   background: rgba(168, 85, 247, 0.12); /* 紫色背景 */
+   color: #7c3aed; /* 紫色文字 */
+}
+
+//=================================== 图标支持 ===================================//
+.vp-code-group .tabs label[data-title$=".prettierignore"]::before,
+.vp-code-group .tabs label[data-title$=".prettierrc"]::before,
+.vp-code-group .tabs label[data-title$=".prettierrc.json"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prettier.svg");
+}
+
+.vp-code-group .tabs label[data-title$="eslint.config.mjs"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/eslint.svg");
+}
+.vp-code-group .tabs label[data-title$="vite.config.ts"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vite.svg");
+}
+.vp-code-group .tabs label[data-title$=".prisma"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prisma.svg");
+}
+.vp-code-group .tabs label[data-title$=".html"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/html.svg");
+}
+
+.vp-code-group .tabs label[data-title$="pre-commit"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/husky.svg");
+}
+
+.vp-code-group .tabs label[data-title$=".editorconfig"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
+}
+.vp-code-group .tabs label[data-title$="esbuild.config.mjs"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/esbuild.svg");
+}
+.vp-code-group .tabs label[data-title$=".sh"]::before,
+.vp-code-group .tabs label[data-title$=".bash"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/shell.svg");
+}
+.vp-code-group .tabs label[data-title$=".fastify.ts"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/fastify.svg");
+}
+.vp-code-group .tabs label[data-title$=".json"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json.svg");
+}
+.vp-code-group .tabs label[data-title$="global.code-snippets"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vscode.svg");
+}
+.vp-code-group .tabs label[data-title$="schema.json"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json-schema.svg");
+}
+.vp-code-group .tabs label[data-title$="stylelint.config.mjs"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/stylelint.svg");
+}
+.vp-code-group .tabs label[data-title$="cspell.json"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/cspell.svg");
+}
