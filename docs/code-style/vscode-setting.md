@@ -124,55 +124,8 @@
    },
    //[!code ++]
    // =============================== 插件配置 ================================
-   "better-comments.tags": [
-      {
-         "tag": "!",
-         "color": "#FF2D00",
-         "strikethrough": false,
-         "underline": false,
-         "backgroundColor": "transparent",
-         "bold": false,
-         "italic": false
-      },
-      {
-         "tag": "?",
-         "color": "#3498DB",
-         "strikethrough": false,
-         "underline": false,
-         "backgroundColor": "transparent",
-         "bold": false,
-         "italic": false
-      },
-      {
-         "tag": "//",
-         "color": "#474747",
-         "strikethrough": true,
-         "underline": false,
-         "backgroundColor": "transparent",
-         "bold": false,
-         "italic": false
-      },
-      {
-         "tag": "todo",
-         "color": "#FF8C00",
-         "strikethrough": false,
-         "underline": false,
-         "backgroundColor": "transparent",
-         "bold": false,
-         "italic": false
-      },
-      {
-         "tag": "*",
-         "color": "#98C379",
-         "strikethrough": false,
-         "underline": false,
-         "backgroundColor": "transparent",
-         "bold": false,
-         "italic": false
-      }
-   ],
+   //Better Comments
    "better-comments.multilineComments": true,
-
    //vscode-icon
    "vsicons.associations.folders": [
       {
@@ -194,6 +147,7 @@
    "versionlens.suggestions.showOnStartup": true,
    //error lens
    "errorLens.enabledDiagnosticLevels": ["warning", "error"],
+   //error len 主动排除eslint和cSpell错误，交给各自的插件进行
    "errorLens.excludeBySource": ["cSpell", "eslint"],
 
    //stylelint支持，关闭默认css、scss验证，使用stylelint验证与格式化
