@@ -364,3 +364,85 @@ export default {
 ```
 
 :::
+
+## 配置Cspell
+
+**安装：**
+
+```sh
+pnpm add cspell -D
+```
+
+::: code-group
+
+```json [cspell.json]
+{
+   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+   "version": "0.2",
+   "language": "en,en-US",
+   // 复合词检查
+   "allowCompoundWords": true,
+   // 正确单词列表
+   "words": [
+      "defu",
+      "echarts",
+      "iconify",
+      "minh",
+      "minw",
+      "mockjs",
+      "nprogress",
+      "nuxt",
+      "pinia",
+      "prefixs",
+      "qrcode",
+      "vite",
+      "vitejs",
+      "vitepress",
+      "vueuse"
+   ],
+   // 从cspell的配置文件为当前目录，file patterns为匹配
+   "ignorePaths": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/*-dist/**",
+      "**/icons/**",
+      "pnpm-lock.yaml",
+      "**/*.log",
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      "**/__tests__/**",
+      "**/*.svg",
+      "**/*.png",
+      "**/*.ico",
+      "docs/.vitepress/cache/**"
+   ]
+}
+```
+
+:::
+
+## 检查命令
+
+::: code-group
+
+```sh [install.sh]
+
+npm install -g cspell
+
+```
+
+:::
+
+| 说明                 | 命令                                                            |
+| :------------------- | :-------------------------------------------------------------- |
+| 检查所有文件         | **cspell \"\*\*\"**                                             |
+| 检查未暂存文件       | **git diff --name-only \| cspell --file-list stdin**            |
+| 检查已暂存文件       | **git diff --cached --name-only \| cspell --file-list stdin**   |
+| 查看上一次已提交文件 | **git diff HEAD^ HEAD --name-only \| cspell --file-list stdin** |
+| 检查指定文件         | `cspell check <filename>`                                       |
+
+<Warning title="注意">
+
+在vscode中，`检查指定文件`,不推荐，直接使用vscode插件**Code Spell Checker**即可
+
+</Warning>

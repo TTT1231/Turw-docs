@@ -8,38 +8,6 @@
 {
    //[!code ++]
    // =============================== 编辑器爱好设置 ================================
-   //文件监听忽略
-   "files.watcherExclude": {
-      "**/.git/objects/**": true,
-      "**/.git/subtree-cache/**": true,
-      "**/.vscode/**": true,
-      "**/node_modules/**": true,
-      "**/tmp/**": true,
-      "**/bower_components/**": true,
-      "**/dist/**": true
-   },
-   //默认包管理工具
-   "npm.packageManager": "pnpm",
-   //文件搜索，排除以下文件
-   "search.exclude": {
-      "**/node_modules": true,
-      "**/*.log": true,
-      "**/*.log*": true,
-      "**/bower_components": true,
-      "**/dist": true,
-      "**/.git": true,
-      "**/.github": true,
-      "**/.gitignore": true,
-      "**/.vitepress/cache": true,
-      "**/.idea": true,
-      "**/.vscode": false,
-      "**/tmp": true,
-      "*.xml": true,
-      "out": true,
-      "dist": true,
-      "node_modules": true,
-      "**/pnpm-lock.yaml": true
-   },
    // 缩进与格式化
    "editor.tabSize": 3, // 制表符宽度为3空格（匹配 Prettier）
    "editor.detectIndentation": false, // 禁用自动检测缩进（强制使用tabSize）
@@ -75,6 +43,15 @@
    "typescript.tsserver.exclude": ["**/node_modules", "**/dist", "**/.turbo"], //文件忽略
    //[!code ++]
    // ===== 语言特定格式化 =====
+   "[html]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+   },
+   "[css]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+   },
+   "[scss]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+   },
    "[typescript]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.formatOnSave": true
@@ -92,12 +69,46 @@
    "terminal.integrated.tabs.enabled": true, // 启用终端标签页
    "terminal.integrated.scrollback": 10000, // 保留10000行历史记录
    //[!code ++]
+   //文件监听忽略
+   "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/.vscode/**": true,
+      "**/node_modules/**": true,
+      "**/tmp/**": true,
+      "**/bower_components/**": true,
+      "**/dist/**": true
+   },
+   //默认包管理工具
+   "npm.packageManager": "pnpm",
+   //[!code ++]
+   //文件搜索，排除以下文件
+   "search.exclude": {
+      "**/node_modules": true,
+      "**/*.log": true,
+      "**/*.log*": true,
+      "**/bower_components": true,
+      "**/dist": true,
+      "**/.git": true,
+      "**/.github": true,
+      "**/.gitignore": true,
+      "**/.vitepress/cache": true,
+      "**/.idea": true,
+      "**/.vscode": false,
+      "**/tmp": true,
+      "*.xml": true,
+      "out": true,
+      "dist": true,
+      "node_modules": true,
+      "**/pnpm-lock.yaml": true
+   },
+   //[!code ++]
    //===== 折叠文件夹（美观优化） =====
    "explorer.fileNesting.enabled": true, // 启用文件嵌套功能
    "explorer.fileNesting.expand": false, // 默认折叠嵌套文件（不展开）
    "explorer.fileNesting.patterns": {
       //file fold
-      "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, ",
+      "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, cspell.json",
       "eslint.config.mjs": ".prettierignore, .prettierrc.json,.prettier,.editorconfig",
       "tsconfig.json": "tsconfig.*.json",
       "tailwind.config.js": "postcss.config.js",
@@ -161,6 +172,8 @@
       }
    ],
    "better-comments.multilineComments": true,
+
+   //vscode-icon
    "vsicons.associations.folders": [
       {
          "icon": "src",
@@ -177,9 +190,13 @@
       }
    ],
    "workbench.iconTheme": "vscode-icons",
+   //version len
    "versionlens.suggestions.showOnStartup": true,
+   //error lens
+   "errorLens.enabledDiagnosticLevels": ["warning", "error"],
+   "errorLens.excludeBySource": ["cSpell", "eslint"],
 
-   //stylelint支持
+   //stylelint支持，关闭默认css、scss验证，使用stylelint验证与格式化
    "css.validate": false,
    "less.validate": false,
    "scss.validate": false,
@@ -187,7 +204,27 @@
    "stylelint.packageManager": "pnpm",
    "stylelint.validate": ["css", "scss", "vue"],
    "stylelint.customSyntax": "postcss-html",
-   "stylelint.snippet": ["css", "scss", "vue"]
+   "stylelint.snippet": ["css", "scss", "vue"],
+
+   //vscode eslint
+   "eslint.validate": [
+      "javascript",
+      "typescript",
+      "javascriptreact",
+      "typescriptreact",
+      "vue",
+      "html",
+      "markdown",
+      "json",
+      "jsonc",
+      "json5"
+   ],
+
+   //使用项目中的ts编译器进行ts检查，而不是vscode自带的
+   "typescript.tsdk": "node_modules/typescript/lib",
+
+   //cspell,这些默认合法
+   "cSpell.words": ["archiver", "axios", "dotenv", "rollup", "vitest"]
 }
 ```
 
@@ -235,7 +272,11 @@
       //version len
       "pflannery.vscode-versionlens",
       //stylelint
-      "stylelint.vscode-stylelint"
+      "stylelint.vscode-stylelint",
+      //error lens
+      "usernamehw.errorlens",
+      //code spell checker
+      "streetsidesoftware.code-spell-checker"
    ]
 }
 ```
@@ -377,6 +418,32 @@
       "prefix": ["!CAUTION"],
       "body": ["> [!CAUTION]", "$1", ">"],
       "description": "小心"
+   },
+   //[!code ++]
+   //=========================== 拼写检查快捷命令 ==========================//
+   "cspell:disable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["cspell:disable"],
+      "body": ["//cspell:disable"],
+      "description": "禁用后面所有的拼写检查"
+   },
+   "spell-checker:disable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["spell-checker:disable"],
+      "body": ["//spell-checker:disable"],
+      "description": "禁用拼写检查开始符"
+   },
+   "spell-checker:enable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["spell-checker:enable"],
+      "body": ["//spell-checker:enable"],
+      "description": "禁用拼写检查结束符"
+   },
+   "cspell:disable-next-line": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["cspell:disable-next-line"],
+      "body": ["//cspell:disable-next-line"],
+      "description": "禁用下一行的拼写检查"
    }
 }
 ```
