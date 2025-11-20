@@ -102,6 +102,9 @@
 .vp-code-group .tabs label[data-title$="stylelint.config.mjs"]::before {
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/stylelint.svg");
 }
+.vp-code-group .tabs label[data-title$=".stylelintignore"]::before {
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/stylelint.svg");
+}
 .vp-code-group .tabs label[data-title$="cspell.json"]::before {
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/cspell.svg");
 }

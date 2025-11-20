@@ -378,6 +378,12 @@
       "body": ["//cspell:disable"],
       "description": "禁用后面所有的拼写检查"
    },
+   "cspell:enable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["cspell:enable"],
+      "body": ["//cspell:enable"],
+      "description": "启用后面所有的拼写检查"
+   },
    "spell-checker:disable": {
       "scope": "vue,typescript,javascript",
       "prefix": ["spell-checker:disable"],

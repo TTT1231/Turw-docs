@@ -363,6 +363,13 @@ export default {
 };
 ```
 
+```[.stylelintignore]
+dist
+public
+__tests__
+coverage
+```
+
 :::
 
 ## 配置Cspell
