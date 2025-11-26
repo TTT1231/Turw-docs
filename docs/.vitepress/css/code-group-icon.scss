@@ -1,14 +1,8 @@
 // 导入 mixins
 @use "../css/mixins.scss" as codeIconNameSpace;
-/* Code Group: 在标签前显示语言徽标（基于 data-title 后缀匹配） */
-.vp-code-group .tabs label {
-   display: inline-flex;
-   align-items: center;
-   gap: 6px;
-}
 
-.vp-code-group .tabs label::before {
-   content: attr(data-lang);
+/* 徽标基础样式 mixin */
+@mixin badgeBase() {
    display: inline-flex;
    align-items: center;
    justify-content: center;
@@ -18,93 +12,121 @@
    font-weight: 600;
    text-transform: uppercase;
    line-height: 1;
-   background: var(--vp-c-default-soft);
-   color: var(--vp-c-default-1);
-   border: 1px solid var(--vp-c-default-2);
 }
 
-/* 通过属性选择器匹配文件后缀，设置不同语言的徽标内容与颜色 */
+/* Code Group: 在标签前显示语言徽标（基于 data-title 后缀匹配） */
+.vp-code-group .tabs label {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+}
+
+//=================================== 文本徽标 ===================================//
+//基础图标支持json,js,ts,.d.ts,vue,sh,bash,html,md
+//!注意这些基础图标要放在前面，后面要自定义的话直接覆盖基础图标即可
+.vp-code-group .tabs label[data-title$=".json"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json.svg");
+}
 .vp-code-group .tabs label[data-title$=".js"]::before {
    content: "JS";
+   @include badgeBase();
    background: rgba(247, 223, 30, 0.18);
    color: #a78900;
+   border: 1px solid rgba(247, 223, 30, 0.3);
 }
 .vp-code-group .tabs label[data-title$=".ts"]::before {
    content: "TS";
+   @include badgeBase();
    background: rgba(213, 219, 230, 0.12);
    color: #1261e1;
    font-weight: 700;
+   border: 1px solid rgba(213, 219, 230, 0.3);
 }
-/*  .d.ts 徽章，美观且与 TS 有区别 */
 .vp-code-group .tabs label[data-title$=".d.ts"]::before {
    content: ".TS";
-   background: #ffffff; /* 白色背景 */
-   color: #00b347; /* 绿色文字 */
+   @include badgeBase();
+   background: #ffffff; //白色背景
+   color: #00b347; //绿色文字
+   border: 1px solid #00b347;
    font-weight: 700;
 }
 .vp-code-group .tabs label[data-title$=".vue"]::before {
    content: "VUE";
+   @include badgeBase();
    background: rgba(65, 184, 131, 0.12);
    color: #3fb27f;
-}
-.vp-code-group .tabs label[data-title$=".md"]::before {
-   content: "MD";
-   background: rgba(168, 85, 247, 0.12); /* 紫色背景 */
-   color: #7c3aed; /* 紫色文字 */
-}
-
-//=================================== 图标支持 ===================================//
-.vp-code-group .tabs label[data-title$=".prettierignore"]::before,
-.vp-code-group .tabs label[data-title$=".prettierrc"]::before,
-.vp-code-group .tabs label[data-title$=".prettierrc.json"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prettier.svg");
-}
-
-.vp-code-group .tabs label[data-title$="eslint.config.mjs"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/eslint.svg");
-}
-.vp-code-group .tabs label[data-title$="vite.config.ts"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vite.svg");
-}
-.vp-code-group .tabs label[data-title$=".prisma"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prisma.svg");
-}
-.vp-code-group .tabs label[data-title$=".html"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/html.svg");
-}
-
-.vp-code-group .tabs label[data-title$="pre-commit"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/husky.svg");
-}
-
-.vp-code-group .tabs label[data-title$=".editorconfig"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
-}
-.vp-code-group .tabs label[data-title$="esbuild.config.mjs"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/esbuild.svg");
+   border: 1px solid rgba(65, 184, 131, 0.3);
 }
 .vp-code-group .tabs label[data-title$=".sh"]::before,
 .vp-code-group .tabs label[data-title$=".bash"]::before {
+   @include badgeBase();
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/shell.svg");
 }
+.vp-code-group .tabs label[data-title$=".html"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/html.svg");
+}
+.vp-code-group .tabs label[data-title$=".md"]::before {
+   content: "MD";
+   @include badgeBase();
+   background: rgba(168, 85, 247, 0.12); //紫色背景
+   color: #7c3aed; //紫色文字
+   border: 1px solid rgba(168, 85, 247, 0.3);
+}
+//!基础图标支持结束
+
+.vp-code-group .tabs label[data-title$=".prettierignore"]::before,
+.vp-code-group .tabs label[data-title$=".prettierrc"]::before,
+.vp-code-group .tabs label[data-title$=".prettierrc.json"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prettier.svg");
+}
+.vp-code-group .tabs label[data-title$="eslint.config.mjs"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/eslint.svg");
+}
+.vp-code-group .tabs label[data-title$="vite.config.ts"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vite.svg");
+}
+.vp-code-group .tabs label[data-title$=".prisma"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prisma.svg");
+}
+.vp-code-group .tabs label[data-title$="pre-commit"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/husky.svg");
+}
+.vp-code-group .tabs label[data-title$=".editorconfig"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
+}
+.vp-code-group .tabs label[data-title$="esbuild.config.mjs"]::before {
+   @include badgeBase();
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/esbuild.svg");
+}
 .vp-code-group .tabs label[data-title$=".fastify.ts"]::before {
+   @include badgeBase();
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/fastify.svg");
 }
-.vp-code-group .tabs label[data-title$=".json"]::before {
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json.svg");
-}
 .vp-code-group .tabs label[data-title$="global.code-snippets"]::before {
+   @include badgeBase();
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vscode.svg");
 }
 .vp-code-group .tabs label[data-title$="schema.json"]::before {
+   @include badgeBase();
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json-schema.svg");
 }
 .vp-code-group .tabs label[data-title$="stylelint.config.mjs"]::before {
+   @include badgeBase();
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/stylelint.svg");
 }
 .vp-code-group .tabs label[data-title$=".stylelintignore"]::before {
+   @include badgeBase();
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/stylelint.svg");
 }
 .vp-code-group .tabs label[data-title$="cspell.json"]::before {
+   @include badgeBase();
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/cspell.svg");
 }
