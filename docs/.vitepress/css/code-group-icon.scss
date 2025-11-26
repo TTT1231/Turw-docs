@@ -68,11 +68,8 @@
    @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/html.svg");
 }
 .vp-code-group .tabs label[data-title$=".md"]::before {
-   content: "MD";
    @include badgeBase();
-   background: rgba(168, 85, 247, 0.12); //紫色背景
-   color: #7c3aed; //紫色文字
-   border: 1px solid rgba(168, 85, 247, 0.3);
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/markdown.svg");
 }
 //!基础图标支持结束
 
