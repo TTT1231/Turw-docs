@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
-import { messageKey } from '../types/injectionKey';
-
-//注入
-const message = inject(messageKey);
+import { ref, computed } from 'vue';
+import CopyBtn from './CopyBtn.vue';
 
 // 响应式数据
 const justifyContent = ref<
@@ -139,25 +136,6 @@ const highlightTailwind = (code: string) => {
 
    return result;
 };
-
-// 复制代码到剪贴板
-const copyToClipboard = async (text: string, type: string) => {
-   try {
-      await navigator.clipboard.writeText(text);
-      // 简单的成功提示 - 可以根据需要替换为更好的通知组件
-
-      message?.success({
-         content: '复制成功',
-         duration: 0.7,
-         //屏幕中心
-         style: {
-            marginTop: '20vh'
-         }
-      });
-   } catch (err) {
-      console.error('复制失败:', err);
-   }
-};
 </script>
 
 <template>
@@ -238,23 +216,7 @@ const copyToClipboard = async (text: string, type: string) => {
                   <span class="code-icon">🎨</span>
                   CSS 代码
                </h4>
-               <button
-                  class="copy-button"
-                  @click="copyToClipboard(cssCode, 'CSS')"
-                  title="复制代码"
-               >
-                  <svg
-                     width="14"
-                     height="14"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2"
-                  >
-                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-               </button>
+               <copy-btn :copy-value="cssCode" />
             </div>
             <pre><code class="css-code" v-html="highlightCss(cssCode)"></code></pre>
          </div>
@@ -265,23 +227,7 @@ const copyToClipboard = async (text: string, type: string) => {
                   <span class="code-icon">⚡</span>
                   Tailwind CSS
                </h4>
-               <button
-                  class="copy-button"
-                  @click="copyToClipboard(tailwindCode, 'Tailwind CSS')"
-                  title="复制代码"
-               >
-                  <svg
-                     width="14"
-                     height="14"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2"
-                  >
-                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-               </button>
+               <copy-btn :copy-value="tailwindCode" />
             </div>
             <pre><code class="tailwind-code" v-html="highlightTailwind(tailwindCode)"></code></pre>
          </div>
@@ -289,7 +235,7 @@ const copyToClipboard = async (text: string, type: string) => {
    </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .flex-property-demo {
    margin: 24px 0;
    padding: 20px;
@@ -309,12 +255,11 @@ const copyToClipboard = async (text: string, type: string) => {
    display: flex;
    flex-direction: column;
    gap: 6px;
-}
-
-.selector-group label {
-   font-weight: 600;
-   color: #374151;
-   font-size: 14px;
+   & > label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 14px;
+   }
 }
 
 .demo-preview {
@@ -323,6 +268,12 @@ const copyToClipboard = async (text: string, type: string) => {
    background: #f8fafc;
    border-radius: 8px;
    border: 1px solid #e5e7eb;
+   h4 {
+      margin: 0 0 12px 0;
+      color: #1f2937;
+      font-size: 16px;
+      font-weight: 600;
+   }
 }
 
 .code-display {
@@ -343,14 +294,35 @@ const copyToClipboard = async (text: string, type: string) => {
    overflow: hidden;
    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
    position: relative;
-}
-
-.code-section:first-child {
-   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.code-section:last-child {
-   background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+   &:first-child {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+   }
+   &:last-child {
+      background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+   }
+   h4 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+   }
+   pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+   }
+   code {
+      font-family:
+         'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #24292f;
+   }
 }
 
 .code-header {
@@ -361,136 +333,69 @@ const copyToClipboard = async (text: string, type: string) => {
    position: relative;
 }
 
-.code-section h4 {
-   margin: 0;
-   font-size: 14px;
-   font-weight: 600;
-   color: white;
-   display: flex;
-   align-items: center;
-   gap: 8px;
-}
-
-.copy-button {
-   background: rgba(255, 255, 255, 0.2);
-   border: 1px solid rgba(255, 255, 255, 0.3);
-   border-radius: 6px;
-   padding: 6px;
-   color: white;
-   cursor: pointer;
-   opacity: 0.7;
-   transition: all 0.2s ease;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-}
-
-.copy-button:hover {
-   opacity: 1;
-   background: rgba(255, 255, 255, 0.3);
-   transform: scale(1.05);
-}
-
-.copy-button:active {
-   transform: scale(0.95);
-}
-
-.copy-button svg {
-   width: 14px;
-   height: 14px;
-}
-
 .code-icon {
    font-size: 16px;
 }
 
-.code-section pre {
-   margin: 0;
-   padding: 16px;
-   overflow-x: auto;
-   background: rgba(255, 255, 255, 0.95);
-   backdrop-filter: blur(10px);
-}
-
-.code-section code {
-   font-family:
-      'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
-   font-size: 13px;
-   line-height: 1.6;
-   color: #24292f;
-}
-
 /* CSS 语法高亮 */
-.code-section :deep(.css-selector) {
-   color: #d73a49;
-   font-weight: 600;
-}
+.code-section {
+   :deep(.css-selector) {
+      color: #d73a49;
+      font-weight: 600;
+   }
 
-.code-section :deep(.css-property) {
-   color: #005cc5;
-   font-weight: 500;
-}
-
-.code-section :deep(.css-value) {
-   color: #032f62;
-   background: rgba(3, 47, 98, 0.1);
-   padding: 1px 3px;
-   border-radius: 3px;
-}
-
-.code-section :deep(.css-brace) {
-   color: #e36209;
-   font-weight: bold;
-}
-
-.code-section :deep(.css-colon) {
-   color: #24292f;
-}
-
-.code-section :deep(.css-semicolon) {
-   color: #6a737d;
+   :deep(.css-property) {
+      color: #005cc5;
+      font-weight: 500;
+   }
+   :deep(.css-value) {
+      color: #032f62;
+      background: rgba(3, 47, 98, 0.1);
+      padding: 1px 3px;
+      border-radius: 3px;
+   }
+   :deep(.css-brace) {
+      color: #e36209;
+      font-weight: bold;
+   }
+   :deep(.css-colon) {
+      color: #24292f;
+   }
+   :deep(.css-semicolon) {
+      color: #6a737d;
+   }
 }
 
 /* Tailwind 语法高亮 */
-.tailwind-code :deep(.html-tag) {
-   color: #22863a;
-   font-weight: 600;
-}
-
-.tailwind-code :deep(.html-attr) {
-   color: #6f42c1;
-}
-
-.tailwind-code :deep(.html-equals) {
-   color: #24292f;
-}
-
-.tailwind-code :deep(.tailwind-classes) {
-   color: #032f62;
-   background: rgba(3, 47, 98, 0.1);
-   padding: 2px 4px;
-   border-radius: 3px;
-}
-
-.tailwind-code :deep(.tailwind-class) {
-   color: #e36209;
-   font-weight: 500;
-   background: rgba(227, 98, 9, 0.1);
-   padding: 1px 2px;
-   border-radius: 2px;
-   margin: 0 1px;
-}
-
-.tailwind-code :deep(.html-comment) {
-   color: #6a737d;
-   font-style: italic;
-}
-
-.demo-preview h4 {
-   margin: 0 0 12px 0;
-   color: #1f2937;
-   font-size: 16px;
-   font-weight: 600;
+.tailwind-code {
+   :deep(.html-tag) {
+      color: #22863a;
+      font-weight: 600;
+   }
+   :deep(.html-attr) {
+      color: #6f42c1;
+   }
+   :deep(.html-equals) {
+      color: #24292f;
+   }
+   :deep(.tailwind-classes) {
+      color: #032f62;
+      background: rgba(3, 47, 98, 0.1);
+      padding: 2px 4px;
+      border-radius: 3px;
+   }
+   :deep(.tailwind-class) {
+      color: #e36209;
+      font-weight: 500;
+      background: rgba(227, 98, 9, 0.1);
+      padding: 1px 2px;
+      border-radius: 2px;
+      margin: 0 1px;
+   }
+   :deep(.html-comment) {
+      color: #6a737d;
+      font-style: italic;
+   }
 }
 
 .flex-container {
@@ -505,6 +410,10 @@ const copyToClipboard = async (text: string, type: string) => {
    color: white;
    min-width: 80px;
    transition: all 0.3s ease;
+   &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+   }
 }
 
 .item-1 {
@@ -521,11 +430,6 @@ const copyToClipboard = async (text: string, type: string) => {
 
 .item-4 {
    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.flex-item:hover {
-   transform: scale(1.05);
-   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Flex 属性样式 */

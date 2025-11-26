@@ -68,7 +68,7 @@ const dynamicStyle = computed(() => {
       </div>
 
       <!-- 效果展示 -->
-      <div class="mb-8 p-5 bg-[#f8fafc] rounded-[8px] border border-solid border-[#e5e7eb]">
+      <div class="mb-8 p-5 bg-[#f8fafc] rounded-lg border border-solid border-[#e5e7eb]">
          <h4>效果展示</h4>
          <div class="transition-all duration-300 ease-in-out grid" :class="dynamicStyle">
             <template v-for="i in 8" :key="i">

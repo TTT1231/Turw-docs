@@ -7,15 +7,7 @@ import '../css/tailwind.css';
 import FlexProperty from './components/FlexProperty.vue';
 import GridProperty from './components/GridProperty.vue';
 import JwtValProcess from './components/JwtValProcess.vue';
-import { messageKey } from './types/injectionKey';
 
-import {
-   Button as AButton,
-   Card as ACard,
-   message as AMessage,
-   Select as ASelect,
-   SelectOption as ASelectOption
-} from 'ant-design-vue';
 import NuxterrorHandling from './components/NuxterrorHandling.vue';
 export default {
    extends: DefaultTheme,
@@ -25,12 +17,6 @@ export default {
       });
    },
    enhanceApp({ app, router, siteData }) {
-      app.use(AButton);
-      app.use(ACard);
-      app.provide(messageKey, AMessage);
-      app.use(ASelect);
-      app.use(ASelectOption);
-
       app.component('FlexProperty', FlexProperty);
       app.component('GridProperty', GridProperty);
       app.component('NuxterrorHandling', NuxterrorHandling);
