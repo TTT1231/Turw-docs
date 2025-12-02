@@ -18,7 +18,7 @@ fi
 
 pnpm i
 
-pnpm run build
+pnpm run docs:build
 
 /www/server/nginx/sbin/nginx -s reload
 

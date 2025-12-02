@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { Select as ASelect, SelectOption as ASelectOption } from 'ant-design-vue';
 
 type GridColumnClass =
    | 'grid-cols-none'
@@ -9,7 +10,7 @@ type GridColumnClass =
    | 'grid-cols-[repeat(3,minmax(min-content,1fr))]'
    | 'grid-cols-[repeat(auto-fit,minmax(200px,auto))]'
    | 'grid-cols-3';
-type GridRowlass =
+type GridRowClass =
    | 'grid-rows-none'
    | 'grid-rows-[1fr_2fr_1fr]'
    | 'gird-rows-[repeat(auto-fit,minmax(200px,1fr))]'
@@ -19,18 +20,18 @@ type GridRowlass =
    | 'grid-rows-3';
 
 const dynamicStyleColumns = ref<GridColumnClass>('grid-cols-3');
-const dynamicStyleRows = ref<GridRowlass>('grid-rows-none');
+const dynamicStyleRows = ref<GridRowClass>('grid-rows-none');
 
 const dynamicStyle = computed(() => {
    return dynamicStyleColumns.value + ' ' + dynamicStyleRows.value;
 });
 </script>
 <template>
-   <div class="mb-6 mr-0 p-5 border border-solid border-[#e5e7eb] bg-[#fefefe] rounded-[0.75rem]">
+   <div class="mb-6 mr-0 p-5 border border-solid border-[#e5e7eb] bg-[#fefefe] rounded-xl">
       <!-- 多选选择 -->
       <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
          <!-- 列属性 -->
-         <div class="flex flex-col gap-[6px]">
+         <div class="flex flex-col gap-1.5">
             <label class="font-bold">grid-templates-column:</label>
             <a-select v-model:value="dynamicStyleColumns" style="width: 100%">
                <a-select-option value="grid-cols-none">grid-cols-none(默认)</a-select-option>
@@ -48,7 +49,7 @@ const dynamicStyle = computed(() => {
             </a-select>
          </div>
          <!-- 行属性 -->
-         <div class="flex flex-col gap-[6px]">
+         <div class="flex flex-col gap-1.5">
             <label class="font-bold">grid-templates-row:</label>
             <a-select v-model:value="dynamicStyleRows" style="width: 100%">
                <a-select-option value="grid-rows-none">grid-rows-none(默认)</a-select-option>

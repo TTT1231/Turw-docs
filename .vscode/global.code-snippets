@@ -32,7 +32,7 @@
       "description": "代码组"
    },
    "code++": {
-      "scope": "typescript",
+      "scope": "typescript,json,javascript",
       "prefix": [
          "!code++"
       ],
@@ -42,7 +42,7 @@
       "description": "代码块++"
    },
    "code--": {
-      "scope": "typescript",
+      "scope": "typescript,json,javascript",
       "prefix": [
          "!code--"
       ],

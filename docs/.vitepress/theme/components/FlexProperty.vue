@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import CopyBtn from './CopyBtn.vue';
-
+import { Select as ASelect, SelectOption as ASelectOption } from 'ant-design-vue';
 // 响应式数据
 const justifyContent = ref<
    'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly'
