@@ -1,10 +1,10 @@
 #!/bin/bash
-
-# 自动部署脚本
-# 这里之所以在定义一个脚本就是服务器运行内存低，
-# 执行之前的deploy-cloud.sh中pnpm run docs:build会因为内存不足而失败
-# 所以这里依赖外部生成好的zip包来更新网站内容
-# !因此原来的deploy-cloud.sh脚本暂不使用
+# ================== 服务器定期执行脚本 ===================
+# 该脚本主要在服务器内部执行，每天凌晨cron定期执行一次
+# 先在本地build好后，上传zip包到服务器，再由该脚本解压更新的方式进行部署
+# 项目目录: /home/Turw-docs/
+# 日志文件: /home/Turw-docs/docs/.vitepress/deploy.log
+# =======================================================
 
 # 定义路径
 BUILD_TEMP_DIR="/home/Turw-docs/docs/.vitepress/.build-temp"

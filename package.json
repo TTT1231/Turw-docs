@@ -11,10 +11,11 @@
    },
    "scripts": {
       "dev": "vitepress dev docs",
-      "docs:build": "vitepress build docs && powershell Compress-Archive -Path ./docs/.vitepress/dist/* -DestinationPath ./docs/.vitepress/dist.zip -Force",
+      "docs:build": "vitepress build docs",
       "docs:preview": "vitepress preview docs",
       "format": "prettier --write docs/",
-      "upload": "powershell $TIMESTAMP = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'; scp ./docs/.vitepress/dist.zip root@139.199.156.219:/home/Turw-docs/docs/.vitepress/.build-temp/$TIMESTAMP.zip"
+      "build-zip-upload:powershell": "powershell -ExecutionPolicy Bypass -File ./scripts/build-zip-upload.ps1",
+      "build-zip-upload:bash": "bash ./scripts/build-zip-upload.sh"
    },
    "dependencies": {
       "ant-design-vue": "^4.2.6",
