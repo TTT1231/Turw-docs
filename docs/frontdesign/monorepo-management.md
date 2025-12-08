@@ -203,3 +203,82 @@ eslint由于第三方开发者更新的原因，因此版本不一致问题是�
 ```
 
 :::
+
+## Turborepo速通
+
+turborepo根据锁文件来理解项目中不同包之间的依赖，
+
+::: danger 危险
+
+当一个包去引用另外一个包的文件的时候，应该是导入这个包进行访问，而不是使用路径访问，例如`./`，否则会违背`模块块思想`，且不好维护。
+
+:::
+
+### 配置任务
+
+| 配置   | 作用         | 作用范围       | 执行流程           | 描述                                           |
+| :----- | :----------- | :------------- | :----------------- | :--------------------------------------------- |
+| build  | 全工作区串行 | 全工作区所有包 | 完全串行           | 所有包的 build 都要等待所有其他包的 build 完成 |
+| ^build | 依赖链并行   | 依赖包         | 包间并行，包内串行 | 我要等我的依赖包先构建完                       |
+| #build | 同包任务串行 | 同一个包内     | 包间并行，包内串行 | 我要等我这个包内的其他任务先完成               |
+
+::: tip
+
+**Inputs**作为`turborepo`的缓存输入，内部用哈希算法进行快照，默认是`Git`追踪文件，遵守`.gitignore`规则
+
+**Outputs**作为`turborepo`的缓存密钥，如果不配置它，那么它不会缓存任何文件
+
+```jsonc
+//turbo.json
+{
+   "tasks": {
+      //使用 !进行排除，例如排除cache文件，`!cache/***`
+      "build": {
+         //!这个input只会追踪md文件，此时会覆盖掉默认Git规则
+         //TODO 保留默认规则：`"$TURBO_DEFAULT$"`加上这个即可
+         "inputs": ["**/*.md"], //[!code ++]
+         "outputs": ["dist/**"] //[!code ++]
+      }
+   }
+}
+```
+
+:::
+
+::: info 注册根任务
+这个根任务就是执行根目录中`package.json`的scripts。
+
+语法规则：`//#<任务名>`，其他用法与`task`类似
+
+:::
+
+### 显示依赖关系
+
+| 命令                         | 作用       |
+| :--------------------------- | :--------- |
+| `turbo build --filter=...ui` | 谁用了ui库 |
+| `turbo build --filter=ui...` | ui库用了谁 |
+
+> [!IMPORTANT] 查看构建依赖关系
+>
+> ```sh
+> turbo run build --graph
+> ```
+>
+> **svg图片**
+>
+> ```sh
+> turbo run build --graph="build-deps.svg"
+> ```
+
+### 常见Options详解
+
+::: tip globalDependencies
+告诉`Turborepo`，当这里面的文件发生变化时，清空所有缓存，重新构建所有包。
+
+主要用于配置文件发生变化，和锁文件依赖发生变化重新触发构建
+:::
+
+### 运行Commands
+
+[Turborepo Commands](https://turborepo.com/docs/reference/run)
