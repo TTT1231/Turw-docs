@@ -4,9 +4,7 @@ outline: deep
 
 # 常见问题及其解决方案
 
-主要讲解项目中遇到的问题及其解决方案。
-
-## 大文件分片上传
+## 大文件上传
 
 快速概览：分片上传一般分三步 — 前端分片并上传、后端临时存储、完成后合并。
 
@@ -14,7 +12,7 @@ outline: deep
 常见要点：断点续传、分片哈希校验、使用 AbortController 终止请求、把耗时计算交给 Web Worker。
 :::
 
-### 分片断点终止上传
+**分片断点终止上传**
 
 主要实现用户可以对大文件请求进行终止和根据文件内容hash去判断在服务端有没有分片  
 对之前上传的分片继续上传，提高上传速率和容错率。
@@ -496,405 +494,6 @@ onMounted(() => {
       ...下拉内容（占位）...
    </div>
 </div>
-```
-
-:::
-
-## NUXT 中的 JWT 认证（概览）
-
-快速说明：后端中间件负责验证 Access Token，失败时使用 Refresh Token 刷新；为避免并发刷新冲突，应使用单例刷新（promise 单例或短期缓存）。
-
-要点：
-
-- 中间件验证：服务端验证 token 并将 user 放入上下文
-- 并发刷新：使用单例 promise 或短期缓存，保证只有一次刷新请求
-- 路由白名单：对登录接口/页面放行，避免重定向死循环
-
-### 实现流程
-
-| 环节             | 职责                                  | 关键点                                              |
-| ---------------- | ------------------------------------- | --------------------------------------------------- |
-| **服务端中间件** | 验证 JWT、刷新 token                  | 进入 `/api/*` 时触发，验证失败用 Refresh Token 刷新 |
-| **客户端中间件** | 调用 `/api/user/auth/me` 验证登录状态 | 处理 401 错误、token 过期情况                       |
-| **插件拦截**     | 全局拦截 401 响应                     | 弹窗提示并跳转登录页                                |
-
-> [!NOTE]
-> **Cookie 存储**：Token 存入 Cookie（`httpOnly` 保护），浏览器自动携带，避免重复登录。注意：`httpOnly` 可防 JS 访问，但开发者工具仍可查看。
-
-### 核心要点
-
-**🔄 并发刷新问题**
-
-| 问题                   | 解决方案                                     |
-| ---------------------- | -------------------------------------------- |
-| 多个请求同时刷新 token | 使用单例 Promise，只刷新一次，其他请求等待   |
-| 高并发场景             | Promise Pool 或请求去重 + 短期缓存（2-5 秒） |
-
-**⚠️ 路由白名单**
-
-| 必须放行的路由          | 原因                     |
-| ----------------------- | ------------------------ |
-| `/login` (登录页面)     | 避免未登录时无限重定向   |
-| `/api/login` (登录接口) | 允许用户登录并获取 token |
-
-### 验证流程
-
-<JwtValProcess/>
-
-**状态判断逻辑**：
-
-1. ✅ AccessToken 未过期 → 直接放行
-2. ⏰ AccessToken 过期 + RefreshToken 有效 → 刷新后放行
-3. ❌ 无 Token 或 RefreshToken 过期 → 401 错误处理
-
-::: details 01.jwt.server.ts（服务端——自动调试模式）
-
-```ts
-// 服务端 JWT 认证中间件——jwt 令牌 token 验证
-// 存储用户上下文对象，避免在同一请求反复验证
-// 请求结束时 event.context.user 自动销毁
-//[!code warning]
-//并发请求时，这里需要做防抖，缓存处理。【缓存时间不能太长2~5秒即可】
-import { JWTExpired, JWTInvalid } from 'jose/errors';
-import { HTTPStatus } from '~~/shared/enums/httpEnums';
-import { whiteRoute } from '~~/shared/whiteRoute';
-import { decodeJwt } from 'jose';
-import { logServer } from '../utils/serverLog';
-
-// 当前更新 access_token 的 promise，保证并发时只会有一个请求刷新
-let currentAccessTokenUpdatePromise: Promise<string> | null = null;
-// 缓存的 access_token
-let targetAccessTokenCache: string | null = null;
-// 缓存过期时间戳（秒）
-let targetAccessTokenExpires: number = 0;
-// 缓存有效期（秒）
-const CACHE_EXPIRY_TIME = 5;
-const getCurrentTime = () => Math.floor(Date.now() / 1000);
-
-export default defineEventHandler(async (event) => {
-   const rawUrl = event.node.req.url || '';
-   const path = rawUrl.split('?')[0];
-   if (whiteRoute.includes(path)) return;
-
-   const isApiRequest = path.startsWith('/api/');
-   const { accessToken, refreshToken } = getTokensFromCookie(event);
-
-   // ===== 调试日志开始 =====
-   logServer('=== JWT中间件调试信息 ===');
-   logServer('请求路径:', path);
-   logServer('当前时间:', new Date().toISOString());
-   logServer('当前时间戳(秒):', getCurrentTime());
-   logServer('Access Token 存在:', !!accessToken);
-   logServer('Refresh Token 存在:', !!refreshToken);
-
-   if (accessToken) {
-      try {
-         const accessDecoded = decodeJwt(accessToken);
-         logServer('Access Token 过期时间:', new Date(accessDecoded.exp! * 1000).toISOString());
-         logServer('Access Token 剩余秒数:', accessDecoded.exp! - getCurrentTime());
-      } catch (e) {
-         logServer('Access Token 解码失败:', e);
-      }
-   }
-
-   if (refreshToken) {
-      try {
-         const refreshDecoded = decodeJwt(refreshToken);
-         logServer('Refresh Token 过期时间:', new Date(refreshDecoded.exp! * 1000).toISOString());
-         logServer('Refresh Token 剩余秒数:', refreshDecoded.exp! - getCurrentTime());
-      } catch (e) {
-         logServer('Refresh Token 解码失败:', e);
-      }
-   }
-   // ===== 调试日志结束 =====
-
-   // 没有任何 token
-   if (!accessToken && !refreshToken) {
-      logServer('🚫 没有任何token，准备跳转登录');
-      if (isApiRequest) {
-         throw createError({
-            statusCode: HTTPStatus.UNAUTHORIZED,
-            statusMessage: 'UNAUTHORIZED',
-            message: '未登录或 token 缺失'
-         });
-      } else {
-         return sendRedirect(event, '/');
-      }
-   }
-
-   // 1. 尝试验证 access_token
-   if (accessToken) {
-      try {
-         logServer('🔍 验证 Access Token...');
-         const payload = await verifyAccessToken(accessToken);
-         logServer('✅ Access Token 验证成功，用户:', payload.userAccount);
-         event.context.user = payload;
-         return;
-      } catch (err: any) {
-         logServer('❌ Access Token 验证失败，尝试使用 Refresh Token:', err.message);
-      }
-   }
-
-   // 2. 使用 refresh_token 刷新
-   if (refreshToken) {
-      logServer('🔄 开始 Refresh Token 流程...');
-
-      // 并发等待
-      if (currentAccessTokenUpdatePromise) {
-         logServer('⏳ 等待其他请求完成刷新...');
-         try {
-            await currentAccessTokenUpdatePromise;
-            if (event.context.user) {
-               logServer('✅ 从其他请求获得用户信息');
-               return;
-            }
-         } catch (error) {
-            logServer('❌ 等待其他请求刷新失败');
-         }
-      }
-
-      // 缓存有效，直接用
-      if (targetAccessTokenCache && targetAccessTokenExpires > getCurrentTime()) {
-         logServer('📦 使用缓存的 Access Token');
-         event.context.user = decodeJwt(targetAccessTokenCache);
-         return;
-      }
-
-      // 开始刷新
-      logServer('🚀 开始刷新 Access Token...');
-      currentAccessTokenUpdatePromise = new Promise(async (resolve, reject) => {
-         try {
-            logServer('🔍 验证 Refresh Token...');
-            const refreshPayload = await verifyRefreshToken(refreshToken);
-            logServer('✅ Refresh Token 验证成功，用户:', refreshPayload.userAccount);
-
-            logServer('🔨 生成新的 Access Token...');
-            const newAccessToken = await signAccessToken({
-               id: refreshPayload.id,
-               userAccount: refreshPayload.userAccount,
-               userPhone: refreshPayload.userPhone,
-               userAuth: refreshPayload.userAuth
-            });
-
-            logServer('🍪 设置新的 Cookie...');
-            setTokensFromCookie(event, newAccessToken, refreshToken);
-            event.context.user = refreshPayload;
-
-            // 更新缓存
-            targetAccessTokenCache = newAccessToken;
-            targetAccessTokenExpires = getCurrentTime() + CACHE_EXPIRY_TIME;
-            logServer('✅ Access Token 刷新成功!');
-
-            resolve(newAccessToken);
-         } catch (e) {
-            logServer('❌ Refresh Token 验证失败:', e);
-            cleanAllTokensFromCookie(event);
-
-            if (isApiRequest) {
-               if (e instanceof JWTExpired) {
-                  logServer('⏰ Refresh Token 已过期');
-                  reject(
-                     createError({
-                        statusCode: HTTPStatus.UNAUTHORIZED,
-                        statusMessage: 'UNAUTHORIZED',
-                        message: 'token 已过期，请重新登录'
-                     })
-                  );
-               } else if (e instanceof JWTInvalid) {
-                  logServer('🚫 Refresh Token 无效');
-                  reject(
-                     createError({
-                        statusCode: HTTPStatus.UNAUTHORIZED,
-                        statusMessage: 'UNAUTHORIZED',
-                        message: '无效的 token，请重新登录'
-                     })
-                  );
-               } else {
-                  logServer('❓ 未知认证错误:', e);
-                  reject(
-                     createError({
-                        statusCode: HTTPStatus.UNAUTHORIZED,
-                        statusMessage: 'UNAUTHORIZED',
-                        message: '认证失败，未知错误，请稍后再试'
-                     })
-                  );
-               }
-            } else {
-               logServer('🏠 非API请求，重定向到登录页');
-               reject(new Error('需要重定向到登录页'));
-            }
-         } finally {
-            logServer('🔄 清理 Promise 状态');
-            currentAccessTokenUpdatePromise = null;
-         }
-      });
-
-      try {
-         await currentAccessTokenUpdatePromise;
-         if (event.context.user) {
-            logServer('✅ 刷新成功，用户已设置');
-            return;
-         }
-      } catch (error) {
-         logServer('❌ 刷新失败:', error);
-         if (!isApiRequest) {
-            return sendRedirect(event, '/');
-         }
-         throw error;
-      }
-   }
-
-   // 3. 最终失败
-   logServer('🚫 最终认证失败，清理所有 token');
-   cleanAllTokensFromCookie(event);
-   if (isApiRequest) {
-      logServer('❌ API请求认证失败');
-      throw createError({
-         statusCode: HTTPStatus.UNAUTHORIZED,
-         statusMessage: 'UNAUTHORIZED',
-         message: '未授权，认证失败'
-      });
-   } else {
-      logServer('🏠 页面请求认证失败，重定向到登录页');
-      return sendRedirect(event, '/');
-   }
-});
-```
-
-:::
-
-::: details 01.auth.client.ts（客户端验证服务端有没有成功）
-
-```ts
-import { whiteRoute } from '~~/shared/whiteRoute';
-
-//01.auth.client.ts
-export default defineNuxtRouteMiddleware(async (to, from) => {
-   if (whiteRoute.includes(to.path)) {
-      return;
-   }
-
-   //获取验证后的user,确保走服务端中间件验证token能正常接受cookie
-   try {
-      const user = await $fetch('/api/user/auth/me', {
-         method: 'GET',
-         credentials: 'include' //强制游览器带上cookie,解决在登录情况下不带cookie的问题
-      });
-      if (user) return;
-   } catch (error: any) {
-      // 401错误会被全局插件自动处理，显示友好的弹框
-      // 这里不需要手动处理，但为了确保路由正确，还是添加检查
-      if (error?.status === 401 || error?.statusCode === 401) {
-         // 认证错误，插件会处理弹框，这里不做跳转
-         // 因为插件会自动跳转到登录页
-         return;
-      }
-
-      // 其他错误直接跳转
-      navigateTo('/', { replace: true });
-   }
-});
-```
-
-:::
-
-fetch-interceptor.ts插件拦截$fetch响应  
-**解决token过期401不解决，导致api一直在刷新等待问题，错误没处理，抛出401错误直接弹窗**
-
-::: details fetch-interceptor.ts（插件）
-
-```ts
-import { Modal } from 'ant-design-vue';
-
-//处理401错误的插件，主要功能就是弹窗
-//自动监听
-export default defineNuxtPlugin(() => {
-   // 防止重复弹框的标志
-   let isDialogShowing = false;
-
-   const showLoginExpiredDialog = () => {
-      // 防止重复弹框
-      if (isDialogShowing) {
-         return;
-      }
-      isDialogShowing = true;
-
-      Modal.confirm({
-         title: '登录已过期',
-         content: '您的登录状态已过期，请重新登录',
-         okText: '重新登录',
-         cancelText: '取消',
-         maskClosable: false,
-         keyboard: false,
-         centered: true,
-         //确认取消都直接回到登录页
-         onOk() {
-            isDialogShowing = false;
-            window.location.href = '/';
-         },
-         onCancel() {
-            isDialogShowing = false;
-            window.location.href = '/';
-         }
-      });
-   };
-
-   //响应拦截器
-   const originalFetch = $fetch.create({
-      onResponseError({ response }) {
-         if (response.status === 401) {
-            showLoginExpiredDialog();
-         }
-      }
-   });
-
-   $fetch = originalFetch;
-
-   // 监听全局未处理的 Promise 拒绝
-   if (import.meta.client) {
-      window.addEventListener('unhandledrejection', (event) => {
-         const error = event.reason;
-
-         // 检查是否是 401 错误
-         if (
-            error?.status === 401 ||
-            error?.statusCode === 401 ||
-            error?.response?.status === 401 ||
-            (error?.data && error.data.statusCode === 401)
-         ) {
-            // 阻止控制台错误显示
-            event.preventDefault();
-            showLoginExpiredDialog();
-         }
-      });
-
-      // 监听全局错误事件
-      window.addEventListener('error', (event) => {
-         const error = event.error;
-         if (error?.status === 401 || error?.statusCode === 401) {
-            event.preventDefault();
-            showLoginExpiredDialog();
-         }
-      });
-   }
-
-   return {
-      provide: {
-         /**全局方法，处理token过期情况，弹出对话框 */
-         handleAuthError: (error: any) => {
-            if (
-               error?.status === 401 ||
-               error?.statusCode === 401 ||
-               error?.response?.status === 401
-            ) {
-               showLoginExpiredDialog();
-               return true; // 表示已处理
-            }
-            return false; // 未处理
-         }
-      }
-   };
-});
 ```
 
 :::
@@ -1581,3 +1180,49 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 ```
 
 :::
+
+## 性能优化
+
+### 重绘与回流优化
+
+|                 观点                 |                                                                                                       描述                                                                                                       |
+| :----------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|     回流影响布局，性能**损耗大**     |                                                                        回流是“布局重计算”，会触发DOM树重新排版，是性能开销最大的渲染操作                                                                         |
+|    重绘影响外观，性能**损耗不大**    |                                                                                      重绘核心是“非几何属性变化”，例如颜色等                                                                                      |
+| 响应式数据变化都可能会影响回流和重绘 | ① 数据变化但未关联 DOM 更新（比如纯逻辑数据）→ **无回流 / 重绘**；<br> ② 数据变化关联 DOM，但仅修改非几何属性（如color）→ **只重绘，无回流；**<br>③ 数据变化关联 DOM，且修改几何属性（如width）→ **回流 + 重绘** |
+
+> [!IMPORTANT] 优化减少重绘和回流
+>
+> - 批量修改dom，`减少`回流
+> - 先脱离文档流，然后修改dom，最后在一次性更新dom，使得回流`降低`2次
+> - 使用游览器内部提供批量操作dom api DocumentFragment，一次性操作dom，`减少`回流
+> - 使用requestAnimationFrame跟随游览器频率，`不掉帧`
+
+### FP/FCP/LCP/CLS优化
+
+::: info FCP
+`First Contentful Paint` 首次绘制文本、图片、canvas等有意义内容的时间
+
+**优化目标方向**：
+
+- 压缩css体积
+- 移除未使用css
+
+`Largest Contentful Paint` 视口最大可见元素的绘制时间
+
+**优化目标方向**：
+
+- 图片懒加载、压缩
+- 减少JS执行时间（主要就是JS阻塞了主渲染进程）
+- 缩短核心环节【渲染树构建->布局->绘制】耗时，让最大元素更快出现在屏幕上
+
+`Cumulative Layout Shift` 累积布局偏移，页面加载期间元素位移的总和。
+
+**优化目标方向**：
+
+- 为图片设置宽和高
+- 预留空间
+- 避免动态修改元素位置/尺寸
+- 合理设置视口（`ViewPort`）,解决移动端一致性
+- 减少运行时样式修改，避免JS的意外重排
+  :::

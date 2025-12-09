@@ -79,7 +79,7 @@ export default defineConfig({
                   ]
                },
                {
-                  text: '常见问题及其解决方案',
+                  text: 'FAQ',
                   link: '/frontdesign/common-problems'
                }
             ]
@@ -90,8 +90,8 @@ export default defineConfig({
             items: [
                { text: '目录结构', link: '/nuxt/catalog' },
                { text: '统一错误处理架构', link: '/nuxt/error-handle' },
-               { text: '配置问题及其解决方案', link: '/nuxt/config-solutions' },
-               { text: 'SEO-SSR', link: '/nuxt/seo-ssr' }
+               { text: 'SEO-SSR', link: '/nuxt/seo-ssr' },
+               { text: 'FAQ', link: '/nuxt/config-solutions' }
             ]
          },
          {
