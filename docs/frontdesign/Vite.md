@@ -170,43 +170,6 @@ function recurseAddRoutes(routes: RoutesType[]) {
 }
 ```
 
-## 代码分割
-
-针对代码分割，这里可以调整vite中Rollup打包中的output中manualChunks(id)函数，其中id是模块的绝对路径，以此来半自动进行代码打包后分割。例如：
-
-```js
- manualChunks(id) {
-          // id 是模块的绝对路径
-          if (id.includes('node_modules')) {
-            return 'vendor' // 第三方依赖打包到 vendor
-          }
-          if (id.includes('src/views/admin')) {
-            return 'admin' // 管理后台相关组件
-          }
-        }
-```
-
-## 代码压缩
-
-sourceMap（源映射）是一种映射文件，主要用于调试。它可以将编译、打包、压缩后的代码映射到源代码位置，及其方便进行调试。
-
-::: warning 注意
-**它文件体积大，如果直接应用到实际环境会有源码泄露风险**。
-在打包时可以启动代码压缩`Minify`的功能，同时也要关闭sourceMap映射，如果用于调试上线则不用。具体配置如下
-:::
-
-```js
-// vite.config.js
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-   build: {
-      minify: 'esbuild', // 启用代码压缩，默认就是 'esbuild',速度快，也可用 'terser'
-      sourcemap: false // 关闭 sourceMap 映射，防止源码泄露 [!code error]
-   }
-});
-```
-
 ## vite dev tools 和 增强import.meta提示
 
 ::: code-group

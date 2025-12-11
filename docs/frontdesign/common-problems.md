@@ -1200,13 +1200,25 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 
 ### FP/FCP/LCP/CLS优化
 
-::: info FCP
+::: info FP
+
+`First Paint`首次绘制，游览器首次将像素点渲染到屏幕上的时间点。
+
+**优化目标方向**:
+
+- 网络请求耗时（HTML文件下载、解析）
+- 减少阻塞渲染进程执行JS
+
+**FCP**
+
 `First Contentful Paint` 首次绘制文本、图片、canvas等有意义内容的时间
 
 **优化目标方向**：
 
 - 压缩css体积
 - 移除未使用css
+
+**LCP**
 
 `Largest Contentful Paint` 视口最大可见元素的绘制时间
 
@@ -1215,6 +1227,8 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 - 图片懒加载、压缩
 - 减少JS执行时间（主要就是JS阻塞了主渲染进程）
 - 缩短核心环节【渲染树构建->布局->绘制】耗时，让最大元素更快出现在屏幕上
+
+**CLS**
 
 `Cumulative Layout Shift` 累积布局偏移，页面加载期间元素位移的总和。
 
@@ -1226,3 +1240,70 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 - 合理设置视口（`ViewPort`）,解决移动端一致性
 - 减少运行时样式修改，避免JS的意外重排
   :::
+
+### Vite优化
+
+**vite8**之前，`pnpm run dev`时候，vite主要采用`esbuild`将`ts->js`并配置`.vite`缓存，使得HMR开发热更新能够实时反馈。正式生产时采用`rollup`进行生产构建，将所有源代码和依赖打包成优化的生产文件。
+
+因此这里优化方向主要就是**开发esbuild构建优化**和**生产rollup构建优化**
+
+::: code-group
+
+```ts [vite.config.ts]
+// =======================  rollup 构建分包优化 - 依赖预构建===================
+// vite.config.js
+export default defineConfig({
+   build: {
+      rollupOptions: {
+         output: {
+            // 拆分包：将第三方依赖和业务代码分离
+            manualChunks: {
+               vue-vendor: ['vue', 'vue-router'], // vue提供商
+               axios-http:['axios'], //网络请求
+               antd-vue:['ant-design-vue']
+               //other .....
+            }
+         }
+      }
+   },
+   //TODO: 依赖预构建优化
+   //主要就是缓存一些常见的，和一些不需要的
+   optimizeDeps:{
+     include: ['vue', 'vue-router', 'pinia'],//预构建依赖
+     exclude: [],//排除预构建依赖
+  }
+});
+```
+
+```ts [vite.config.ts]
+// =======================  生产构建压缩优化 - CSS优化 ===================
+// vite.config.js
+export default defineConfig({
+   build: {
+      //[!code warning] 生产关闭
+      sourcemap: false
+      //如果要极致压缩，不考虑时间效率的话可以选用terser
+      minify: 'terser' //默认使用esbuild进行压缩，来平衡性能和压缩效率
+      //配置，可以参考如下：
+      // https://terser.org/docs/api-reference/#minify-options
+      terserOptions: {
+         maxWorkers:4 //cpu工作数
+         //[!code warning]
+         //!如果想要自定义的terserOptions必须要terser依赖
+         //`pnpm add terser -D`
+      },
+
+      //TODO: CSS分离与优化
+      cssCodeSplit: true, // 启用 CSS 代码拆分
+      cssMinify: true, // 启用 CSS 压缩
+   }
+});
+```
+
+:::
+
+::: danger 危险
+
+**Vite8**发布之后，开发和生产统一使用了**Rolldown**，来避免开发与生产不一致效应，同时其性能提升大约**15倍**，因此`esbuild`和`rollup`构建优化在未来不会适用。
+
+:::
