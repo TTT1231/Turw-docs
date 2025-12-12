@@ -52,11 +52,8 @@
    font-weight: 700;
 }
 .vp-code-group .tabs label[data-title$=".vue"]::before {
-   content: "VUE";
    @include badgeBase();
-   background: rgba(65, 184, 131, 0.12);
-   color: #3fb27f;
-   border: 1px solid rgba(65, 184, 131, 0.3);
+   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vue.svg");
 }
 .vp-code-group .tabs label[data-title$=".sh"]::before,
 .vp-code-group .tabs label[data-title$=".bash"]::before {

@@ -128,3 +128,37 @@ function main() {
    }
 }
 ```
+
+## slot工作原理
+
+::: code-group
+
+```vue [Qwe.vue]
+<template>
+   <slot greet="hi hello" />
+   <slot reply="yes you too" name="named slot" />
+</template>
+```
+
+```vue [Base.vue]
+<template>
+   <Qwe>
+      <template #eric>
+         <h3>这是来自 App 组件的具名插槽内容</h3>
+      </template>
+      <template #default="slotProps">
+         <div>这是默认内容{{ slotProps.greet }}</div>
+      </template>
+   </Qwe>
+</template>
+```
+
+:::
+
+::: info 通知
+**第一阶段**，App.vue渲染时会将上诉的`template #default`生成一个h函数，这个函数参数就是`slotProps.nihao`交给Qwe.vue
+
+**第二阶段**，Qwe.vue开始渲染，拿出`greet`参数进行传递，然后执行该h函数，生成dom节点
+
+**第三阶段**，生成DOM树，渲染内容
+:::
