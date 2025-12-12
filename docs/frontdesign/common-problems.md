@@ -1307,3 +1307,20 @@ export default defineConfig({
 **Vite8**发布之后，开发和生产统一使用了**Rolldown**，来避免开发与生产不一致效应，同时其性能提升大约**15倍**，因此`esbuild`和`rollup`构建优化在未来不会适用。
 
 :::
+
+### 内存优化
+
+`内存优化核心`降低内存的使用，使得垃圾回收器（GC）充分发挥作用。
+
+内存泄漏常见情况：
+
+- 意外全局变量（挂在`windows`下，没有被释放掉）
+- 没有清理的定时器或者回调（setInterval、setTimeout），没有被`clear`掉
+- 闭包内部维持的局部变量，忘记指向为空，得不到释放（不需要时，还在被引用）
+- DOM节点从DOM树中移除了（removeChild），但是还是被引用，GC无法回收该节点和父节点，**DOM数连通的**
+- 绑定了事件监听器，在元素被移除或组件销毁时，没有手动移除`removeEventListener`，主要发生在手动给dom元素绑定事件（`addEventListener`）
+- `watch/watchEffect`监听外部变量，`vue`中`onUnMounted`不会自动回收该回调，导致内存泄漏（监听组件内部变量不会有该情况）
+- 自定义指令`v-[direct name]`中`onUnMounted`内部引用的定时器等没有清理干净
+
+> [!CAUTION] 特别小心
+> 当使用`windows`去保留引用的时候，例如状态、组件实例的时候，很容易导致内存泄漏，主要就是全局`windows`对象当每个组件都去使用的时候，导致管理混乱。
