@@ -1,5 +1,7 @@
 // 导入 mixins
 @use "../css/mixins.scss" as codeIconNameSpace;
+@use "sass:meta";
+@use "sass:list";
 
 /* 徽标基础样式 mixin */
 @mixin badgeBase() {
@@ -22,12 +24,8 @@
 }
 
 //=================================== 文本徽标 ===================================//
-//基础图标支持json,js,ts,.d.ts,vue,sh,bash,html,md
+//基础图标支持js,ts,.d.ts
 //!注意这些基础图标要放在前面，后面要自定义的话直接覆盖基础图标即可
-.vp-code-group .tabs label[data-title$=".json"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json.svg");
-}
 .vp-code-group .tabs label[data-title$=".js"]::before {
    content: "JS";
    @include badgeBase();
@@ -51,76 +49,74 @@
    border: 1px solid #00b347;
    font-weight: 700;
 }
-.vp-code-group .tabs label[data-title$=".vue"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vue.svg");
-}
-.vp-code-group .tabs label[data-title$=".sh"]::before,
-.vp-code-group .tabs label[data-title$=".bash"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/shell.svg");
-}
-.vp-code-group .tabs label[data-title$=".html"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/html.svg");
-}
-.vp-code-group .tabs label[data-title$=".md"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/markdown.svg");
-}
-//!基础图标支持结束
 
-.vp-code-group .tabs label[data-title$=".prettierignore"]::before,
-.vp-code-group .tabs label[data-title$=".prettierrc"]::before,
-.vp-code-group .tabs label[data-title$=".prettierrc.json"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prettier.svg");
+//公共图标路径变量
+$commonIconPath: "/Turw-docs/assets/images";
+
+//获取图标目标路径函数
+@function getIconUrl($icon-name) {
+   @return "#{$commonIconPath}/#{$icon-name}.svg";
 }
-.vp-code-group .tabs label[data-title$="eslint.config.mjs"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/eslint.svg");
-}
-.vp-code-group .tabs label[data-title$="vite.config.ts"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vite.svg");
-}
-.vp-code-group .tabs label[data-title$=".prisma"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/prisma.svg");
-}
-.vp-code-group .tabs label[data-title$="pre-commit"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/husky.svg");
-}
-.vp-code-group .tabs label[data-title$=".editorconfig"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/editorconfig.svg", #ffffff, 22px);
-}
-.vp-code-group .tabs label[data-title$="esbuild.config.mjs"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/esbuild.svg");
-}
-.vp-code-group .tabs label[data-title$=".fastify.ts"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/fastify.svg");
-}
-.vp-code-group .tabs label[data-title$="global.code-snippets"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/vscode.svg");
-}
-.vp-code-group .tabs label[data-title$="schema.json"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/json-schema.svg");
-}
-.vp-code-group .tabs label[data-title$="stylelint.config.mjs"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/stylelint.svg");
-}
-.vp-code-group .tabs label[data-title$=".stylelintignore"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/stylelint.svg");
-}
-.vp-code-group .tabs label[data-title$="cspell.json"]::before {
-   @include badgeBase();
-   @include codeIconNameSpace.applyIcon("/Turw-docs/assets/images/cspell.svg");
+
+/*
+  图表配置Configs
+   格式: "映射后缀": ("getIconUrl('icon-name')",?bg-color,?size)
+   Tips: 没有参数时，外围括号可以删除.
+*/
+$iconConfigs: (
+   // ========================= 基础图标 =======================
+   ".json": getIconUrl("json"),
+   ".vue": getIconUrl("vue"),
+   ".sh": getIconUrl("shell"),
+   ".bash": getIconUrl("shell"),
+   ".html": getIconUrl("html"),
+   ".md": getIconUrl("markdown"),
+   // ========================= 扩展图标 =======================
+   ".prettierignore": getIconUrl("prettier"),
+   ".prettierrc": getIconUrl("prettier"),
+   ".prettierrc.json": getIconUrl("prettier"),
+   "eslint.config.mjs": getIconUrl("eslint"),
+   "vite.config.ts": getIconUrl("vite"),
+   ".prisma": getIconUrl("prisma"),
+   "pre-commit": getIconUrl("husky"),
+   ".editorconfig": (getIconUrl("editorconfig"), #ffffff, 22px),
+   "esbuild.config.mjs": getIconUrl("esbuild"),
+   ".fastify.ts": getIconUrl("fastify"),
+   "global.code-snippets": getIconUrl("vscode"),
+   "schema.json": getIconUrl("json-schema"),
+   "stylelint.config.mjs": getIconUrl("stylelint"),
+   ".stylelintignore": getIconUrl("stylelint"),
+   "cspell.json": getIconUrl("cspell")
+);
+
+// 生成图标样式
+@each $key, $value in $iconConfigs {
+   .vp-code-group .tabs label[data-title$="#{$key}"]::before {
+      @include badgeBase();
+
+      @if meta.type-of($value) == "list" {
+         //加了括号，有多个参数
+         $iconUrl: list.nth($value, 1);
+         $bgColor: null;
+         $size: null;
+
+         @if list.length($value) > 1 {
+            $bgColor: list.nth($value, 2);
+         }
+         @if list.length($value) > 2 {
+            $size: list.nth($value, 3);
+         }
+
+         @if $bgColor and $size {
+            @include codeIconNameSpace.applyIcon($iconUrl, $bgColor, $size);
+         } @else if $bgColor {
+            @include codeIconNameSpace.applyIcon($iconUrl, $bgColor);
+         } @else {
+            @include codeIconNameSpace.applyIcon($iconUrl);
+         }
+      } @else {
+         //单个参数
+         @include codeIconNameSpace.applyIcon($value);
+      }
+   }
 }
