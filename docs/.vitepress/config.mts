@@ -65,6 +65,10 @@ export default defineConfig({
                   link: '/frontdesign/monorepo-management'
                },
                {
+                  text: '移动端',
+                  link: '/frontdesign/mobile'
+               },
+               {
                   text: '前端安全',
                   link: '/frontdesign/front-security'
                },
