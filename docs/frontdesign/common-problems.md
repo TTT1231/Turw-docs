@@ -1324,3 +1324,78 @@ export default defineConfig({
 
 > [!CAUTION] 特别小心
 > 当使用`windows`去保留引用的时候，例如状态、组件实例的时候，很容易导致内存泄漏，主要就是全局`windows`对象当每个组件都去使用的时候，导致管理混乱。
+
+### 静态资源优化
+
+**图片优化：**
+
+::: info squoosh图片压缩
+在选择图片时，这里采用外部插件进行优化后，在放到项目当中去。这里选用[squoosh](https://squoosh.app/)进行图片可视化压缩，来权衡画质和图片体积。
+
+|           场景            |    推荐选项    | 输出格式  |
+| :-----------------------: | :------------: | :-------: |
+|          兼容性           |    MozJPEG     |   .jpg    |
+|    透明背景 + 较小体积    |     OxiPNG     |   .png    |
+|     现代设备 + 小体积     |      WebP      |   .webp   |
+| **现代设备 + 极致小体积** |    **AVIF**    | **.avif** |
+|      无损压缩 + 临时      | JPEG XL (beta) |   .jxl    |
+
+优先选用`AVIF`其比`WebP`小**20%-50%**,而且压缩效率也比`WebP`快。
+:::
+
+由于游览器会在首次请求的时候一次性全部下载和加载所有的图片，哪怕图片在屏幕外，同时等到真正加载的时候会将图片进行解码解码成像素点进行渲染，因此可以从这两个方面入手。
+
+> [!IMPORTANT] 图片性能优化核心
+>
+> - **图片加载优化**，例如首屏图片不用立即渲染的，可以使用`H5`的`loading lazy`属性，将图片加载延迟到视口内（也即位于可视化页面中，能够被看的见的）
+> - **图片解码优化**，例如首屏图片不用立即渲染的，可以使用`H5`的`decoding async`控制，来控制图片的解码，将图片的解码去放到后台中进行（类似`Web Worker`），避免解码堵塞了主渲染进程，造成卡顿
+
+::: tip 图片展示
+由于`media`只能用作筛选，不能处理DPR，因此需要这个`size`，如果是只适配手机的话，可以加上`media="(max-width: 640px)"`，去处理手机。
+
+`size`可以针对不同的图片，可以根据不同设备尺寸和分辨率去设置图片源，来展示图片。例如：
+
+<!-- prettier-ignore-start -->
+```vue
+<template>
+   <!-- (size现代方案)根据视口宽度自动选择图片尺寸 -->
+   <!-- Tip:大于600px的匹配第二条规则 -->
+   <img
+      srcset="
+        ../public/small.avif   384w,
+        ../public/medium.avif  768w,
+        ../public/large.avif  1200w
+      "
+      sizes="
+         (max-width: 600px) 384px,
+         (max-width: 1000px) 768px,
+         1200px"
+      src="../public/medium.avif"
+      alt="兜底处理图片"
+   />
+   <!-- (size+media过滤方案)只在手机端展示（） -->
+   <!-- Tip:source必须配合picture使用 -->
+   <picture>
+      <source
+         media="(max-width: 600px)"
+         srcset="../public/small.avif 384w"
+         sizes="384px"
+      />
+      <img
+         src="../public/small.avif"
+         alt="兜底处理图片"
+      />
+</picture>
+</template>
+```
+<!-- prettier-ignore-end -->
+
+:::
+
+::: warning 注意
+使用`srcset`去定义不同分辨率的图片源的时候，必须要`sizes`去告诉游览器图片显示尺寸，否则游览器默认使用视口的全宽作为图片的显示宽度，会导致选错图片（**错选大图**）
+
+同时这个`srcset`必须要指定描述符`w`去告诉游览器这张图片原始的width是多少像素,
+
+例如`  <source srcset="../public/logo@3x.png 3x">`
+:::
