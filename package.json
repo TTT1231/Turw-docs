@@ -2,10 +2,12 @@
    "type": "module",
    "devDependencies": {
       "@tailwindcss/postcss": "^4.1.15",
+      "archiver": "^7.0.1",
       "autoprefixer": "^10.4.21",
       "postcss": "^8.5.6",
       "prettier": "^3.6.2",
       "sass": "^1.94.0",
+      "ssh2": "^1.17.0",
       "tailwindcss": "^4.1.15",
       "vitepress": "^1.6.4"
    },
@@ -14,8 +16,7 @@
       "docs:build": "vitepress build docs",
       "docs:preview": "vitepress preview docs",
       "format": "prettier --write docs/",
-      "build-zip-upload:powershell": "powershell -ExecutionPolicy Bypass -File ./scripts/build-zip-upload.ps1",
-      "build-zip-upload:bash": "bash ./scripts/build-zip-upload.sh"
+      "build-zip-upload": "node ./scripts/build-zip-upload.mjs"
    },
    "dependencies": {
       "ant-design-vue": "^4.2.6",

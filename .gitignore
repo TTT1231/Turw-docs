@@ -1,4 +1,10 @@
+# Environment variables
+.env
+
+# Dependencies
 node_modules
+
+# Build output
 docs/.vitepress/cache/
 docs/.vitepress/dist
 dist.zip
