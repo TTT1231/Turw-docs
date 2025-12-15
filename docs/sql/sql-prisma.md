@@ -138,7 +138,7 @@ npx prisma migrate deploy
 针对prisma中迁移历史，可以进行更改，但是前提是要保证该更改不会影响其它表，这样做会造成历史混乱，所以直接使用**前驱**修改，也即增加一个前驱历史这个历史删除或者修改之前的表。
 
 > [!IMPORTANT]
-> 由于prisma7+中output必填，导致**Prisma客户端**被生成到了指定的ouput目录中，而每次npx prisma generate 的时候会变化，当使用自定义引入类型文件时注意引入的生成路径。该方法解决客户端类型报错问题。
+> 由于prisma7+中output必填，导致**Prisma客户端**被生成到了指定的output目录中，而每次npx prisma generate 的时候会变化，当使用自定义引入类型文件时注意引入的生成路径。该方法解决客户端类型报错问题。
 >
 > 例如`import { PrismaClient } from '../generated/prisma/index';`其中后面的from对应output中的路径，此时就是依赖动态生成的客户端。
 

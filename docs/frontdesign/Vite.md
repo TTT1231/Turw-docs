@@ -223,7 +223,7 @@ interface ImportMetaEnv extends Record<ImportMetaEnvFallbackKey, any> {
 
 > [!IMPORTANT]
 > 解决方案就是**保留它**，在需要的验证的地方例如`zod`中scheme只针对特定的变量进行验证，
-> parse验证时直接将`import.mata.env`进行解构赋值即可
+> parse验证时直接将`import.meta.env`进行解构赋值即可
 
 > [!WARNING]
 > 如果想在vite启动时就对环境变量进行验证，使得验证不通过应用程序直接终止，那么就需要在`vite.config.ts`文件中在defineConfig进行验证，缺点就是要**手动加载环境变量**，vite不会自动处理，如下:

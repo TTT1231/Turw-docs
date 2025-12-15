@@ -138,7 +138,7 @@ robots: {
 sitemap: {
    enabled: true,
    hostname: 'http:/localhost:6002',
-   exc   lude: ['/back/**', '/', '/api/**'],
+   exclude: ['/back/**', '/', '/api/**'],
 },
 
 //schema.org 结构化数据,避免每个页面都要写一遍

@@ -716,7 +716,7 @@ class RequestClient {
 export { RequestClient };
 ```
 
-```ts [intercepeor.ts]
+```ts [interceptor.ts]
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import type { RequestInterceptorConfig, ResponseInterceptorConfig } from '../types';
 

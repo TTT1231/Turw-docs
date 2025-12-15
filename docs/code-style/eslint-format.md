@@ -290,7 +290,7 @@ export default {
             },
             {
                //media规则
-               name: 'meida',
+               name: 'media',
                type: 'at-rule'
             },
             {

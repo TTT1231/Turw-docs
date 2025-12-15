@@ -105,7 +105,7 @@ return next.handle().pipe(
 :::
 
 ::: tip 提示
-在Nestjs中Controller方法中，最后的结果也会被Observable包裹，统一返回格式，统一拦截器的Obserable和管道的链式调用触发
+在Nestjs中Controller方法中，最后的结果也会被Observable包裹，统一返回格式，统一拦截器的Observable和管道的链式调用触发
 :::
 
 ### DI思想

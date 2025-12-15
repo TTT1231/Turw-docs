@@ -750,7 +750,7 @@ console.log('✅ Build completed successfully!');
 
 ## 传输数据压缩加速
 
-**以node:zlib**中的两个gzip和defalte为例。
+**以node:zlib**中的两个gzip和deflate为例。
 
 - gip适合http传输，**游览器兼容**
 - deflate适合嵌入式设备、低延迟通信（**大文件下1gb以上，比gzip压缩时间快15%**）
@@ -932,7 +932,7 @@ await build({
   outdir,
   bundle: true,
 
-  platform: 'node', // 针对 Node.js 平台，如果是node平台就不能使用esbuild的代码压缩minifiy(这个是在游览器独有的)
+  platform: 'node', // 针对 Node.js 平台，如果是node平台就不能使用esbuild的代码压缩minify(这个是在游览器独有的)
                     //nodejs是运行时，会一次性加载所有目标代码（在需要时）分包会导致性能下降等，除非很在乎启动时间
   target: 'node18', // 目标 Node.js 版本
   format: 'esm',
