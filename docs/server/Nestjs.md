@@ -12,7 +12,7 @@ outline: deep
 
 #### 请求生命周期
 
-```
+```markdown:no-line-numbers
 请求进入 → 中间件 → 守卫 → 拦截器(Before) → 管道 → 控制器 → 拦截器(After) → 异常过滤器 → 响应发出
 ```
 

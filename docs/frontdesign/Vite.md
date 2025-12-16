@@ -174,7 +174,7 @@ function recurseAddRoutes(routes: RoutesType[]) {
 
 ::: code-group
 
-```sh [install.sh]
+```sh:no-line-numbers [install.sh]
 pnpm add vite-plugin-vue-devtools -D
 ```
 

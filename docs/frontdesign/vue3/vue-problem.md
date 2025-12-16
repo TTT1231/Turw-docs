@@ -10,26 +10,41 @@
 
 ## 开发与生产环境中proxy（api）问题
 
-```js
+::: code-group
+
+```ts [vite.config.ts]
 //这里是vite中的代理，主要将javaserver代理到目标
 //这里是开发环境，在生产环境中没有效果需要使用nginx进行代替
-proxy:{
-    '/javaserver':{
-        target:'http://127.0.0.1:7002',
-        changeOrigin:true,
-        rewrite:(path)=>path.replace(/^\/javaserver/,'')
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+// https://vite.dev/config/
+export default defineConfig({
+   plugins: [vue()],
+   server: {
+      proxy: {
+         '/javaserver': {
+            target: 'http://127.0.0.1:7002',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/javaserver/, '')
+         }
       }
-    }
+   }
+});
 ```
 
-```json
-//vite打包后，proxy配置不会生效，需要在Nginx中配置/javaserver转发规则，代替vite中proxy使得请求进行转发。
-//==========nginx setting ==================
-location /javaserver/ {
+```sh [nginx.conf]
+# vite打包后，proxy配置不会生效，需要在Nginx中配置/javaserver转发规则，
+# 代替vite中proxy使得请求进行转发。
+server {
+  location /javaserver/ {
     proxy_pass http://127.0.0.1:7002/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     rewrite ^/javaserver/(.*)$ /$1 break;
+   }
 }
 ```
+
+:::

@@ -130,7 +130,7 @@ app.use(cors(corsOptions));
 import要设置module为ESNext或commonJS（要配置ts），后端api使用commonJS兼容性好。其他的话ESNext，或者需要使用ES6最新语法。  
 开发时可以使用热更新重载，例如**nodemon** ,例如让nodemon监视src下所有文件，一有变动就重启服务（这里加上ts类型安全），重启服务时，然后编译main.ts。
 
-```js
+```js:no-line-numbers
 nodemon --watch \"src/**/*.ts\" --exec \"ts-node\"  main.ts
 ```
 
@@ -138,7 +138,7 @@ nodemon --watch \"src/**/*.ts\" --exec \"ts-node\"  main.ts
 
 静态资源代理直接使用express.static中间件即可，例如将所有public目录暴露出去（当然也可以自定义别的目录。
 
-```js
+```js:no-line-numbers
 app.use(express.static('public'));
 ```
 
@@ -875,7 +875,7 @@ export const setupDefaultRoute = (router: Router) => {
 
 ::: code-group
 
-```sh [install.sh]
+```sh:no-line-numbers [install.sh]
 pnpm i tsx -D
 ```
 
@@ -901,7 +901,7 @@ pnpm i tsx -D
 安装`esbuild`并设置配置文件
 ::: code-group
 
-```bash [install.sh]
+```bash:no-line-numbers [install.sh]
 pnpm i esbuild -D
 ```
 

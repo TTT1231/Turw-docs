@@ -27,7 +27,7 @@ outline: deep
 
 **步骤 1：安装依赖**
 
-```sh
+```sh:no-line-numbers
 pnpm add -D @nuxtjs/tailwindcss
 ```
 
@@ -42,7 +42,7 @@ export default defineNuxtConfig({
 
 **步骤 3：创建 CSS 入口文件**
 
-```css
+```css:no-line-numbers
 /* ~/assets/css/main.css */
 @import 'tailwindcss';
 ```
@@ -402,7 +402,7 @@ export default defineNuxtConfig({
 
 **安装**
 
-```sh
+```sh:no-line-numbers
 pnpm add -D @ant-design-vue/nuxt
 ```
 
@@ -438,7 +438,7 @@ ESLint 报错 `defineNuxtConfig` 未定义，因为找不到 `TypeScript` 的顶
 
 直接安装 TypeScript：
 
-```sh
+```sh:no-line-numbers
 pnpm install -D typescript
 ```
 

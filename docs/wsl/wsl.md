@@ -6,7 +6,7 @@ wsl2 在windows集成 linux，主要就是解决网络代理问题，docker能�
 
 **1、在管理员模式启动powershell**
 
-```powershell
+```powershell:no-line-numbers
 wsl --install
 ```
 
@@ -14,7 +14,7 @@ wsl --install
 
 **3、配置ssh服务**
 
-```bash
+```bash:no-line-numbers
 sudo apt update && sudo apt install openssh-server
 ```
 
@@ -22,7 +22,7 @@ sudo apt update && sudo apt install openssh-server
 
 使得能够**允许通过密码验证登录 SSH 服务器**。
 
-```bash
+```bash:no-line-numbers
 sudo nano /etc/ssh/sshd_config
 ```
 
@@ -34,7 +34,7 @@ PasswordAuthentication yes
 
 **5、启动SSH服务**
 
-```bash
+```bash:no-line-numbers
 sudo service ssh start
 ```
 
@@ -49,7 +49,7 @@ sudo service ssh start
 - 默认网关负责在 Linux 与 Windows 之间转发网络流量
 - **重启 Windows 后网关地址会重新分配**
 
-```bash
+```bash:no-line-numbers
 ip route show default
 ```
 
@@ -58,7 +58,7 @@ ip route show default
 - `eth0` 网卡中的 `inet` 字段即为当前 WSL2 IP
 - **每次重启都会变动**
 
-```bash
+```bash:no-line-numbers
 ip addr show eth0
 ```
 

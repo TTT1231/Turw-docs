@@ -13,7 +13,7 @@
 
 ## 安装
 
-```sh
+```sh::no-line-numbers
 pnpm add -D eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-config-prettier eslint-plugin-prettier
 
 ```
@@ -189,7 +189,7 @@ server这里是示例名，类似项目src可以自定义
 
 **安装**：
 
-```sh
+```sh:no-line-numbers
 pnpm add @stylistic/stylelint-plugin postcss-scss stylelint-config-recommended-vue stylelint-config-standard-scss stylelint-prettier stylelint-scss vue -D @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser @vitejs/plugin-vue @vue/tsconfig eslint eslint-config-prettier eslint-plugin-prettier postcss-html prettier sass stylelint stylelint-config-recommended-scss stylelint-config-standard stylelint-order typescript vite vue-tsc
 ```
 
@@ -376,7 +376,7 @@ coverage
 
 **安装：**
 
-```sh
+```sh:no-line-numbers
 pnpm add cspell -D
 ```
 
@@ -432,10 +432,8 @@ pnpm add cspell -D
 
 ::: code-group
 
-```sh [install.sh]
-
+```sh::no-line-numbers [install.sh]
 npm install -g cspell
-
 ```
 
 :::

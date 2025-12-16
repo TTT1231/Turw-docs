@@ -75,7 +75,7 @@
 - **需求**：安装 `@pinia/nuxt`
 - **类型提示**：完整类型提示 :smiley:
 - **使用方式**：需手动导入
-   ```ts
+   ```ts:no-line-numbers
    import { useUserStore } from '@/stores';
    ```
 

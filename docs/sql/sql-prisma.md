@@ -20,13 +20,13 @@ Prisma将表看成一个对象(model)，所有操作都看作对象的操作，�
 
 **Install husky**
 
-```sh
+```sh:no-line-numbers
 pnpm add --save-dev husky
 ```
 
 **husky init**
 
-```sh
+```sh:no-line-numbers
 pnpm exec husky init
 ```
 
@@ -119,19 +119,19 @@ npx prisma init --datasource-provider mysql --output ../generated/prisma
 
 **安装prisma client**，类型安全和简化SQL
 
-```sh
+```sh:no-line-numbers
 pnpm install @prisma/client
 ```
 
 init prisma client
 
-```sh
+```sh:no-line-numbers
 npx prisma generate
 ```
 
 **最后迁移到数据库中（生产模式下使用）**
 
-```sh
+```sh:no-line-numbers
 npx prisma migrate deploy
 ```
 

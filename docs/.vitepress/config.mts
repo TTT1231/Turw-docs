@@ -11,6 +11,9 @@ export default defineConfig({
          }
       }
    },
+   markdown: {
+      lineNumbers: true // 启用代码块行号
+   },
    lang: 'zh-CN',
    base: '/Turw-docs/', // Set to your desired base path
    title: '我的文档',
