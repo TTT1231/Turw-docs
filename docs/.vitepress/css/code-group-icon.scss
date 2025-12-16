@@ -51,7 +51,7 @@
 }
 
 //公共图标路径变量
-$commonIconPath: "/Turw-docs/assets/images";
+$commonIconPath: "/Turw-docs/assets/images/code-icon";
 
 //获取图标目标路径函数
 @function getIconUrl($icon-name) {
@@ -86,7 +86,8 @@ $iconConfigs: (
    "schema.json": getIconUrl("json-schema"),
    "stylelint.config.mjs": getIconUrl("stylelint"),
    ".stylelintignore": getIconUrl("stylelint"),
-   "cspell.json": getIconUrl("cspell")
+   "cspell.json": getIconUrl("cspell"),
+   "nginx.conf": getIconUrl("nginx")
 );
 
 // 生成图标样式

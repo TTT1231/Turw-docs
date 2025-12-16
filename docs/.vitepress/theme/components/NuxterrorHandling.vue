@@ -14,11 +14,14 @@ const props = defineProps({
    }
 });
 
-//nuxt error handle skleton
+//img home
+const imgHome = '/Turw-docs/assets/images/com-icon';
+
+//nuxt error handle skeleton
 const imgMap = {
-   'APP-ERROR': '/Turw-docs/assets/images/application.png',
-   'FRONTEND-ERROR': '/Turw-docs/assets/images/frontedend.png',
-   'LAYERS-STRUCT': '/Turw-docs/assets/images/layers-struct.png'
+   'APP-ERROR': `${imgHome}/application.png`,
+   'FRONTEND-ERROR': `${imgHome}/frontedend.png`,
+   'LAYERS-STRUCT': `${imgHome}/layers-struct.png`
 };
 
 const isLoading = ref(true);

@@ -26,6 +26,8 @@
       "recompiles",
       "ncjs",
       "esbenp",
+      "esbuild",
+      "fastify",
       ".browserslistrc",
       "vsicons",
       "dbaeumer",
