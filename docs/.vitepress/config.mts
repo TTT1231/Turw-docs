@@ -3,6 +3,33 @@ import { defineConfig } from 'vitepress';
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
    vite: {
+      //自定义日志过滤器，过滤没有用的code-icon svg警告（实际上是动态使用）
+      customLogger: {
+         info(msg) {
+            if (typeof msg === 'string' && msg.includes('code-icon') && msg.includes('.svg')) {
+               return;
+            }
+            console.log(msg);
+         },
+         warn(msg) {
+            if (typeof msg === 'string' && msg.includes('code-icon') && msg.includes('.svg')) {
+               return;
+            }
+            console.warn(msg);
+         },
+         warnOnce(msg) {
+            if (typeof msg === 'string' && msg.includes('code-icon') && msg.includes('.svg')) {
+               return;
+            }
+            console.warn(msg);
+         },
+         error(msg) {
+            console.error(msg);
+         },
+         hasWarned: false,
+         hasErrorLogged: () => false,
+         clearScreen: () => {}
+      },
       css: {
          preprocessorOptions: {
             scss: {
