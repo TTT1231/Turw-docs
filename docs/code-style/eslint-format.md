@@ -13,7 +13,7 @@
 
 ## 安装
 
-```sh::no-line-numbers
+```sh:no-line-numbers
 pnpm add -D eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-config-prettier eslint-plugin-prettier
 
 ```
@@ -432,7 +432,7 @@ pnpm add cspell -D
 
 ::: code-group
 
-```sh::no-line-numbers [install.sh]
+```sh:no-line-numbers [install.sh]
 npm install -g cspell
 ```
 
