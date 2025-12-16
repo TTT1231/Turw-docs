@@ -37,6 +37,7 @@ export default defineConfig({
 # vite打包后，proxy配置不会生效，需要在Nginx中配置/javaserver转发规则，
 # 代替vite中proxy使得请求进行转发。
 server {
+  # API 代理 - 不需要 CORS！
   location /javaserver/ {
     proxy_pass http://127.0.0.1:7002/;
     proxy_set_header Host $host;
@@ -47,4 +48,12 @@ server {
 }
 ```
 
+:::
+
+::: danger 危险
+代理的核心作用就是避免`CORS`问题，而不是解决`CORS`问题
+
+因此当开启代理之后，就不需要再`Nginx`中启用`CORS`，因为这里`vite`作为了中转站点，因此这里是一个同源请求转发。
+
+因此实践中如果是网关的话，只需统一经过网关，然后网关转发即可，此时也是不需要`CORS`，和配置`vite`请求转发，然后nginx配置代理类似。
 :::
