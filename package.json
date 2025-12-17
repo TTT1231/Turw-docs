@@ -18,7 +18,8 @@
       "docs:preview": "vitepress preview docs",
       "format": "prettier --write docs/",
       "check:cspell": "cspell **",
-      "build-zip-upload": "node ./scripts/build-zip-upload.mjs"
+      "build-zip-upload": "node ./scripts/build-zip-upload.mjs",
+      "upload-zip": "node ./scripts/upload-zip.mjs"
    },
    "dependencies": {
       "ant-design-vue": "^4.2.6",

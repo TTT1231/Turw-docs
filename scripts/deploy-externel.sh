@@ -2,14 +2,15 @@
 # ================== 服务器定期执行脚本 ===================
 # 该脚本主要在服务器内部执行，每天凌晨cron定期执行一次
 # 先在本地build好后，上传zip包到服务器，再由该脚本解压更新的方式进行部署
-# 项目目录: /home/Turw-docs/
-# 日志文件: /home/Turw-docs/docs/.vitepress/deploy.log
+# 项目目录: /home/Mydocs
+# 日志文件: /home/Mydocs/deploy.log
 # =======================================================
 
 # 定义路径
-BUILD_TEMP_DIR="/home/Turw-docs/docs/.vitepress/.build-temp"
-DIST_DIR="/home/Turw-docs/docs/.vitepress/dist"
-LOG_FILE="/home/Turw-docs/docs/.vitepress/deploy.log"
+BASE_DIR="/home/Mydocs"
+BUILD_TEMP_DIR="$BASE_DIR/temps"
+DIST_DIR="$BASE_DIR/dist"
+LOG_FILE="$BASE_DIR/deploy.log"
 
 # 确保日志文件存在
 if ! touch "$LOG_FILE"; then
