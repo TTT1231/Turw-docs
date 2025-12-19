@@ -188,17 +188,17 @@
    border-color: var(--vp-button-nest-border);
    color: var(--vp-button-nest-text);
    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
 
-.VPButton.nest:hover {
-   border-color: var(--vp-button-nest-hover-border);
-   color: var(--vp-button-nest-hover-text);
-   background: linear-gradient(135deg, #5568d3 0%, #6a4199 100%);
-   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
+   &:hover {
+      border-color: var(--vp-button-nest-hover-border);
+      color: var(--vp-button-nest-hover-text);
+      background: linear-gradient(135deg, #5568d3 0%, #6a4199 100%);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+   }
 
-.VPButton.nest:active {
-   border-color: var(--vp-button-nest-active-border);
-   color: var(--vp-button-nest-active-text);
-   background: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%);
+   &:active {
+      border-color: var(--vp-button-nest-active-border);
+      color: var(--vp-button-nest-active-text);
+      background: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%);
+   }
 }

@@ -38,7 +38,7 @@ outline: deep
 
 ## 中间件应用
 
-### 错误处理
+**错误处理**
 
 ```js
 //语法错误处理
@@ -104,10 +104,10 @@ const handleUnknownError=(app:Express)=>{
 }
 ```
 
-### CORS
+**CORS**
 
 这里如果要让ajax(XMLHttpRequest)或者fetch区别游览发起请求和表单之间访问url
-则需要**x-requested-with**用于标识，**Content-Type**和**Authorization**用于认证，
+则需要`x-requested-with`用于标识，**Content-Type**和**Authorization**用于认证，
 也可以使用自定义允许的请求头**customHeaders**。示例：
 
 ```js
@@ -212,7 +212,7 @@ export {};
 路由定义要存储全局，要不然打包就不会共享 这里的约定是文件必须按照Nuxt中api一样配置【约定即配置核心】，这里约定函数为**defineNodeRoute**,可以自行定义。
 :::
 
-### 实现
+**实现**
 
 <details>
 <summary class=" bg-blue-400  text-white cursor-pointer select-none
@@ -611,7 +611,7 @@ export function registerRoutes(router: Router): void {
 
 </details>
 
-### 插件注册
+**插件注册**
 
 <details>
 <summary class=" bg-blue-400  text-white cursor-pointer select-none
@@ -662,7 +662,7 @@ export default defineRouterPlugin;
 
 </details>
 
-### 打包
+**打包**
 
 ::: tip 提示
 这里以esbuild打包为例，因为esbuild非常适合**中小型RESTful API**项目打包  
@@ -893,10 +893,12 @@ pnpm i tsx -D
 ::: tip 提示
 打包nodejs常见的有两个一个是`esbuild`另外一个是`webpack`，esbuild构建速度快，配置简单易用性高。
 
-但是在一些复杂项目中没有webpack好用，因而**复杂项目使用webpack，快速上线中小项目使用esbuild**
+但是在一些复杂项目中没有webpack好用，因而**复杂项目使用webpack，快速上线中小项目使用esbuild**。
+
+当然了，一些脚手架项目也可以用**tsup**打包也是一样的。
 :::
 
-### esbuild打包
+**esbuild打包**
 
 安装`esbuild`并设置配置文件
 ::: code-group
@@ -954,3 +956,101 @@ await build({
 ```
 
 :::
+
+## 进程与脚本
+
+`Nodejs`可以针对进程进行管理，实现**进程并发、任务沙箱隔离、脚本编写、聚合层BFF转发、自动化运维和构建、数据处理等**等功能。
+
+主要就是一些CPU密集任务型处理，因为`Nodejs`是高性能I/O处理，因此对这方面特别擅长，其核心就是**将I/O操作迁移到后台，避免阻塞主进程**。
+
+大部分场景如下：数据加密、数据计算、图片处理等。也是通过Nodejs中`fork`创建子进程，然后进行处理（类似CPU并行），使得主进程继续处理其他请求，返回最终处理结果而后主进程进行处理。
+
+还一种就是一些定时任务和流式长期运行任务，例如**日志监控、数据备份、爬虫任务、跨语言集成等**。
+
+::: tip 提示
+跨语言集成能力，也是借助`Nodejs`环境，类似`Nodejs`脚本使用对应的环境启动对应的代码，例如使用`python`启用`.py`完成模型推理工作等。
+:::
+
+::: danger 危险
+`fork`创建子进程会消耗资源，因此实际中不能创建太多，会有性能损耗
+:::
+
+> [!IMPORTANT] 重要
+> 上诉中的能力，是借助`Nodejs`中`child_process`模块的，翻译过来就是子进程模块。
+
+::: tip 为什么是`child_process`
+
+|       库       |              优点              |       缺点       |     适用场景      |
+| :------------: | :----------------------------: | :--------------: | :---------------: |
+| child_process  | 进程隔离、进程并行、跨语言集成 |  创建进程有开销  | CPU密集、需要沙箱 |
+| Worker Threads |        共享内存，开销小        |     ipc通信      |    进程间通信     |
+|    Redis/MQ    |         分布式、持久化         | 必须要中间件集成 |    分布式系统     |
+
+:::
+
+**child_process配置速通**
+
+**Base配置**
+
+|    属性    |    默认值     |                     描述                     |
+| :--------: | :-----------: | :------------------------------------------: |
+|    env     |       -       | 环境变量，可覆盖Nodejs相关的PATH，NODE_ENV等 |
+|  timeout   |       0       |                表进程执行限制                |
+|    uid     |       -       |             /Unix系统下的用户id              |
+|   signal   |       -       |       AbortSignal信号，用于中止子进程        |
+|    gid     |       -       |               Unix系统下的组id               |
+| killSignal |   'SIGTERM'   |         超时时发送给子进程的终止信号         |
+|    cwd     | process.cwd() |              子进程当前工作目录              |
+
+**spawn特点和配置**
+
+异步执行，流式返回输出，默认不用Shell启动。
+[spawn官方配置文档](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options)
+
+|           属性           | 默认值 |         类型          |           描述           |
+| :----------------------: | :----: | :-------------------: | :----------------------: |
+|       windowsHide        | false  |       `boolean`       |        窗口不隐藏        |
+| windowsVerbatimArguments | false  |       `boolean`       |   windows参数自动转义    |
+|          argv0           |   -    |       `string`        |   显式设置argv[0]的值    |
+|      serialization       | 'json' | `'json'\|'advanced' ` |    发送消息序列化类型    |
+|          shell           | false  | `'boolean'\|'string'` |  是否在shell中运行命令   |
+|         detached         |   -    |       `boolean`       | 分离子进程，使其独立运行 |
+
+**exec/execFile特点和配置**
+
+缓存输出后一次性返回
+
+[exec官方配置文档](https://nodejs.org/api/child_process.html#child_processexeccommand-options-callback)
+
+[execFile官方配置文档](https://nodejs.org/api/child_process.html#child_processexecfilefile-args-options-callback)
+
+|    属性     |    默认值    |           类型           |                     描述                     |
+| :---------: | :----------: | :----------------------: | :------------------------------------------: |
+| windowsHide |    false     |        `boolean`         |                  窗口不隐藏                  |
+|  encoding   |    'utf8'    |         `string`         | 字符编码，设置为 'buffer' 则输出 Buffer 对象 |
+|  maxBuffer  | 1024 \* 1024 | `'number'\|'undefined' ` |                  缓冲区大小                  |
+
+::: danger 危险
+`exec`和`execFile`的核心就是有关**shell**配置，因为`execFile`就是针对`exec`的封装，主要就是解决shell注入问题。
+
+- `exec`中shell默认启用(true)
+- `execFile`中shell默认关闭(false)
+
+因此`execFile`就不支持了shell语法。
+:::
+
+**fork特点和配置**
+
+IPC通信（基于spawn）封装，主要用于CPU任务拆分，优化CPU利用。只会在Node环境下执行，默认包含IPC通信通道。
+
+一般类似就是像electron通信一样，还有就是node脚本执行，进程守护等。
+
+[fork官方配置文档](https://nodejs.org/api/child_process.html#child_processforkmodulepath-args-options)
+
+|           属性           | 默认值 |         类型          |                   描述                    |
+| :----------------------: | :----: | :-------------------: | :---------------------------------------: |
+| windowsVerbatimArguments | false  |       `boolean`       |            windows参数自动转义            |
+|         execArgv         |   -    |      `string[]`       |               命令执行参数                |
+|         execPath         |   -    |       `string`        |               命令执行路径                |
+|      serialization       | 'json' | `'json'\|'advanced' ` |            发送消息序列化类型             |
+|          silent          | false  |       `boolean`       | 默认从父进程继承，如果为true则类似console |
