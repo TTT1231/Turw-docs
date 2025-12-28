@@ -4,13 +4,9 @@ outline: deep
 
 # Nodejs
 
-一般用于RESTful API(Express/Fastify)，BBF,特别适合中小型项目。
-也即前端全栈，实时应用开发、偏前端方向。相比java其开发速度很快，适合快速迭代开发。
+高性能IO、BBF、跨平台开发工具、cli、SSR、SSG、小工具脚本等
 
-**优点**：高性能IO、启动快、丰富生态、开发速度快  
-**缺点**：类型安全差、不适合高CPU
-
-## 框架选择
+## RESTful框架选择
 
 | **Framework** | **Version** | **Router?** | **Requests/sec** |
 | ------------- | ----------- | ----------- | ---------------- |
@@ -142,13 +138,43 @@ nodemon --watch \"src/**/*.ts\" --exec \"ts-node\"  main.ts
 app.use(express.static('public'));
 ```
 
-## **Request拓展（.d.ts不加载问题）**
+## **ts-node运行时类型问题**
 
-在对原生类型如express中Request进行全局拓展时，如果只定义了
+在使用`ts-node`会出现 “运行时类型未加载” 问题，也就是`.d.ts`文件未纳入加载范围。
 
-```ts
-import type { Request } from 'express';
+::: tip 问题原因
+此问题出现在使用`ts-node`去运行`ts`文件并在`tsconfig`中配置了`ts-node`中`transpileOnly`属性启用了类型检查，由于启用了检查，但是没有配置`files`去加载文件，那么此时就会出现运行时类型问题。
 
+其中files只会加载项目文件，此时必须通过`include`显示指定哪些文件属于项目中的一部分 。（启用类型检查条件下`transpileOnly`）
+
+该问题只是一个类型问题，关闭`transpileOnly`也是可以运行的，如果非要`ts-node`检查的话，就必须要配置`files`和`transpileOnly`两种属性。
+
+当然了，在开发中也是需要针对一些类型文件编译器也是要识别到的，使得开发更加类型安全。
+:::
+
+::: warning 注意
+在配置包含类型文件中，有两种方案，一种是`include`和`typeRoots`方案。
+
+:grinning: :`include`是文件级别精确匹配，针对每个文件可控，结构也更加清晰。因此实际中推荐使用这种。
+:disappointed_relieved: : `typeRoots`会扫描整个目录，同时会覆盖默认，需要显示声明，实际使用容易造成误配。因此大多数不推荐。
+:::
+
+::: tip 提示
+**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件,例如（**第一个是默认，后面一个是自定义的**）：
+
+```json
+{
+   "typeRoots": ["./node_modules/@types", "./server/types"]
+}
+```
+
+:::
+
+> 首先需要保证**类型安全**，这里以环境类型为例
+
+::: code-group
+
+```ts [env.d.ts]
 declare global {
    namespace Express {
       interface Request {
@@ -170,40 +196,40 @@ declare global {
 export {};
 ```
 
-就算在tsconfig配置了**typeRoots**定义声明文件查找文件，此时ts不报错但是运行报错。  
-原因就是：执行pnpm dev 启动项目时类型声明文件没有加载导致出错。
+```jsonc [tsconfig.json]
+{
+   "ts-node": {
+      //[!code warning]
+      // 关闭它时，不会出现这个问题，需要解决类型问题，使用ts-node需要明确指定需不需要它
+      //[!code warning]
+      //使用ts-node类型检查，不推荐，检查多余且不适配耗时长
 
-此时可以使用在`tsconfig.json`中添加`ts-node`配置
-
-- 解决.d.ts没导入
-- 所有.d.ts配置都在一个地方、维护友好
-- 官方ts和ts-node推荐做法
-- 避免重复导入和保持全局类型的特性
-
-**ts-node是为了让 Node.js 能够直接运行 TypeScript 文件（.ts），而无需先手动编译成 JavaScript。**
-
-::: warning 注意
-生产模式还是tsc编译成`JavaScript`，再用 node运行，这样**保险些**。
-:::
-
-```ts
-  /* ts-node 配置，输入编译选项外 */
-  "ts-node": {
-    "files": true,                                     /* 启用 TypeScript 的 files 选项，确保类型文件被正确加载 */
-    "transpileOnly": false                             /* 启用严格的类型检查，生产模式注意要关闭 */
-  },
+      "transpileOnly": false //[!code ++] 启用类型检查 ,
+      "files": true //[!code ++] 加载 include 中的所有文件
+   },
+   "include": ["env.d.ts"] //[!code ++] 包含类型
+}
 ```
 
-其中files只会加载项目文件，此时必须通过`include`显示指定哪些文件属于项目中的一部分 。
+```json [package.json]
+{
+   "scripts": {
+      //[!code ++]
+      "dev": "ts-node src/main.ts"
+   }
+}
+```
 
-::: tip 提示
-**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件,例如（**第一个是默认，后面一个是自定义的**）：
+:::
 
-`"typeRoots": [                                    
-    "./node_modules/@types",               
-    "./server/types"
-  ]`
+::: details
+**ts-node是为了让 Node.js 能够直接运行 TypeScript 文件（.ts），而无需先手动编译成 JavaScript。**
 
+同时由于`esm`格式目前还是不支持，只能使用加载器格式进行加载`esm`格式，而且加载器未来会抛弃选用`import`格式。
+
+因此实际`ts-node`运行中会将项目的`esm`格式转化为`commonJS`格式。
+
+它核心就是**轻量、即时执行**，因此只适合一些验证场景和简单脚本场景不需要打包工具参与。
 :::
 
 ## 约定式路由实现
