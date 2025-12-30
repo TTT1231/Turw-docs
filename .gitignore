@@ -10,3 +10,8 @@ docs/.vitepress/dist
 dist.zip
 .vitepress/deploy.log
 secret/
+
+# Husky - keep the _ folder and custom hooks, ignore generated ones
+.husky/*
+!.husky/_
+!.husky/pre-push
