@@ -81,22 +81,15 @@ private A a;
 只要实现类似上诉AOP设计思想都可以称为APO设计，例如对象代理、拦截器（包括全局拦截、局部拦截）、装饰器，不过它们的思想都差不多，都是为了**在方法执行前或者后，执行这个副作用函数**。
 :::
 
-## nestjs架构思想
-
-### 职责、模块分离思想
+## nestjs架构设计思想
 
 其应用注解**修饰器**只负责向**Function**注入元数据信息，而后IOC（container）容器负责根据这些元数据信息存储`providers` Function，**这里的providers包含providers和controllers**，同时懒注入`providers`当容器发现需要使用`providers`容器会自动注入实例，并存储该实例，进行实例的全生命周期管理。
 
 而它的工厂函数思想**将类对象的创建封装起来**使得使用者不关心其内部实现，只关心其向外部暴露的方法进行调用。
 
-**简单实现**
+::: code-group
 
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   装饰器
-</summary>
-
-```ts
+```ts [Decorator.ts]
 import 'reflect-metadata';
 //controller 装饰器
 export const Controller = (path?: string): ClassDecorator => {
@@ -117,6 +110,7 @@ export const Injectable = (): ClassDecorator => {
 //GET装饰器
 export const Get = (path?: string): MethodDecorator => {
    return (target: Object, propertyKey: string | Symbol, descriptor: PropertyDescriptor) => {
+      //propertyKey：被修饰的方法名
       Reflect.defineMetadata('http:method', 'GET', descriptor.value!);
       Reflect.defineMetadata('http:method:path', path, descriptor.value!);
    };
@@ -135,12 +129,12 @@ export const Module = (metadata: ModuleMetadata): ClassDecorator => {
 
       //关联控制器和模块
       //一个模块可以包含多个控制器，用于模块化管理控制器
-      defineModule(target, metadata.controllers || []);
-      Reflect.defineMetadata('controllers', metadata.controllers, target);
+      defineModule(target, metadata.controllers || []); //controllers -> module
+      Reflect.defineMetadata('controllers', metadata.controllers, target); //module ->controllers
 
       //关联提供者（providers）和模块
-      defineProvidersModule(target, metadata.providers || []);
-      Reflect.defineMetadata('providers', metadata.providers, target);
+      defineProvidersModule(target, metadata.providers || []); //providers -> module
+      Reflect.defineMetadata('providers', metadata.providers, target); //module ->providers
 
       //在类上保存exports
       Reflect.defineMetadata('exports', metadata.exports, target);
@@ -152,6 +146,7 @@ export const Module = (metadata: ModuleMetadata): ClassDecorator => {
 //给每个控制器添加元数据，标识它们属于哪个模块
 export function defineModule(target: Function, metadataControllers: Function[]) {
    metadataControllers.forEach((controller) => {
+      //在target上标记controller
       Reflect.defineMetadata('MODULE_METADATA', target, controller);
    });
 }
@@ -169,14 +164,7 @@ export function defineProvidersModule(target: Function, providers: Provider[] = 
 }
 ```
 
-</details>
-
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   IOC容器
-</summary>
-
-```ts
+```ts [IOC_Container.ts]
 import 'reflect-metadata';
 
 /**
@@ -210,7 +198,7 @@ export class Container {
       }
 
       // 注册 controllers (controllers 也是 providers)
-      //创建controller示例
+      //创建controller实例
       //负责给controller注入service
       //管理controller的生命周期
       for (const controller of controllers) {
@@ -227,8 +215,10 @@ export class Container {
       let providerClass: Function;
 
       if (typeof provider === 'function') {
+         //如果传入的 provider 本身就是一个函数/类（比如 UserService）
          providerClass = provider;
       } else if (provider.useClass) {
+         //如果传入的是一个对象，且包含 useClass 属性（比如 { useClass: UserService }）
          providerClass = provider.useClass;
       } else {
          throw new Error(`Invalid provider: ${provider}`);
@@ -244,6 +234,7 @@ export class Container {
          );
       }
 
+      //调试输出用，用来输出到底是controller还是service
       if (isController) {
          console.log(`🎯 Registering Controller: ${providerClass.name}`);
       } else {
@@ -326,14 +317,7 @@ export class Container {
 }
 ```
 
-</details>
-
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-    工厂函数及其内部实现
-</summary>
-
-```ts
+```ts [Factory.ts]
 /**
  * NestJS 工厂类 - 模拟 NestJS 的应用创建过程
  */
@@ -357,12 +341,14 @@ export class NestFactory {
       return app;
    }
 }
+```
 
+```ts [Application.ts]
 //=========================== 工厂函数内部实现=============================
 import 'reflect-metadata';
 import * as http from 'http';
-import { Container } from './container.js';
-import { RouteScanner } from './route-scanner.js';
+import { Container } from './IOC_Container';
+import { RouteScanner } from './RouterScanner';
 
 /**
  * NestJS 应用核心类
@@ -511,16 +497,9 @@ export class NestApplication {
 }
 ```
 
-</details>
-
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-    注入路由（完成路由映射）
-</summary>
-
-```ts
+```ts [RouterScanner.ts]
 import 'reflect-metadata';
-import { Container } from './container.js';
+import { Container } from './IOC_Container';
 /**
  * 路由信息接口
  */
@@ -688,14 +667,7 @@ export class RouteScanner {
 }
 ```
 
-</details>
-
-<details>
-<summary class="bg-blue-400 text-white cursor-pointer select-none text-center active:scale-95">
-   示例用法
-</summary>
-
-```ts
+```ts [Usage.ts]
 //app.server.ts
 @Injectable()
 export class AppService {
@@ -764,4 +736,4 @@ async function bootstrap() {
 bootstrap();
 ```
 
-</details>
+:::
