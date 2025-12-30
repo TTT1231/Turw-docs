@@ -142,3 +142,190 @@ commonjs
 **Map**强引用，`Map`一直会持有这个对象的引用，即使外部没有变量引用这个对象，垃圾回收（GC）不会回收它，**会占用内存**，除非手动置空。
 
 **WeakMap**弱引用，外部没有变量引用这个`WeakMap`的时候，垃圾回收（GC）自动回收，避免了忘记手动置空，导致的内存泄漏。
+
+## stage3装饰器
+
+::: code-group
+
+<!-- prettier-ignore-start -->
+```ts [class-decorator.ts]
+/**
+ * @description 类装饰器 - 新标准 (Stage 3 Decorators)
+ * @returns 返回一个类装饰器函数
+ * @template T - 传递给装饰器的泛型参数，解决this类型问题
+ * @returns @param target - 被装饰的类构造函数
+ * @returns @param context - 类装饰器上下文，包含类的元数据和初始化器
+ */
+export function classDecorator(token?: string) {
+   return function <T extends abstract new (...args: any[]) => any>(
+      target: T,
+      context: ClassDecoratorContext<T>
+   ): T | void {
+      /**
+       * !获取不了参数名称，这里是编译时，运行时会被删除所以获取不到
+       * @description 获取构造函数参数类型数组
+       * @deprecated 这里ts编译器在新的版本中，由于违反了职责单一原则，不再自动添加设计时元数据
+       */
+      // Reflect.getMetadata('design:paramtypes', target) || [];
+
+      /**
+       * TODO: 设置类修饰器自定义元数据
+       * !特别注意，context.addInitializer在类装饰器和方法装饰器还有属性装饰器中的行为不同，体现在
+       *    - 类装饰器中，addInitializer的回调在类定义完成时执行，this指向类的构造函数（类本身）
+       *    - 方法装饰器中，addInitializer的回调在类实例化时执行，this指向类的实例对象
+       *    - 属性装饰器中，同方法装饰器类似，其必须要初始化类实例才能执行
+       * @example @usage
+       * ```ts
+       * @classDecorator()
+       * class A {}
+       * const class_value = Reflect.getMetadata('custom:class', A);
+       * //打印：类元数据，不用实例化类
+       * console.log('类元数据：', class_value);
+       * ```ts
+       */
+      context.addInitializer(function (this: T) {
+         Reflect.defineMetadata('custom:class', '类元数据，不用实例化类', target);
+      });
+
+      //不对类进行修改，返回undefined
+      return undefined;
+   };
+}
+```
+<!-- prettier-ignore-end -->
+
+<!-- prettier-ignore-start -->
+```ts [method-decorator.ts]
+/**
+ * @description 方法装饰器 - 新标准 (Stage 3 Decorators)
+ * @returns 返回一个方法装饰器函数
+ * @template T - 传递给装饰器的泛型参数，解决this类型问题
+ * @template This - 方法的this类型
+ * @template Args - 方法参数类型元组
+ * @template Return - 方法返回值类型
+ * @returns @param target - 被装饰的方法，指向原方法
+ * @returns @param context - 方法装饰器上下文，包含方法的元数据
+ */
+export function methodDecorator<T>() {
+   return function <This extends Object, Args extends any[], Return>(
+      target: (this: This, ...args: Args) => Return,
+      context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
+   ) {
+      /**
+       * @description 类定义时执行，直接在target（原方法）上设置元数据，将元数据附加到原方法中,
+       *              可以通过 A.prototype.[methodName] 访问，然后获取元数据
+       * @usage       用于不用实例化类就能获取元数据
+       * !注意: 如果是在context.addInitializer中定义元数据，则在类实例化时执行,
+       *              !该方法中的回调是在类实例化阶段执行的，不是在定义阶段
+       * @usage       然后如果想要在实例化时获取元数据可以将元数据绑定到类实例上，必须在context.addInitializer中定义
+       *
+       * @example
+       * ```ts
+       * class A {
+       *   @methodDecorator()
+       *   say() {console.log('say'); }
+       * }
+       * const method_value = Reflect.getMetadata('custom:method:noInit', A.prototype.say, 'say');
+       * //打印：类不用初始化就能获取元数据
+       * console.log('方法元数据：', method_value);
+       * ```ts
+       */
+      Reflect.defineMetadata(
+         'custom:method:noInit',
+         '类不用初始化就能获取元数据',
+         target,
+         context.name
+      );
+
+      /**
+       * @description 在运行阶段获取元数据，编译时必须要写在context.addInitializer回调中
+       * @note 注意this 指向问题
+       * @example @usage
+       * ```ts
+       * class A {
+       *   @methodDecorator()
+       *   say() {console.log('say'); }
+       * }
+       * const a = new A();
+       * const method_value = Reflect.getMetadata('custom:method:mustInit', a, 'say');
+       * //打印：类必须要初始化才能获取元数据
+       * console.log('方法元数据：', method_value);
+       * ```ts
+       */
+      context.addInitializer(function (this: This) {
+         Reflect.defineMetadata(
+            'custom:method:mustInit',
+            '类必须要初始化才能获取元数据',
+            this.constructor.prototype,
+            context.name
+         );
+      });
+
+      // 在新标准中,方法装饰器返回新的方法实现或 undefined，同类装饰器返回类似
+      //TODO 不修改方法实现，返回undefined
+      return undefined;
+
+      //TODO 修改方法实现
+      // return function (this: This, ...args: Args): Return {
+      //     console.log(`Calling method: ${String(context.name)}`);
+      //     return target.apply(this, args);
+      // };
+   };
+}
+```
+<!-- prettier-ignore-end -->
+
+<!-- prettier-ignore-start -->
+```ts [property-decorator.ts]
+/**
+ * @description 属性装饰器 - 新标准 (Stage 3 Decorators)
+ * @template T - 指向类类型
+ * @template Value - 属性值类型，也就是属性的类型
+ * @returns @param target - 被装饰的属性，新标准值为undefined
+ * @returns @param context - 属性装饰器上下文，包含属性的元数据
+ * @returns @returns @param this - 指向类实例
+ */
+export function propertyDecorator<T extends Object, Value>() {
+
+    //!第一个参数由于target是undefined，所以无法直接定义元数据，可以直接省略
+    return function (
+        context: ClassFieldDecoratorContext<T, Value>
+    ): (initialValue: Value) => Value {
+
+        /**
+         * !十分注意的是： 这里的this指向类实例，但是在addInitializer回调中，this指向类的构造函数。也就是说这里的addInitializer每次实例化时执行
+         * TODO 在类实例化时定义元数据
+         * @example @usage
+         * ```ts
+         * class A {
+         *   @propertyDecorator()
+         *   name: string = '你好啊';
+         * }
+         * const a = new A();
+         * const property_value = Reflect.getMetadata('custom:property', a, 'name');
+         * //打印：类必须要初始化才能获取元数据
+         * console.log('属性元数据：', property_value);
+         * ```ts
+         */
+
+        context.addInitializer(function (this: T) {
+            Reflect.defineMetadata(
+                "custom:property",
+                "property_value",
+                this,
+                context.name
+            );
+        });
+
+        //TODO 修改属性的初始值 ,这里不修改直接原样返回
+        //!注意类型
+        return function (this: T, initialValue: Value): Value {
+            return initialValue;
+        };
+    };
+}
+
+```
+<!-- prettier-ignore-end -->
+
+:::
