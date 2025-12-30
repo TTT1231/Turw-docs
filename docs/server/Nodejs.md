@@ -875,7 +875,20 @@ export const setupDefaultRoute = (router: Router) => {
 :::
 
 **配置：**  
-在`package.json`显示声明`"type":"module"`即可，然后就是配置`tsconfig.json`让ts如何解析该模块，
+在`package.json`显示声明`"type":"module"`即可，然后就是配置`tsconfig.json`让ts如何解析该模块
+
+::: warning 注意
+实际上不会这样子做，这样开发体验不好，每次都要输入文件后缀`js`，即使是`ts`。
+
+在node环境下的时候，当设置它的时候，node会强制要求文件后缀，如果是`ts`写的，那么特别是本地引入文件的时候会是`js`后缀，这样不直观，因此开发的时候一般不用，保持默认即可。
+
+同时如果确认需要显式的`esm`的时候，此时就需要，但是不推荐`ts`，因为`ts`会被视为`js`处理，此时可以使用`mjs`。
+
+:::
+
+::: tip 提示
+大部分情况下，`type`保持默认即可，避免在开发中`ts`本地文件引入时，要保持文件后缀`js`，**JS**文件选用`mjs`格式即可。
+:::
 
 ```json
 {
@@ -899,34 +912,36 @@ export const setupDefaultRoute = (router: Router) => {
 
 然后就是`package.json`启动命令的配置，这里使用更加现代的ts编译器`tsx`。其他的也可以，根据实际情况使用即可。
 
-::: code-group
+::: danger 危险
+`tsc`由于是单线程，构建速度慢，没有tree-shaking、模块打包等情况，因此实际上很少会选用它。
 
-```sh:no-line-numbers [install.sh]
-pnpm i tsx -D
-```
-
-```json [package.json]
-"scripts": {
-   "start": "node --import tsx src/main.ts",
-   "dev": "nodemon --watch \"src/**/*.ts\" -e ts,json --exec \"node --import tsx src/main.ts\""
-},
-```
-
+但是由于它是`ts`的官方打包工具，而且它非常适合类型检查，在快速验证的场景下可以选用它。
 :::
 
 ## 打包
 
 ::: tip 提示
-打包nodejs常见的有两个一个是`esbuild`另外一个是`webpack`，esbuild构建速度快，配置简单易用性高。
+如果是CLI、npm库、API服务，可以选用`tsup`。
 
-但是在一些复杂项目中没有webpack好用，因而**复杂项目使用webpack，快速上线中小项目使用esbuild**。
+如果是库开发，需要tree-shaking效果好、输出可读性好，此时可以选用`rollup`，但是速度会稍微比较慢较`tsup`、以及HMR不支持。
 
-当然了，一些脚手架项目也可以用**tsup**打包也是一样的。
+由于`rollup`受限JS单线程，打包耗时就会长，可以考虑`rolldown`也就是`rollup`重置版本，**未来发展趋势**，未来也会慢慢支持HMR功能，目前主要部分插件支持首先开发者一小部分会不支持，但是大部分是支持的。
+
+如果需要HMR热更新，可以选用`swc`，但是它仅转义不支持类型检查，因此在选用它时注意考虑**类型安全**
 :::
 
-**esbuild打包**
+::: warning 注意
+以上打包工具，`tsup`、`rollup`、`rolldown`、`swc`都不支持类型检查，因此打包前需要注意类型安全，或者执行一次类型安全检查，也是可以的。
+:::
 
-安装`esbuild`并设置配置文件
+::: info 通知
+`nestjs`中在使用`swc`进行转译`ts`->`js`然后在`build`阶段会先执行`tsc`类型检查，检查完后就是`swc`转译代码了。
+
+`vite8`打包构建也是选用的`rolldown`。
+:::
+
+在进行快速场景验证的时候，可以选用`esbuild`进行转译，但是正常项目不推荐，只适合很少场景，追求简单的话，选用`tsup`也是可以的。
+
 ::: code-group
 
 ```bash:no-line-numbers [install.sh]
