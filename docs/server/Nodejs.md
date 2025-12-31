@@ -6,6 +6,72 @@ outline: deep
 
 高性能IO、BBF、跨平台开发工具、cli、SSR、SSG、小工具脚本等
 
+## core
+
+> [!IMPORTANT] Nodejs代码处理过程
+>
+> ```md:no-line-numbers
+> 同步代码
+>  ↓
+> Process.nextTick 队列（清空）
+>  ↓
+> Promise(then回调)/queueMicrotask 微任务队列（清空）
+>  ↓
+> 进入事件循环某个阶段 (Timers/Poll/Check...)
+>  ↓
+> 执行该阶段的回调队列
+>  ↓
+> 检查并清空 process.nextTick
+>  ↓
+> 检查并清空微任务队列
+>  ↓
+> 进入下一个事件循环阶段（重复上述流程）
+> ```
+
+::: warning 注意
+`process.nextTick`独立微任务队列，最高任务优先级，在所有微任务执行前执行，也就是每个事件循环阶段之前检查和清空，因而仍然归属事件循环。
+
+`setImmediate`回调，在事件循环中的poll阶段完成后执行，也即在check阶段执行，执行完后会开启下一轮事件回调（会完成本轮循环，然后才开启下一轮循环，从timers阶段开始）。
+:::
+
+### libuv
+
+`Nodejs`主要用它来实现高性能处理I/O和跨平台兼容两大核心问题。同时也是借用它的`c++`线程池处理密集CPU任务（默认4个线程）。
+
+例如子进程管理`child_process`、进程管理`process`、定时器`setTimeout/Interval`、事件发射器`EventEmitter`以及文件操作`fs`等。
+
+内部依赖事件循环阶段。
+
+> [!IMPORTANT] 为什么需要线程池
+> 大部分操作系统没有异步操作文件API，且完善不好。之所以需要异步操作API主要就是避免阻塞主线程执行(CPU密集型，造成迫切任务等待长，性能不好)
+>
+> 该线程池主要就是在一些文件I/O和加密/压缩等CPU密集场景使用多，提高并行处理吞吐量
+
+::: info 事件循环EventLoop
+
+```md:no-line-numbers
+Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callbacks
+```
+
+- Timer定时器，执行setTimeout和setInterval回调。
+- Pending callbacks待处理回调，主要处理一些错误和延迟到下一个循环迭代的I/O回调，例如TCP错误。
+- Idle、prepare内部阶段
+- Poll 执行新I/O，阻塞等待，处理http请求
+- Check 执行`setImmediate`回调
+  :::
+
+::: tip 提示
+`Nodejs`是单线程的，核心就是事件循环，只有一个JS执行线程。然后`Nodejs`执行任务顺序如下，主线程执行同步代码，遇到异步任务，不等待结果，把任务丢给对应处理模块，然后主线程继续执行，同步代码执行完毕，主线程有空了在从任务队列中取出执行。
+:::
+
+## 微任务与宏任务
+
+**微任务**：主要就是`promise.then`回调、`queueMicrotask`、`MutationObserver`，在每个阶段后执行。
+
+**宏任务**：异步执行大任务（较于微任务耗时长，执行时间久），微任务执行完后才会执行宏任务。主要就是一些`I/O`和`setTimeout`、`setInterval`、`setImmediate`。
+
+`Nodejs`碰见微任务或者宏任务会直接将它加入对应列中，待主执行JS有空后，按照优先级别顺序执行。
+
 ## RESTful框架选择
 
 | **Framework** | **Version** | **Router?** | **Requests/sec** |
