@@ -20,6 +20,7 @@
    ],
    // 正确单词列表
    "words": [
+      "addii",
       ".browserslistrc",
       "ACMR",
       "Cascader",
@@ -38,6 +39,8 @@
       "dbaeumer",
       "defu",
       "echarts",
+      "emcc",
+      "emscripten",
       "envfile",
       "esbenp",
       "esbuild",

@@ -134,6 +134,11 @@ export default defineConfig({
             link: '/electron'
          },
          {
+            text: 'WebAssembly',
+            collapsed: true,
+            link: '/WebAssembly'
+         },
+         {
             text: '代码风格和规范',
             collapsed: true,
             items: [
