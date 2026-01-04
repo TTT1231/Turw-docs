@@ -1,3 +1,7 @@
+---
+outline: deep
+---
+
 # WebAssembly
 
 `WebAssembly`用于在跨平台中，游览器/`Nodejs`调用C++/C代码，用来解决`JS`在CPU密集计算任务下的缺点问题。
@@ -65,7 +69,85 @@ js提供了完整的`C++`操作，例如类、指针、异常处理、内存管�
 ## 类型安全
 
 这里类型使用**Emscripten自动生成**的最好，这最能精准知道导出什么需要什么，里面有什么，保证了wasm编译器编译和实际使用一致。
+
 wasm和js两种格式，最后生成的`.d.ts`文件类型都是一样的。
+
+进行类型安全的时候，要注意[模块导出问题](#导出模块问题)。
+
+::: warning 注意
+`emcc`生成的`.d.ts`类型文件，在工厂函数转化后，类型不安全，会被判断为unknown形式还有wasm运行时类型缺失，例如内存管理、I/O、文件系统、声明周期钩子。因此需要手动进行类型补全，如果需要类型安全前提下。
+
+这是在加上转化为工厂函数前提下`-sMODULARIZE`让初始化变为异步，如果是`emcc`生成的类型文件会如下:
+
+```ts
+// TypeScript bindings for emscripten-generated code.  Automatically generated at compile time.
+interface WasmModule {
+   _main(_0: number, _1: number): number;
+}
+
+export type MainModule = WasmModule;
+export default function MainModuleFactory(options?: unknown): Promise<MainModule>;
+```
+
+可以看到类型缺失了，还有wasm运行时类型，这时候需要进行手动补全，如下::: code-group
+
+```ts
+/// <reference types="emscripten" />
+
+interface WasmModule {
+   _main(_0: number, _1: number): number;
+}
+export type MainModule = WasmModule;
+export default function MainModuleFactory(
+   options?: Partial<EmscriptenModule>
+): Promise<MainModule & EmscriptenModule>;
+```
+
+这样会有点类型略显冗余，可以直接使用TS继承类型即可:
+
+```ts
+/// <reference types="emscripten" />
+
+export interface MainModule extends EmscriptenModule {
+   _main(_0: number, _1: number): number;
+}
+
+export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+```
+
+上面这个MainModule只是`emcc`自动生成的一个模块。
+:::
+
+::: tip 工厂函数类型为什么是这样的？
+这个类型在官方类型包中就定义了这个工厂函数类型。
+
+```ts
+/**
+ * @param moduleOverrides 模块覆盖配置
+ * @return 完整模块实例
+ */
+type EmscriptenModuleFactory<T extends EmscriptenModule = EmscriptenModule> = (
+   moduleOverrides?: Partial<T>
+) => Promise<T>;
+```
+
+`EmscriptenModule`是模块类型，有双重用途。
+
+```ts
+//用途1：作为工厂函数参数配置对象
+const module = await createModule({
+   print: (msg) => console.log(msg)
+   //....
+});
+
+//用途2：作为模块实例
+const module = await createModule(/** ... */);
+module.print('some print'); //配置函数
+module._malloc(100); //运行时生成函数
+//....
+```
+
+:::
 
 ::: tip 使用方法
 
@@ -75,7 +157,7 @@ wasm和js两种格式，最后生成的`.d.ts`文件类型都是一样的。
 
 ### 游览器类型安全
 
-由于游览器内置了`emscripten`类型，因此在使用`JS Module`时可以进行拓展，但是由于`emscripten`是类型文件不是一个模块，因此需要三斜线，然后对类型进行拓展。
+由于游览器没有内置了`emscripten`类型需要下载`@types/emscripten`，在使用`JS Module`时可以进行拓展，但是由于`emscripten`是类型文件不是一个模块，因此需要三斜线，然后对类型进行拓展。
 
 ```ts
 /// <reference types="emscripten" />
@@ -142,4 +224,80 @@ extern "C" {
 差异就是体现在调用时，例如当加载`JS`或者wasm的时候，调用函数前面会有\_标识，表示这是wasm生成的C函数代码。
 
 `C++`类、类方法等不会自动加，也不能使用`extern "C"`修饰，`extern "C"`只能修饰普通函数，会给普通函数自动添加`_`。
+:::
+
+### 导出模块问题
+
+`emcc`模块导出模块方式是`UMD`格式，该格式兼容游览器、`Nodejs`、`AMD`多环境，在游览器中会挂载在windows.Module下，在`Nodejs`依赖`module.exports`这种commonJS形式。
+
+同时默认情况下会立即同步执行。这种格式虽然很兼容但是使用方法很少，因此实际上会将其转化为`ES`形式，完成异步按需加载避免阻塞主线程。
+
+::: warning 注意
+`-sEXPORT_ES6=1`启用`ES`导出的时候，`emcc`只会解决模块导出问题，并不会控制如何进行初始化，此时任然还是同步初始化，会在引入模块时立即完成模块初始化工作。
+
+这返回的是已经初始化的对象，同时不能传递配置参数，还有在webAssembly初始化异步情况下，会无法自定义初始化参数和加载完成前立即调用函数会崩溃情况。
+
+因此它会和`-sMODULARIZE=1`启用工厂函数转化，`emcc`会异步加载wasm文件，此时能够正确处理异步初始化、传递配置参数、不会阻塞页面加载情况。
+:::
+
+::: tip 提示
+上诉可以理解成这样，`-sMODULARIZE=1`让初始化变为异步，`-sEXPORT_ES6=1`转化ES6形式。因而实际中，两者要配合使用，并启用。
+:::
+
+::: danger 危险
+如果按照[类型安全解决](#类型安全)进行类型安全，这里会出现在游览器`import(js)`的时候会找不到这个文件的声明文件，TS断言成any会报类型错误，如果按照下面进行类型声明会出现问题
+
+```ts
+/// <reference types="emscripten" />
+
+export interface MainModule extends EmscriptenModule {
+   _main(_0: number, _1: number): number;
+}
+
+export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+
+//[!code error]
+//!error1:这里问题主要出现在内部，MainModuleFactory和MainModule作用域不存在，有顶级export。
+//[!code error]
+//!error2:同时declare module 会创建一个隔离的作用域，因此在作用域内部没有MainModule和MainModuleFactory两个类型
+
+declare module 'path/to/js' {
+   export { MainModuleFactory as default, MainModule };
+}
+```
+
+**特别注意：** 模块匹配规则，也就是这个`path/to/js`如果是相对路径或者具体包名，declare作用域规则会严格隔离，不能访问外部类型和全局类型，如果是路径别名`@`或者通配符`*`则TS作用域规则较为宽松，可以访问外部类型和全局类型。
+
+这是由于declare的路径从当前路径出发的，外部的`import(js)`从外部初始路径出发，两者会严格对比，此时路径字符串会不一样，但是最终都是指向同一个文件，相对路径和具体包名就报类型错误了。
+
+按照下面方法进行类型安全就可以了，下面之所以分成两个文件，一个就是模块声明文件，另外一个就是供给外部使用类型文件，主要是避免写在一个文件中由于export和declare矛盾，导致`import(js)`失败，报类型错误问题。
+
+```ts
+//[wasm-module].d.ts
+declare module '@/path/to/target.js' {
+   interface WasmModule extends EmscriptenModule {
+      _main(_0: number, _1: number): number;
+   }
+
+   type MainModule = WasmModule;
+
+   const factory: (options?: Partial<MainModule>) => Promise<MainModule>;
+   export default factory;
+   export type { MainModule, WasmModule };
+}
+```
+
+```ts
+/// <reference types="emscripten" />
+//[wasm-type].d.ts
+
+export interface WasmModule {
+   _main(_0: number, _1: number): number;
+}
+
+export type MainModule = WasmModule;
+
+export type MainModuleFactory = (options?: Partial<MainModule>) => Promise<MainModule>;
+```
+
 :::
