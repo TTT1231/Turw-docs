@@ -361,3 +361,9 @@ contextBridge.exposeInMainWorld('electronApi', autoAssembleBridge<IElectronApi>(
 ```
 
 :::
+
+## 打包路径问题
+
+Electron应用在打包后无法解析以`/`开头的绝对路径，即使配置了`publicDir`，这会在开发环境下有用，但是在打包环境中，这种路径引用方式会失效。
+
+解决思路是**交给Vite处理**，让`Vite`在构建时处理资源路径，从而避免路径问题。例如使用资源加载形式加载`import logo from '/assets/vue.svg'`，这样在开发模式和打包模式下都能正常工作。
