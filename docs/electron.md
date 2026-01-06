@@ -6,13 +6,16 @@ outline: deep
 
 ## 类型统一与安全
 
-解决ipcRenderer.invoke(chunnel,..args)和ipcMain.handle(chunnel,(e,..args))=>ReturnType的chunnel提示和参数类型安全以及返回类型安全等问题。进一步简化繁琐函数的编写。
+::: info 通知
+主要就是在使用`ipcRenderer.invoke(chunnel,..args)`等的`chunnel`必须要确保`chunnel`一致，不一致时会出现问题还要来回查看，这里使用`TS`进行参与和智能提示，简化繁琐`chunnel`的编写和误写。
+:::
 
-### ipc类型提示
+### ipc主线程类型提示安全
 
 ::: code-group
 
 ```ts [window.d.ts]
+//渲染线程类型拓展用
 declare global {
    interface Window {
       /**
@@ -24,6 +27,79 @@ declare global {
 
 // global默认是模块作用域,需要显式导出才能成为全局声明文件
 export {};
+```
+
+```ts [ipcHelpType.d.ts]
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * 提取对象中所有函数类型的键
+ */
+type FuncKeys<T> = {
+   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+}[keyof T] &
+   string;
+
+/**
+ * 提取对象中所有非函数对象类型的键（用于嵌套）
+ */
+type ObjKeys<T> = {
+   [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] extends object ? K : never;
+}[keyof T] &
+   string;
+
+/**
+ * @description 生成所有可能的路径（最多3层嵌套）
+ */
+type Paths<T> =
+   | FuncKeys<T>
+   | {
+        [K1 in ObjKeys<T>]: `${K1}-${FuncKeys<T[K1]>}`;
+     }[ObjKeys<T>]
+   | {
+        [K1 in ObjKeys<T>]: {
+           [K2 in ObjKeys<T[K1]>]: `${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
+        }[ObjKeys<T[K1]>];
+     }[ObjKeys<T>];
+
+/**
+ * @description 根据路径获取函数类型
+ */
+type GetFunc<T, P> = P extends `${infer First}-${infer Rest}`
+   ? First extends keyof T
+      ? GetFunc<T[First], Rest>
+      : never
+   : P extends keyof T
+     ? T[P]
+     : never;
+
+/**
+ * @description 提取函数参数类型
+ */
+type FuncArgs<F> = F extends (...args: infer Args) => any ? Args : never;
+
+/**
+ * @description 提取函数返回值类型
+ */
+type FuncReturn<F> = F extends (...args: any[]) => infer R ? R : never;
+
+/**
+ * @description 辅助类型 - 用于严格检查返回值类型
+ */
+type StrictReturnType<T> =
+   T extends Promise<infer R> ? Promise<R> | R : T extends void ? void | undefined : T;
+
+/**
+ * @description IPC 通道定义类型
+ * 将路径映射为包含 channel 和对应函数类型的对象
+ */
+type IpcChannelMap<T> = {
+   [P in Paths<T>]: {
+      channel: P;
+      args: FuncArgs<GetFunc<T, P>>;
+      return: FuncReturn<GetFunc<T, P>>;
+   };
+};
 ```
 
 ```ts [ipc.d.ts]
@@ -38,42 +114,65 @@ declare interface IElectronApi {
 }
 ```
 
-```ts [ipc-util-type.d.ts]
+```ts [ipcFactoryType.d.ts]
 /* eslint-disable @typescript-eslint/no-explicit-any */
-//ipc-type-util.d.ts
+
 /**
- * @description 递归生成所有可能的路径（限制深度5层嵌套）
- * @usage @example
- * type User = {
- *  nihao: () => void;
- *  query:{
- *   getUserData: () => Promise<UserData>;
- *  }
- * !name:string; // 非函数属性会被忽略,不会出现在路径中
- * }
- * type UserPaths = Paths<User>; // "nihao" | "query-getUserData"
+ * 提取对象中所有函数类型的键
  */
-type Paths<T, Prefix extends string = '', Depth extends any[] = []> = Depth['length'] extends 5 // 限制递归深度为5
-   ? never
-   : T extends (...args: any[]) => any
-     ? Prefix
-     : {
-          [K in keyof T & string]: T[K] extends (...args: any[]) => any
-             ? Prefix extends ''
-                ? K
-                : `${Prefix}-${K}`
-             : T[K] extends object
-               ? Paths<T[K], Prefix extends '' ? K : `${Prefix}-${K}`, [...Depth, 1]>
-               : never;
-       }[keyof T & string];
+type FuncKeys<T> = {
+   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+}[keyof T] &
+   string;
+
+/**
+ * 提取对象中所有非函数对象类型的键（用于嵌套）
+ */
+type ObjKeys<T> = {
+   [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] extends object ? K : never;
+}[keyof T] &
+   string;
+
+/**
+ * @description 生成所有可能的路径（最多3层嵌套，不带命名空间前缀）
+ */
+type Paths<T> =
+   | FuncKeys<T>
+   | {
+        [K1 in ObjKeys<T>]: `${K1}-${FuncKeys<T[K1]>}`;
+     }[ObjKeys<T>]
+   | {
+        [K1 in ObjKeys<T>]: {
+           [K2 in ObjKeys<T[K1]>]: `${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
+        }[ObjKeys<T[K1]>];
+     }[ObjKeys<T>];
+
+/**
+ * @description 生成带命名空间前缀的路径
+ * @example NamespacedPaths<'IElectronApi', IElectronApi> = 'IElectronApi-windowControl-minimize' | ...
+ */
+type NamespacedPaths<NS extends string, T> =
+   | {
+        [K in FuncKeys<T>]: `${NS}-${K}`;
+     }[FuncKeys<T>]
+   | {
+        [K1 in ObjKeys<T>]: `${NS}-${K1}-${FuncKeys<T[K1]>}`;
+     }[ObjKeys<T>]
+   | {
+        [K1 in ObjKeys<T>]: {
+           [K2 in ObjKeys<T[K1]>]: `${NS}-${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
+        }[ObjKeys<T[K1]>];
+     }[ObjKeys<T>];
+
+/**
+ * @description 根据带命名空间的路径获取函数类型
+ */
+type GetFuncFromNamespaced<NS extends string, T, P> = P extends `${NS}-${infer Rest}`
+   ? GetFunc<T, Rest>
+   : never;
 
 /**
  * @description 根据路径获取函数类型
- * @usage @example
- * type User = {
- *  nihao: () => void;
- * }
- * type FuncType = GetFunc<User, 'nihao'>; // () => void
  */
 type GetFunc<T, P> = P extends `${infer First}-${infer Rest}`
    ? First extends keyof T
@@ -85,119 +184,359 @@ type GetFunc<T, P> = P extends `${infer First}-${infer Rest}`
 
 /**
  * @description 提取函数参数类型
- * @usage @example
- * type FuncType = (a: string, b: number) => void;
- * type Args = FuncArgs<FuncType>; // [string, number]参数类型元组
  */
 type FuncArgs<F> = F extends (...args: infer Args) => any ? Args : never;
 
 /**
  * @description 提取函数返回值类型
- * @usage @example
- * type FuncType = () => string;
- * type ReturnType = FuncReturn<FuncType>; // string
  */
 type FuncReturn<F> = F extends (...args: any[]) => infer R ? R : never;
 
 /**
  * @description 辅助类型 - 用于严格检查返回值类型
- * 如果期望返回 void，则只能返回 void 或 undefined
- * 如果期望返回 Promise<T>，则可以返回 Promise<T> 或 T（会被自动包装）
- * 否则必须返回精确匹配的类型
  */
 type StrictReturnType<T> =
-   T extends Promise<infer R>
-      ? Promise<R> | R // 允许同步返回值，ipcMain.handle 会自动包装
-      : T extends void
-        ? void | undefined // void 只能返回 void 或 undefined
-        : T; // 其他类型必须精确匹配
+   T extends Promise<infer R> ? Promise<R> | R : T extends void ? void | undefined : T;
+
+/**
+ * @description 用于构建 preload API 的类型
+ * 将接口转换为可用于 contextBridge.exposeInMainWorld 的结构
+ */
+type BuildExposedApi<NS extends string, T> = {
+   [K in keyof T]: T[K] extends (...args: infer Args) => infer R
+      ? {
+           /** IPC 通道名称 */
+           channel: `${NS}-${K & string}`;
+           /** 调用方法 */
+           invoke: (...args: Args) => Promise<Awaited<R>>;
+           send: (...args: Args) => void;
+        }
+      : T[K] extends object
+        ? BuildExposedApiNested<`${NS}-${K & string}`, T[K]>
+        : never;
+};
+
+type BuildExposedApiNested<Prefix extends string, T> = {
+   [K in keyof T]: T[K] extends (...args: infer Args) => infer R
+      ? {
+           /** IPC 通道名称 */
+           channel: `${Prefix}-${K & string}`;
+           /** 调用方法 */
+           invoke: (...args: Args) => Promise<Awaited<R>>;
+           send: (...args: Args) => void;
+        }
+      : T[K] extends object
+        ? BuildExposedApiNested<`${Prefix}-${K & string}`, T[K]>
+        : never;
+};
+
+/**
+ * @description IPC 通道定义类型
+ */
+type IpcChannelMap<T> = {
+   [P in Paths<T>]: {
+      channel: P;
+      args: FuncArgs<GetFunc<T, P>>;
+      return: FuncReturn<GetFunc<T, P>>;
+   };
+};
 ```
 
-```ts [ipc-util.ts]
-///<reference path="./ipc-type-util.d.ts" />
+```ts [ipcFactoryMainTypeUtil.ts]
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ipcMain, type IpcMainInvokeEvent, type IpcMainEvent } from 'electron/main';
 
+/**
+ * @description 创建带命名空间的类型安全 IPC 管理器
+ * @template NS - 命名空间字符串（通常是接口名称）
+ * @template T - IPC 接口定义类型
+ * @returns 返回一个包含类型化 IPC 方法的对象
+ *
+ * @usage @example
+ * // 定义接口
+ * interface IElectronApi {
+ *   windowControl: {
+ *     minimize: () => void;
+ *     maximize: () => void;
+ *     close: () => void;
+ *   };
+ *   app: {
+ *     getVersion: () => Promise<string>;
+ *   };
+ * }
+ *
+ * // 创建带命名空间的管理器（不需要传递 namespace 参数）
+ * const api = createIpcMain<'IElectronApi', IElectronApi>();
+ *
+ * // 通道名会自动加上命名空间前缀
+ * api.handle('IElectronApi-windowControl-minimize', (event) => {
+ *   // 处理最小化
+ * });
+ *
+ * api.handle('IElectronApi-app-getVersion', async (event) => {
+ *   return '1.0.0';
+ * });
+ */
+export function createIpcMain<NS extends string, T extends Record<string, any>>() {
+   type Channel = NamespacedPaths<NS, T>;
+
+   return {
+      /**
+       * 注册 handle 处理器（用于 invoke 调用）
+       */
+      handle<P extends Channel>(
+         channel: P,
+         handler: (
+            event: IpcMainInvokeEvent,
+            ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+         ) => StrictReturnType<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>
+      ): void {
+         ipcMain.handle(channel as string, handler);
+      },
+
+      /**
+       * 注册一次性 handle 处理器
+       */
+      handleOnce<P extends Channel>(
+         channel: P,
+         handler: (
+            event: IpcMainInvokeEvent,
+            ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+         ) => StrictReturnType<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>
+      ): void {
+         ipcMain.handleOnce(channel as string, handler);
+      },
+
+      /**
+       * 移除 handle 处理器
+       */
+      removeHandler<P extends Channel>(channel: P): void {
+         ipcMain.removeHandler(channel as string);
+      },
+
+      /**
+       * 注册事件监听器（用于 send 调用）
+       */
+      on<P extends Channel>(
+         channel: P,
+         listener: (event: IpcMainEvent, ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>) => void
+      ): void {
+         ipcMain.on(channel as string, listener);
+      },
+
+      /**
+       * 注册一次性事件监听器
+       */
+      once<P extends Channel>(
+         channel: P,
+         listener: (event: IpcMainEvent, ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>) => void
+      ): void {
+         ipcMain.once(channel as string, listener);
+      },
+
+      /**
+       * 移除事件监听器
+       */
+      off<P extends Channel>(
+         channel: P,
+         listener: (event: IpcMainEvent, ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>) => void
+      ): void {
+         ipcMain.off(channel as string, listener);
+      },
+
+      /**
+       * 移除指定通道的所有监听器
+       */
+      removeAllListeners<P extends Channel>(channel: P): void {
+         ipcMain.removeAllListeners(channel as string);
+      }
+   };
+}
+
+export const IpcTypeManager = {
+   createIpcMain
+};
+```
+
+:::
+
+::: tip 提示
+上诉中使用工厂函数模式在创建实例时一次性绑定，避免每次在调用时指定泛型，TS计算时而有，时而没有的问题。
+:::
+
+### preload桥接类型提示安全
+
+避免在桥接渲染进程与主进程通信时，这个`chunnel`以及命名空间提示需求。
+
+这里前提也是需要上诉**ipc主线程类型提示安全**前面四个代码，接上。
+
+::: code-group
+
+```ts [ipcFactoryPreloadTypeUtil.ts]
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ipcRenderer } from 'electron/renderer';
 
 /**
- * @description 根据传递的类型，自动推断路径和参数类型（类型安全）
- * @template T - 目标对象的类型，必须是一个记录类型
- * @template P - 方法路径字符串，自动推断为 T 中所有可能的有效路径(也就是 Paths<T>)
- * @param path 路径字符串
- * @param args 参数
- * @returns 函数返回类型
+ * @description 创建类型安全的 Preload API 构建器
+ * @template NS - 命名空间字符串（通常是接口名称）
+ * @template T - IPC 接口定义类型
+ * @returns 返回一个类型安全的 API 构建器，用于 contextBridge.exposeInMainWorld
  *
  * @usage @example
- * interface IpcQuery {
- *  user:{
- *   getUserData: (id:string) => Promise<string>;
- *  }
+ * // 定义接口
+ * interface IElectronApi {
+ *   windowControl: {
+ *     minimize: () => void;
+ *     maximize: () => void;
+ *     close: () => void;
+ *   };
+ *   app: {
+ *     getVersion: () => Promise<string>;
+ *   };
  * }
- * ipcRendererInvoke<IpcQuery>('user-getUserData',id);  // 自动推断 chunnel，和id类型
+ *
+ * // 创建 API 构建器（不需要传递 namespace 参数）
+ * const api = createPreloadApi<'IElectronApi', IElectronApi>();
+ *
+ * // 使用 - 每一层都有类型提示！
+ * contextBridge.exposeInMainWorld('electronApi', {
+ *   windowControl: {
+ *     // 输入时会提示 minimize, maximize, close
+ *     minimize: () => api.send('IElectronApi-windowControl-minimize'),
+ *     // channel 名称也有自动提示
+ *   },
+ *   app: {
+ *     getVersion: () => api.invoke('IElectronApi-app-getVersion'),
+ *   },
+ * });
  */
-export function ipcRendererInvoke<T extends Record<string, any>, P extends Paths<T> = Paths<T>>(
-   path: P,
-   ...args: FuncArgs<GetFunc<T, P>>
-): FuncReturn<GetFunc<T, P>> {
-   return ipcRenderer.invoke(path as string, ...args) as FuncReturn<GetFunc<T, P>>;
+export function createPreloadApi<NS extends string, T extends Record<string, any>>() {
+   type Channel = NamespacedPaths<NS, T>;
+
+   return {
+      /**
+       * 异步调用主进程的 handle 处理器
+       */
+      invoke<P extends Channel>(
+         channel: P,
+         ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+            ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            : never
+      ): Promise<Awaited<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>> {
+         return ipcRenderer.invoke(channel as string, ...args);
+      },
+
+      /**
+       * 向主进程发送消息（无返回值）
+       */
+      send<P extends Channel>(
+         channel: P,
+         ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+            ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            : never
+      ): void {
+         ipcRenderer.send(channel as string, ...args);
+      },
+
+      /**
+       * 同步调用主进程（阻塞，谨慎使用）
+       */
+      sendSync<P extends Channel>(
+         channel: P,
+         ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+            ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            : never
+      ): FuncReturn<GetFuncFromNamespaced<NS, T, P>> {
+         return ipcRenderer.sendSync(channel as string, ...args);
+      },
+
+      /**
+       * 监听主进程消息
+       */
+      on<P extends Channel>(
+         channel: P,
+         callback: (
+            ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+               ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+               : never
+         ) => void
+      ): () => void {
+         const listener = (_event: any, ...args: any[]) => {
+            (callback as (...a: any[]) => void)(...args);
+         };
+         ipcRenderer.on(channel as string, listener);
+         return () => {
+            ipcRenderer.off(channel as string, listener);
+         };
+      },
+
+      /**
+       * 监听主进程消息（只触发一次）
+       */
+      once<P extends Channel>(
+         channel: P,
+         callback: (
+            ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+               ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+               : never
+         ) => void
+      ): void {
+         ipcRenderer.once(channel as string, (_event, ...args) => {
+            (callback as (...a: any[]) => void)(...(args as any));
+         });
+      },
+
+      /**
+       * 获取通道名称的辅助方法（用于类型提示）
+       */
+      channel<P extends Channel>(channel: P): P {
+         return channel;
+      }
+   };
 }
 
 /**
- * @description 对 ipcMain.handle 的类型安全封装
- * @template T - 目标对象的类型，必须是一个记录类型
- * @template P - 方法路径字符串，自动推断为 T 中所有可能的有效路径(也就是 Paths<T>)
- * @param channel - IPC 通道名称，自动推断和提示
- * @param handler - 处理函数，第一个参数是 event，后续参数自动推断类型，返回值类型也会严格检查
- * @returns void
+ * @description 创建类型安全的 exposeInMainWorld API 结构定义
+ * 这个类型用于帮助开发者在手写 contextBridge.exposeInMainWorld 时获得完整的类型提示
  *
  * @usage @example
- * interface IElectronNihao2 {
- *   nihao2: (s: string) => void;
+ * interface IElectronApi {
+ *   windowControl: {
+ *     minimize: () => void;
+ *     maximize: () => void;
+ *   };
  * }
  *
- * // 使用示例：
- * ipcMainHandle<IElectronNihao2>('nihao2', (event, s) => {
- *   // s 的类型会自动推断为 string
- *   console.log(s);
- *   // 如果 return ''; 会报错，因为返回值应该是 void
- * });
+ * // 使用类型约束（不需要传递 namespace 参数）
+ * const api = createPreloadApi<'IElectronApi', IElectronApi>();
  *
- * interface IpcQuery {
- *   user: {
- *     getUserData: () => Promise<string>;
- *   }
- * }
+ * // 定义符合接口结构的 API
+ * const electronApi: ExposedApiStructure<IElectronApi> = {
+ *   windowControl: {
+ *     minimize: () => api.send('IElectronApi-windowControl-minimize'),
+ *     maximize: () => api.send('IElectronApi-windowControl-maximize'),
+ *   },
+ * };
  *
- * // 嵌套路径示例（这个chunnel同ipcRendererInvoke一样）[!code error]：
- * ipcMainHandle<IpcQuery>('user-getUserData', async (event) => {
- *   // 返回值类型会被推断为 Promise<string>
- *   return 'user data';
- * });
- *
+ * contextBridge.exposeInMainWorld('electronApi', electronApi);
  */
-export function ipcMainHandle<T extends Record<string, any>, P extends Paths<T> = Paths<T>>(
-   channel: P,
-   handler: (
-      event: IpcMainInvokeEvent,
-      ...args: FuncArgs<GetFunc<T, P>>
-   ) => StrictReturnType<FuncReturn<GetFunc<T, P>>>
-): void {
-   ipcMain.handle(channel as string, handler);
-}
+export type ExposedApiStructure<T> = {
+   [K in keyof T]: T[K] extends (...args: infer Args) => infer R
+      ? (...args: Args) => R extends Promise<any> ? R : Promise<R> | void
+      : T[K] extends object
+        ? ExposedApiStructure<T[K]>
+        : never;
+};
 
 /**
- * @description 移除 IPC 处理器
- * @template T - 目标对象的类型
- * @template P - 方法路径字符串
- * @param channel - 要移除的 IPC 通道名称
- *
- * @usage @example
- * ipcMainHandleRemove<IElectronNihao2>('nihao2');
+ * @description 获取所有带命名空间的通道名称类型
+ * 用于在手写 ipcRenderer.send/invoke 时获得通道名提示
  */
-export function ipcMainHandleRemove<T extends Record<string, any>, P extends Paths<T> = Paths<T>>(
-   channel: P
-): void {
-   ipcMain.removeHandler(channel as string);
-}
+export type GetChannels<NS extends string, T extends Record<string, any>> = NamespacedPaths<NS, T>;
+
+export const IpcRendererManager = {
+   createPreloadApi
+};
 ```
 
 :::
