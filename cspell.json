@@ -25,6 +25,8 @@
       "ACMR",
       "Cascader",
       "Contentful",
+      "ccall",
+      "cwrap",
       "FOUC",
       "Gret",
       "Mydocs",
@@ -86,6 +88,16 @@
       "vitepress",
       "vsicons",
       "vueuse",
-      "yoavbls"
+      "yoavbls",
+      "WEBGL",
+      "dlmalloc",
+      "emmalloc",
+      "fexceptions",
+      "pthread",
+      "Pthreads",
+      "PTHREAD",
+      "PTHREADS",
+      "Embind",
+      "gsource"
    ]
 }
