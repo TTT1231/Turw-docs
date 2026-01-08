@@ -151,6 +151,10 @@ module._malloc(100); //运行时生成函数
 
 :::
 
+::: danger bind模块类型
+`EmbindModule`模块不需要继承任何东西，它只定义了你通过`EMSCRIPTEN_BINDINGS`暴露的类型，这些类型是c++代码特有的，与emcc基础设施无关，最终会与其他接口合并。
+:::
+
 ::: tip 使用方法
 
 在`emcc`进行编译时，只需要在命令末尾加上`--emit-tsd`，而后跟文件名和类型即可，例如`qwe.d.ts`。
@@ -304,6 +308,52 @@ export type MainModuleFactory = (options?: Partial<MainModule>) => Promise<MainM
 
 :::
 
+### 函数指针问题
+
+该问题报错主要原因就是：编译器对类型比较宽容，强制转换后仍然能运行，但是WebAssembly有严格类型检查，函数签名必须完全匹配才不会报`abort(10)`和`Invalid function pointer called`错误。例如：
+
+```cpp
+// 定义一个函数指针类型：void 返回值，接受 const char* 参数
+typedef void(*voidReturnType)(const char *);
+
+// 三个不同签名的函数：
+void voidReturn(const char *message) { ... }        //  签名匹配
+//[!code warning]
+int intReturn(const char *message) { ... }          // 返回 int 而不是 void
+//[!code warning]
+void voidReturnNoParam() { ... }                    //  没有参数
+
+voidReturnType functionList[3];
+// 把它们都强制转换成同一类型
+functionList[0] = voidReturn;                        //  正常，没有涉及到强制转换，类型严格
+//[!code error]
+functionList[1] = (voidReturnType)intReturn;         //  Emscripten 会报错，在调用时签名不同会失败，`int a = functionList[1]("")`
+//[!code error]
+functionList[2] = (voidReturnType)voidReturnNoParam; //  Emscripten 会报错，在调用时签名不同会失败，`functionList[2]()`
+```
+
+::: tip 解决思路
+模拟一个签名一样的包装函数，去欺骗emcc编译器，然后在内部调用原函数，但是这必须要忽略返回类型。
+
+```cpp
+//签名一样
+void intReturnAdapter(const char* message){
+   //!返回值只能在该函数内进行处理
+   intReturn(message);
+}
+//这样就不会报错
+functionList[1] = intReturnAdapter;
+```
+
+:::
+
+> [!IMPORTANT] 重要
+>
+> - `sASSERTIONS`为emcc的运行时断言检查(函数指针、类型匹配等)
+> - `sSAFE_HEAP`为emcc的内存访问边界检查，能看到越界访问、空指针引用等指针问题。
+>
+> 开发时可用开启这两个进行检查，`emcc -sSAFE_HEAP -sASSERTIONS test.cpp`
+
 ## 配置速查
 
 ### 输出与模块化
@@ -381,7 +431,17 @@ int add(int x,int y){
 |   `--preload-file`   |   -    |  预加载文件到虚拟文件系统   |
 |    `--embed-file`    |   -    |     嵌入文件到JS/wasm中     |
 
-### 绑定与交互
+::: tip 提示
+游览器环境中运行代码无法访问DOM，也无法直接访问本地文件系统，因此可以使用`EMCC`的虚拟文件系统，可以预加载数据或链接到URL，方便懒加载。
+
+默认使用`MEMFS`虚拟文件系统，同时本地代码调用文件时，大部分会调用`libc`和`libcxx`同步文件API，会进一步调用底层的文件系统API。
+
+文件使用JS使用同步XHR异步加载，编译后的代码只有在异步加载完成且在虚拟文件系统可用时才允许允许，并调用同步API。
+
+[更详细介绍文档](https://emscripten.org/docs/porting/files/file_systems_overview.html#file-system-overview)
+:::
+
+### bind
 
 |      选项       | 默认值 |                     说明                      |
 | :-------------: | :----: | :-------------------------------------------: |
@@ -393,6 +453,11 @@ int add(int x,int y){
 主要就是在使用C++类等特性的时候，需要导出去，调用。
 
 这里要注意内存泄漏，主要就是在JS层面创建了对象，即使JS指向为`null`的时候，但是wasm内存层面，还是会存在无法感知JS层面的GC被屏蔽掉了，需要调用wasm层面手动定义的回收函数例如类析构，或者自定义`delete`。
+
+`--bind`是`-lembind`和额外配置，一站式自动完成链接Embind库、导出必要Embind符号、配置JS并生成`.d.ts`类型定义。
+
+`--bind`在cpp代码中如果embind的时候，导出时此时必须要它参与，才能真正使用。
+
 :::
 
 ### WebAssembly特性
@@ -475,6 +540,8 @@ int add(int x,int y){
 
 ::: tip 提示
 这里主要体现在c++/c调用fetch、websocket、webGL。
+
+但是由于底层JS网络是异步的，因此只能限制网络功能为异步非阻塞。
 :::
 
 ### 库支持
