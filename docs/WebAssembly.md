@@ -354,6 +354,319 @@ functionList[1] = intReturnAdapter;
 >
 > 开发时可用开启这两个进行检查，`emcc -sSAFE_HEAP -sASSERTIONS test.cpp`
 
+## 宏相关
+
+### 常用宏
+
+::: tip 类绑定相关
+
+- `EMSCRIPTEN_BINDINGS`绑定入口点
+- `class_<T>(name)`绑定C++类到JS
+- `constructor<Args...>()`导出类构造函数
+- `function(name, &Class::method)`导出成员函数
+- `function(name, &functionPtr)`导出全局函数
+- `property(name, &getter, &setter)`导出可读写属性
+- `property(name, &getter)`导出只读属性
+- `select_overload<Signature>(&method)`解决函数重载
+- `class_function(name, &Class::staticMethod)`导出静态方法
+- `class_property(name, &getter, &setter)`类静态属性导出
+
+:::
+
+::: tip 值类型和枚举
+
+- `enum_<T>(name)`绑定枚举类型
+- `value(name, EnumValue)`导出枚举值
+- `value_object<T>(name)`绑定简单结构体
+- `field(name, &T::member)`导出结构体字段
+
+:::
+
+::: tip 内存和智能指针
+
+- `smart_ptr<std::shared_ptr<T>>()`绑定智能指针
+- `EMSCRIPTEN_KEEPALIVE`防止函数被优化掉
+
+:::
+
+::: tip 继承和多态
+
+- `base<BaseClass>()`声明类继承关系
+- `allow_subclass<Wrapper>(name)`允许 JS 继承 C++ 类
+- `pure_virtual(&Class::method)`标记纯虚函数
+- `optional_override(callback)`可选重写虚函数
+
+:::
+
+::: tip 常量和数组
+
+- `constant(name, value)`导出编译时常量
+- `value_array<T>(name)`绑定固定大小数组
+- `element(index_func)`自定义数组索引访问
+
+:::
+
+::: tip 异步和主循环
+
+- `emscripten_set_main_loop`设置主循环（游戏/动画）
+- `EM_ASYNC_JS(...)`异步 JavaScript 函数
+- `await()`等待 Promise
+
+:::
+
+::: tip 其他场景
+
+|      场景      |               命令                |         描述          |
+| :------------: | :-------------------------------: | :-------------------: |
+|    网络请求    |        `emscripten_fetch`         | C++调用JS发起网络请求 |
+| HTML5 事件回调 | `emscripten_set_keydown_callback` | C++监听键盘鼠标等事件 |
+|   WebGL 相关   |       `emscripten_webgl_*`        | C++调用WebGL渲染图形  |
+|  Worker/线程   |       `emscripten_webgl_*`        |    C++到Web Worker    |
+
+:::
+
+### 完整宏
+
+::: details
+
+**1. 核心绑定宏（bind.h）**
+
+| 宏名称                              | 作用                  |
+| :---------------------------------- | :-------------------- |
+| `EMSCRIPTEN_BINDINGS(name)`         | 定义绑定块            |
+| `EMSCRIPTEN_DECLARE_VAL_TYPE(type)` | 声明可用作 val 的类型 |
+| `EMSCRIPTEN_SYMBOL(sym)`            | 符号声明              |
+
+**2. 类绑定链式方法**
+
+| 方法名                                   | 作用         |
+| :--------------------------------------- | :----------- |
+| `class_<T>(name)`                        | 开始绑定类   |
+| `.constructor<Args...>()`                | 绑定构造函数 |
+| `.function(name, ptr, policy)`           | 绑定成员函数 |
+| `.class_function(name, ptr, policy)`     | 绑定静态函数 |
+| `.property(name, getter, setter)`        | 绑定属性     |
+| `.class_property(name, getter, setter)`  | 绑定静态属性 |
+| `.base<BaseClass>()`                     | 声明继承关系 |
+| `.smart_ptr<PtrType<T>>()`               | 绑定智能指针 |
+| `.smart_ptr_constructor(name, func)`     | 智能指针构造 |
+| `.allow_subclass<Wrapper>(name, policy)` | 允许 JS 继承 |
+
+**3. 值类型绑定**
+
+| 方法名                     | 作用             |
+| :------------------------- | :--------------- |
+| `value_object<T>(name)`    | 绑定值对象       |
+| `.field(name, &T::member)` | 绑定字段         |
+| `value_array<T>(name)`     | 绑定数组类型     |
+| `.element(&T::operator[])` | 绑定数组元素访问 |
+| `.element(index_func)`     | 自定义索引访问   |
+
+**4. 枚举绑定**
+
+| 方法名                    | 作用       |
+| :------------------------ | :--------- |
+| `enum_<T>(name)`          | 绑定枚举   |
+| `.value(name, EnumValue)` | 绑定枚举值 |
+
+**5. 函数绑定**
+
+| 方法名                        | 作用           |
+| :---------------------------- | :------------- |
+| `function(name, ptr, policy)` | 绑定全局函数   |
+| `select_overload<Sig>(ptr)`   | 选择重载版本   |
+| `optional_override(func)`     | 可选重写虚函数 |
+| `pure_virtual(&Class::func)`  | 纯虚函数标记   |
+
+**6. 常量和变量**
+
+| 方法名                  | 作用     |
+| :---------------------- | :------- |
+| `constant(name, value)` | 绑定常量 |
+
+**7. 内存和所有权策略宏（emscripten.h）**
+
+| 宏名称                            | 作用                 |
+| :-------------------------------- | :------------------- |
+| `EMSCRIPTEN_KEEPALIVE`            | 防止函数被优化删除   |
+| `EMSCRIPTEN_WEBGL_CONTEXT_HANDLE` | WebGL 上下文句柄类型 |
+| `EMSCRIPTEN_RESULT`               | 返回结果代码类型     |
+
+**8. 内联 JavaScript 宏（emscripten.h）**
+
+| 宏名称                              | 作用                |
+| :---------------------------------- | :------------------ |
+| `EM_ASM(...)`                       | 内联 JS 代码        |
+| `EM_ASM_(...)`                      | 内联 JS（无返回）   |
+| `EM_ASM_INT(...)`                   | 内联 JS 返回 int    |
+| `EM_ASM_DOUBLE(...)`                | 内联 JS 返回 double |
+| `EM_ASM_PTR(...)`                   | 内联 JS 返回指针    |
+| `EM_JS(ret, name, args, ...)`       | 定义 JS 函数        |
+| `EM_ASYNC_JS(ret, name, args, ...)` | 定义异步 JS 函数    |
+
+**9. 异步和线程相关（emscripten.h）**
+
+| 宏名称                            | 作用               |
+| :-------------------------------- | :----------------- |
+| `emscripten_sleep(ms)`            | 异步睡眠           |
+| `emscripten_sleep_with_yield(ms)` | 带让步的睡眠       |
+| `EMSCRIPTEN_PTHREAD_TRANSFERRED`  | 标记线程传输的对象 |
+| `EMSCRIPTEN_PTHREAD_CALL(...)`    | 在线程中调用       |
+
+**10. 主循环和事件（emscripten.h）**
+
+| 函数/宏                        | 作用               |
+| :----------------------------- | :----------------- |
+| `emscripten_set_main_loop`     | 设置主循环         |
+| `emscripten_set_main_loop_arg` | 设置带参数的主循环 |
+| `emscripten_cancel_main_loop`  | 取消主循环         |
+| `emscripten_pause_main_loop`   | 暂停主循环         |
+| `emscripten_resume_main_loop`  | 恢复主循环         |
+
+**11. 文件系统相关（emscripten.h）**
+
+| 函数                           | 作用               |
+| :----------------------------- | :----------------- |
+| `emscripten_run_script`        | 执行 JS 脚本       |
+| `emscripten_run_script_int`    | 执行脚本返回 int   |
+| `emscripten_run_script_string` | 执行脚本返回字符串 |
+| `EM_PRELOAD_FILE(...)`         | 预加载文件         |
+| `EM_EMBED_FILE(...)`           | 嵌入文件           |
+
+**12. WebGL 相关（html5.h）**
+
+| 宏/类型                           | 作用             |
+| :-------------------------------- | :--------------- |
+| `EMSCRIPTEN_WEBGL_CONTEXT_HANDLE` | WebGL 上下文句柄 |
+| `emscripten_webgl_*` 函数族       | WebGL 操作函数   |
+
+**13. HTML5 事件相关（html5.h）**
+
+| 宏/类型                     | 作用                                      |
+| :-------------------------- | :---------------------------------------- |
+| `EMSCRIPTEN_EVENT_*`        | 事件类型常量                              |
+| `emscripten_set_*_callback` | 设置各种事件回调                          |
+| 鼠标事件                    | mousedown, mouseup, mousemove 等          |
+| 键盘事件                    | keydown, keyup, keypress                  |
+| 触摸事件                    | touchstart, touchend, touchmove           |
+| 指针锁定                    | pointerlockchange, pointerlockerror       |
+| 全屏                        | fullscreenchange, fullscreenerror         |
+| 页面可见性                  | visibilitychange                          |
+| 焦点                        | focus, blur                               |
+| 设备方向                    | deviceorientation, devicemotion           |
+| 电池                        | batterychargingchange, batterylevelchange |
+| Gamepad                     | gamepadconnected, gamepaddisconnected     |
+
+**14. 内存和堆相关（emscripten.h）**
+
+| 函数/宏                    | 作用              |
+| :------------------------- | :---------------- |
+| `emscripten_get_heap_size` | 获取堆大小        |
+| `emscripten_resize_heap`   | 调整堆大小        |
+| `emscripten_get_sbrk_ptr`  | 获取堆指针        |
+| `EMSCRIPTEN_HEAP8`         | Int8Array 视图    |
+| `EMSCRIPTEN_HEAP16`        | Int16Array 视图   |
+| `EMSCRIPTEN_HEAP32`        | Int32Array 视图   |
+| `EMSCRIPTEN_HEAPU8`        | Uint8Array 视图   |
+| `EMSCRIPTEN_HEAPU16`       | Uint16Array 视图  |
+| `EMSCRIPTEN_HEAPU32`       | Uint32Array 视图  |
+| `EMSCRIPTEN_HEAPF32`       | Float32Array 视图 |
+| `EMSCRIPTEN_HEAPF64`       | Float64Array 视图 |
+
+**15. 调试和性能相关（emscripten.h）**
+
+| 函数/宏                      | 作用              |
+| :--------------------------- | :---------------- |
+| `emscripten_debugger`        | 触发调试器断点    |
+| `emscripten_log`             | 日志输出          |
+| `emscripten_get_callstack`   | 获取调用栈        |
+| `emscripten_get_now`         | 获取高精度时间    |
+| `emscripten_performance_now` | Performance.now() |
+| `EMSCRIPTEN_PROFILE_*`       | 性能分析宏        |
+
+**16. Worker 和线程（emscripten.h, threading.h）**
+
+| 函数/宏                                   | 作用            |
+| :---------------------------------------- | :-------------- |
+| `emscripten_create_worker`                | 创建 Worker     |
+| `emscripten_destroy_worker`               | 销毁 Worker     |
+| `emscripten_call_worker`                  | 调用 Worker     |
+| `emscripten_worker_respond`               | Worker 响应     |
+| `emscripten_worker_respond_provisionally` | Worker 临时响应 |
+| `emscripten_get_worker_queue_size`        | 获取队列大小    |
+| `pthread_create`                          | POSIX 线程创建  |
+| `pthread_join`                            | POSIX 线程等待  |
+
+**17. Fetch API（fetch.h）**
+
+| 函数/宏                  | 作用           |
+| :----------------------- | :------------- |
+| `emscripten_fetch`       | 发起网络请求   |
+| `emscripten_fetch_wait`  | 等待请求完成   |
+| `emscripten_fetch_close` | 关闭请求       |
+| `EMSCRIPTEN_FETCH_*`     | Fetch 标志常量 |
+
+**18. WebSocket（websocket.h）**
+
+| 函数                     | 作用                 |
+| :----------------------- | :------------------- |
+| `emscripten_websocket_*` | WebSocket 操作函数族 |
+
+**19. Audio（webaudio.h）**
+
+| 函数                              | 作用           |
+| :-------------------------------- | :------------- |
+| `emscripten_create_audio_context` | 创建音频上下文 |
+| `emscripten_audio_*`              | 音频相关函数   |
+
+**20. Val 类型方法（val.h）**
+
+| 方法                         | 作用            |
+| :--------------------------- | :-------------- |
+| `val::undefined()`           | JS undefined    |
+| `val::null()`                | JS null         |
+| `val::global(name)`          | 全局对象        |
+| `val::module_property(name)` | 模块属性        |
+| `val::array()`               | 创建 JS 数组    |
+| `val::object()`              | 创建 JS 对象    |
+| `val::take_ownership(ptr)`   | 获取所有权      |
+| `.await()`                   | 等待 Promise    |
+| `.call(name, args...)`       | 调用方法        |
+| `.new_(args...)`             | new 构造        |
+| `[key]`                      | 索引访问        |
+| `.as<T>()`                   | 类型转换        |
+| `.typeof()`                  | 类型检查        |
+| `.instanceof(constructor)`   | instanceof 检查 |
+
+**21. 编译器属性宏**
+
+| 宏                         | 作用                     |
+| :------------------------- | :----------------------- |
+| `__EMSCRIPTEN__`           | 标识 Emscripten 编译环境 |
+| `__EMSCRIPTEN_major__`     | 主版本号                 |
+| `__EMSCRIPTEN_minor__`     | 次版本号                 |
+| `__EMSCRIPTEN_tiny__`      | 修订版本号               |
+| `EMSCRIPTEN_ALWAYS_INLINE` | 强制内联                 |
+| `EMSCRIPTEN_NOINLINE`      | 禁止内联                 |
+
+**22. WASM 特定（wasm.h）**
+
+| 函数/宏                    | 作用          |
+| :------------------------- | :------------ |
+| `emscripten_wasm_wait_i32` | WASM 原子等待 |
+| `emscripten_wasm_notify`   | WASM 原子通知 |
+| `__builtin_wasm_*`         | WASM 内建函数 |
+
+**23. 导出/导入宏**
+
+| 宏                  | 作用          |
+| :------------------ | :------------ |
+| `EMSCRIPTEN_EXPORT` | 导出符号      |
+| `EMSCRIPTEN_IMPORT` | 导入符号      |
+| `EM_PORT_API(ret)`  | 端口 API 声明 |
+
+:::
+
 ## 配置速查
 
 ### 输出与模块化
