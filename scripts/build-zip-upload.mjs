@@ -51,6 +51,21 @@ async function main() {
       const env = loadEnv();
       validateEnv(env);
 
+      //环境变量验证完后，这里做类型安全
+      const envConfig = {
+         SERVER_USER: env.SERVER_USER,
+         SERVER_HOST: env.SERVER_HOST,
+         // SERVER_PASSWORD: env.SERVER_PASSWORD,
+         SERVER_PRIVATE_KEY_PATH: env.SERVER_PRIVATE_KEY_PATH,
+         SERVER_PATH: env.SERVER_PATH,
+         SERVER_TEMP_ZIP_PATH: env.SERVER_TEMP_ZIP_PATH,
+         GIT_PUSH_BUILD_ZIP_REQUIRE: env.GIT_PUSH_BUILD_ZIP_REQUIRE
+      };
+
+      if (envConfig.GIT_PUSH_BUILD_ZIP_REQUIRE.toLowerCase().trim() === 'false') {
+         //不要构建和上传
+         return;
+      }
       // 1. 构建 VitePress
       await spawnAsync('pnpm', ['run', 'docs:build'], { cwd: rootDir });
 
@@ -61,9 +76,9 @@ async function main() {
 
       // 3. 上传到服务器
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-      const tempPath = env.SERVER_TEMP_ZIP_PATH || 'temp';
-      const remotePath = `${env.SERVER_PATH}/${tempPath}/${timestamp}.zip`;
-      await uploadToServer(zipPath, remotePath, env);
+      const tempPath = envConfig.SERVER_TEMP_ZIP_PATH || 'temp';
+      const remotePath = `${envConfig.SERVER_PATH}/${tempPath}/${timestamp}.zip`;
+      await uploadToServer(zipPath, remotePath, envConfig);
 
       console.log('🎉 Done!');
    } catch (error) {
