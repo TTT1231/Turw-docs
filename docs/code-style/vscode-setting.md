@@ -418,6 +418,43 @@
 没有的话，就只能按照文档自己配置自定义的文件夹图标和文件图标
 :::
 
+## 工作区设置
+
+主要用于单项目多文件夹下视觉疲劳问题，借助`vscode 工作区设置解决`。
+
+::: code-group
+
+```jsonc [customer.code-workspace]
+{
+   //自定义显示文件夹
+   "folders": [
+      {
+         "name": "renderer",
+         "path": "src/renderer"
+      }
+      //....
+   ],
+
+   //同.vscode/settings.json设置一样设置工作区，会覆盖全局设置
+   "settings": {
+      //不显示某些文件
+      "files.exclude": {
+         // 隐藏 src/preload 中的特定文件
+         "src/preload/ipcUtil.ts": true,
+         // 隐藏文件夹
+         "src/main/ipc/utils": true
+         //...
+      },
+      // 工作区用不同的字体大小
+      "editor.fontSize": 18
+      //其他设置
+      //.....
+   }
+}
+```
+
+:::
+
 ## 跨编译器风格统一
 
 ::: code-group
