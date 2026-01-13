@@ -20,6 +20,10 @@ Emscripten会将`C++`通过`Clang + LLVM`转化中间件IR代码，而后Emscrip
 两者一般一起使用，来最大程度追求性能，当然这是在`Web`场景下。
 :::
 
+::: danger 危险
+c++环境下，在`visual studio`或者`vscode`等，如果在里面写emcc代码获取代码提示等，需要安装`clang`工具或者`LLVM`语言服务器，都可以。
+:::
+
 ## 编译执行差异
 
 `emcc`可以将cpp代码编译成`.wasm`和`.js`格式，这里讨论这两种编译差异和执行差异。
@@ -71,6 +75,320 @@ js提供了完整的`C++`操作，例如类、指针、异常处理、内存管�
 主要是为了解决emcc手动编写命令和查找命令的繁琐问题。
 
 [工具下载地址](https://github.com/TTT1231/emccgui/releases)
+
+::: warning 注意
+注意该工具需要[emcc](https://emscripten.org/docs/)和ts(类型导出用)。
+
+注意两者都需要设置为全局变量，要不然命令会执行失败。
+
+或者复制命令手动执行也是可以的，但是前提需要有`emcc`和`tsc`支持。
+:::
+
+## 使用示例
+
+::: code-group
+
+```cpp [test1.cpp]
+#include <emscripten.h>
+
+extern "C" {
+	EMSCRIPTEN_KEEPALIVE
+	int add(int x, int y) {
+		return x + y;
+	}
+}
+```
+
+```cpp [ClassObj.cpp]
+#include <emscripten/bind.h>
+
+using namespace emscripten;
+
+class MyClass {
+private:
+	int x;
+public:
+	MyClass(int x) : x(x) {}
+	void incrementX() {
+		this->x = this->x + 1;
+	}
+	int getX() const { return x; }
+	std::string showStr() {
+		return "Hello, this is C++ MyClass";
+	}
+};
+
+//Binding
+EMSCRIPTEN_BINDINGS(bind_unique_group) {
+	class_<MyClass>("MyClass")
+		.constructor<int>()
+		.function("incrementX", &MyClass::incrementX)
+		.function("getX", &MyClass::getX)
+		.function("showStr", &MyClass::showStr);
+}
+```
+
+```ts [test1_V1.d.ts]
+//该文件是类型文件
+//这种是js+wasm格式，此时有dts类型
+//!如果是wasm格式，则没有dts类型，和运行时函数例如ccall等。
+/// <reference types="emscripten" />
+
+declare namespace RuntimeExports {
+   /**
+    * @param {string|null=} returnType
+    * @param {Array=} argTypes
+    * @param {Array=} args
+    * @param {Object=} opts
+    */
+   function ccall(
+      ident: any,
+      returnType?: (string | null) | undefined,
+      argTypes?: any[] | undefined,
+      args?: any[] | undefined,
+      opts?: any | undefined
+   ): any;
+   /**
+    * @param {string=} returnType
+    * @param {Array=} argTypes
+    * @param {Object=} opts
+    */
+   function cwrap(
+      ident: any,
+      returnType?: string | undefined,
+      argTypes?: any[] | undefined,
+      opts?: any | undefined
+   ): any;
+   /**
+    * @param {number} ptr
+    * @param {string} type
+    */
+   function getValue(ptr: number, type?: string): any;
+   /**
+    * @param {number} ptr
+    * @param {number} value
+    * @param {string} type
+    */
+   function setValue(ptr: number, value: number, type?: string): void;
+}
+interface WasmModule extends EmscriptenModule {
+   _add(_0: number, _1: number): number;
+   _malloc(size: number): number;
+   _free(ptr: number): void;
+}
+
+export type MainModule = WasmModule & typeof RuntimeExports;
+export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+```
+
+```ts [test1_V2.d.ts]
+//该文件解决动态import的ts类型问题
+//[!code warning] 注意需要编译时采用工厂编译
+/// <reference types="emscripten" />
+
+//定义路径
+declare module '@/assets/test1.js' {
+   interface RuntimeExports {
+      /**
+       * @param {string|null=} returnType
+       * @param {Array=} argTypes
+       * @param {Array=} args
+       * @param {Object=} opts
+       */
+      ccall(
+         ident: any,
+         returnType?: (string | null) | undefined,
+         argTypes?: any[] | undefined,
+         args?: any[] | undefined,
+         opts?: any | undefined
+      ): any;
+      /**
+       * @param {string=} returnType
+       * @param {Array=} argTypes
+       * @param {Object=} opts
+       */
+      cwrap(
+         ident: any,
+         returnType?: string | undefined,
+         argTypes?: any[] | undefined,
+         opts?: any | undefined
+      ): any;
+      /**
+       * @param {number} ptr
+       * @param {string} type
+       */
+      getValue(ptr: number, type?: string): any;
+      /**
+       * @param {number} ptr
+       * @param {number} value
+       * @param {string} type
+       */
+      setValue(ptr: number, value: number, type?: string): void;
+   }
+   interface WasmModule extends EmscriptenModule {
+      _add(_0: number, _1: number): number;
+   }
+
+   export type MainModule = WasmModule & RuntimeExports;
+   export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+}
+```
+
+```ts [ClassObj_V1.d.ts]
+//该文件是类型文件,这种是js+wasm格式，此时有dts类型.
+//由于类需要绑定，因此这里只能时js+wasm格式
+/// <reference types="emscripten" />
+
+interface WasmModule extends EmscriptenModule {}
+
+export interface ClassHandle {
+   isAliasOf(other: ClassHandle): boolean;
+   delete(): void;
+   deleteLater(): this;
+   isDeleted(): boolean;
+   // @ts-ignore - If targeting lower than ESNext, this symbol might not exist.
+   [Symbol.dispose](): void;
+   clone(): this;
+}
+export interface MyClass extends ClassHandle {
+   incrementX(): void;
+   getX(): number;
+   showStr(): string;
+}
+
+interface EmbindModule {
+   MyClass: {
+      new (_0: number): MyClass;
+   };
+}
+
+export type MainModule = WasmModule & EmbindModule;
+export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+```
+
+```ts [ClassObj_V2.d.ts]
+//该文件解决动态import的ts类型问题
+//[!code warning] 注意需要编译时采用工厂编译
+/// <reference types="emscripten" />
+
+declare module '@/assets/ClassObj.js' {
+   interface WasmModule extends EmscriptenModule {}
+   export interface ClassHandle {
+      isAliasOf(other: ClassHandle): boolean;
+      delete(): void;
+      deleteLater(): this;
+      isDeleted(): boolean;
+      // @ts-ignore - If targeting lower than ESNext, this symbol might not exist.
+      [Symbol.dispose](): void;
+      clone(): this;
+   }
+   export interface MyClass extends ClassHandle {
+      incrementX(): void;
+      getX(): number;
+      showStr(): string;
+   }
+   interface EmbindModule {
+      MyClass: {
+         new (_0: number): MyClass;
+      };
+   }
+
+   export type MainModule = WasmModule & EmbindModule;
+   export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+}
+```
+
+:::
+
+**实际用法:**
+
+::: code-group
+
+```ts [test1.ts]
+import type { MainModule } from './types/test1';
+
+const test1Module = ref<MainModule | null>(null);
+onMounted(async () => {
+   const { default: createModule } = await import('@/assets/test1.js');
+   test1Module.value = await createModule();
+   console.log('WASM模块加载完成');
+});
+
+const handleCallBack = () => {
+   if (test1Module.value) {
+      const result = test1Module.value._add(123, 456);
+      //print 679
+      console.log('WASM计算结果：', result);
+
+      //ccall
+      const addResult: number = test1Module.value.ccall(
+         'add',
+         'number',
+         ['number', 'number'],
+         [10, 20]
+      );
+      //print 30
+      console.log('WASM ccall计算结果：', addResult);
+      //cwrap
+      const addFunc: MainModule['_add'] = test1Module.value.cwrap('add', 'number', [
+         'number',
+         'number'
+      ]);
+      //print 70
+      console.log('WASM cwrap计算结果：', addFunc(30, 40));
+   }
+};
+```
+
+```ts [ClassObj.ts]
+import { ref, onMounted } from 'vue';
+import type { MainModule } from '@/types/classObj';
+
+const classModule = ref<MainModule | null>(null);
+
+onMounted(async () => {
+   const { default: createModule } = await import('@/assets/ClassObj.js');
+   classModule.value = await createModule();
+   console.log('class WASM模块加载完成');
+});
+
+const handleCallBack = () => {
+   if (classModule.value) {
+      const instance = new classModule.value.MyClass(10);
+
+      //print 10
+      console.log('对象内部私有值', instance.getX());
+      instance.incrementX();
+      //print 11
+      console.log('调用方法后对象内部私有值', instance.getX());
+      //print Hello, this is C++ MyClass
+      console.log('普通方法调用', instance.showStr());
+   }
+};
+```
+
+```ts [test1-wasm-pure.ts]
+//纯的wasm，没有wasm运行时(内存管理、文件系统、异常处理....)
+//需要SIDE_MODULE模式，编译动态链接库(也即纯函数库)
+
+try {
+   //[!code warning]
+   // 注意，这个wasm是二进制文件，因此import写法不行，且比较慢。
+   //可以直接用fetch获取二进制文件，并instantiateStreaming流式编译，这样速度更快
+   const { instance } = await WebAssembly.instantiateStreaming(fetch('/src/assets/111.wasm'));
+   // 调用 add 函数
+   //[!code warning]
+   //下面注意类型安全
+   const add = instance.exports.add as (x: number, y: number) => number;
+   result.value = add(1, 2);
+   //print 3
+   console.log('结果:', result.value);
+} catch (error) {
+   console.error('加载失败:', error);
+}
+```
+
+:::
 
 ## 类型安全
 

@@ -88,7 +88,8 @@ $iconConfigs: (
    "stylelint.config.mjs": getIconUrl("stylelint"),
    ".stylelintignore": getIconUrl("stylelint"),
    "cspell.json": getIconUrl("cspell"),
-   "nginx.conf": getIconUrl("nginx")
+   "nginx.conf": getIconUrl("nginx"),
+   ".cpp": getIconUrl("cpp")
 );
 
 // 生成图标样式
