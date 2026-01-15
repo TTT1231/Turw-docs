@@ -55,10 +55,19 @@ c++环境下，在`visual studio`或者`vscode`等，如果在里面写emcc代�
 >
 > wasm实际调用路径：JS → WebAssembly。
 >
-> 因此在调用耗时方面，wasm直接调用比JS代码执行快，没有包装层开销。
+> 因此在调用耗时方面，wasm直接调用比JS代码执行快，没有其他非必要import检查，但是这样它**没有运行时**，需要手动imports。下面可以进行验证：
+>
+> ```ts
+> const response = await fetch('[path/to].wasm');
+> const buffer = await response.arrayBuffer();
+> const module = await WebAssembly.compile(buffer);
+>
+> // 打印所有需要的 import，wasm中没有运行时
+> const imports = WebAssembly.Module.imports(module);
+> ```
 
 ::: tip 提示
-js提供了完整的`C++`操作，例如类、指针、异常处理、内存管理等。而wasm只能用于简单计算。
+js提供了完整的`C++`操作，例如类、指针、异常处理、内存管理等，emcc自动完成了这样事。而wasm只能用于简单计算，或者手动实现完成类似emcc的功能，最终效果也是一样的。
 :::
 
 ::: danger 危险
@@ -1000,7 +1009,7 @@ functionList[1] = intReturnAdapter;
 |        `-sEXPORT_ES6`        |         0         | <mark>生成 ES6 模块格式（需配合MODULARIZE）</mark> |
 |       `-sEXPORT_NAME`        |     'Module'      |                 指定导出的模块名称                 |
 |       `-sSINGLE_FILE`        |         0         |         将 wasm 以 base64 内嵌到 JS 文件中         |
-|     `--emit-tsd <file>`      |      不生成       |     <mark>生成 TypeScript 类型声明文件</mark>      |
+|     `--emit-tsd <file>`      |      不生成       | <mark>生成 TypeScript 类型声明文件，JS生效</mark>  |
 |       `-sENVIRONMENT`        | 'web,worker,node' |              **运行环境(会增加体积)**              |
 |    `-sEXPORTED_FUNCTIONS`    |     ['main']      | <mark>指定导出的 C/C++ 函数（需加 \_ 前缀）</mark> |
 | `-sEXPORTED_RUNTIME_METHODS` |        []         |   <mark>导出运行时辅助方法如 ccall, cwrap</mark>   |
@@ -1097,13 +1106,13 @@ int add(int x,int y){
 
 ### WebAssembly特性
 
-|            选项            | 默认值 |          说明          |
-| :------------------------: | :----: | :--------------------: |
-|          `-sWASM`          |   1    |    输出 WebAssembly    |
-| `-sWASM_ASYNC_COMPILATION` |   1    |     异步编译 wasm      |
-|    `-sSTANDALONE_WASM`     |   0    |     生成独立 wasm      |
-|     `-sIMPORT_MEMORY`      |   0    |     从外部导入内存     |
-|       `-sEXPORT_ALL`       |   0    | 导出所有函数（调试用） |
+|            选项            | 默认值 |                         说明                         |
+| :------------------------: | :----: | :--------------------------------------------------: |
+|          `-sWASM`          |   1    |                   输出 WebAssembly                   |
+| `-sWASM_ASYNC_COMPILATION` |   1    |                    异步编译 wasm                     |
+|    `-sSTANDALONE_WASM`     |   0    | 生成一个尽量独立的 WASM，减少对外部依赖(最小imports) |
+|     `-sIMPORT_MEMORY`      |   0    |                    从外部导入内存                    |
+|       `-sEXPORT_ALL`       |   0    |                导出所有函数（调试用）                |
 
 ::: tip 提示
 如果只是简单的计算，没有用到C++的特性如类、指针等，可以只生成wasm格式，这是占用内存和大小会小好多，而且使用也方便。

@@ -1,37 +1,16 @@
 {
    "folders": [
       {
-         "name": "root",
-         "path": "."
+         "name": "docs",
+         "path": "docs"
       }
    ],
    "settings": {
       "files.exclude": {
-         // =========== 隐藏.vitepress里面文件 ============
-         "docs/.vitepress/.build-temp": true,
-         "docs/.vitepress/cache": true,
-         "docs/.vitepress/dist": true,
-         "docs/.vitepress/dist.zip": true,
-
-         ".vscode": true,
-         ".github": true,
-         "node_modules": true,
-         "scripts": true,
-         ".husky": true,
-         "secret": true,
-         "README.md": true,
-         "Turw.code-workspace": true,
-
-         //格式化相关
-         ".prettierrc.json": true,
-         ".prettierignore": true,
-         ".editorconfig": true,
-         ".stylelintignore": true,
-         "stylelint.config.mjs": true,
-
-         //tailwind相关
-         "tailwind.config.js": true,
-         "postcss.config.js": true
+         "**/.vitepress/.build-temp": true,
+         "**/.vitepress/cache": true,
+         "**/.vitepress/dist": true,
+         "**/.vitepress/dist.zip": true
       },
       "explorer.fileNesting.enabled": true
    }
