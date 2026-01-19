@@ -9,18 +9,12 @@ hero:
    image:
       src: /assets/homeright.svg
    actions:
-      - theme: brand
-        text: 前端 FAQ
+      - theme: nest
+        text: 快速开始
         link: /frontdesign/common-problems
       - theme: alt
-        text: Nuxt FAQ
-        link: /nuxt/config-solutions
-      - theme: alt
-        text: Node
-        link: /server/Nodejs
-      - theme: nest
-        text: Nest FAQ
-        link: /server/Nestjs
+        text: vscode配置
+        link: /code-style/vscode-setting
 
 features:
    - icon: 📚
