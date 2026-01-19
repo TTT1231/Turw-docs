@@ -4,7 +4,7 @@
  */
 
 // 高亮样式
-@use "../css/highlight.scss";
+@use "../css/custom-container.scss";
 
 // code group 图标样式
 @use "../css/code-group-icon.scss";
@@ -200,5 +200,63 @@
       border-color: var(--vp-button-nest-active-border);
       color: var(--vp-button-nest-active-text);
       background: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%);
+   }
+}
+
+/**
+ * ==================== 全局表格样式（非自定义容器内） ====================
+ * GitHub 风格表格，支持明暗双主题
+ */
+
+// 明亮模式
+.vp-doc table:not(.custom-block table):not([class*="language-"]) {
+   border-collapse: collapse;
+   width: auto;
+   margin: 16px 0;
+
+   th {
+      background-color: #f6f8fa;
+      color: #24292f;
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 12px;
+      border: 1px solid #d0d7de;
+   }
+
+   td {
+      padding: 8px 12px;
+      color: #24292f;
+      border: 1px solid #d0d7de;
+      font-size: 14px;
+      line-height: 1.6;
+   }
+
+   tr {
+      transition: background-color 0.2s ease;
+
+      &:hover td {
+         background-color: #f6f8fa;
+      }
+   }
+}
+
+// 暗黑模式
+.dark .vp-doc table:not(.custom-block table):not([class*="language-"]) {
+   background-color: transparent;
+
+   th {
+      background-color: #161b22;
+      color: #c9d1d9;
+      border-color: #30363d;
+   }
+
+   td {
+      background-color: transparent;
+      color: #c9d1d9;
+      border-color: #30363d;
+   }
+
+   tr:hover td {
+      background-color: #161b22;
    }
 }

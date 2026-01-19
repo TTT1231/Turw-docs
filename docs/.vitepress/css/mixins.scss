@@ -11,3 +11,341 @@
    height: $size;
    margin-right: 4px;
 }
+
+/**
+ * Custom Block Styles (VitePress & GitHub Alerts)
+ * 包含所有自定义容器样式: :::tip, :::warning, :::info, :::danger, :::details
+ * 以及 GitHub Alert 样式: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
+ * @description 明亮模式下的样式
+ */
+
+@mixin custom-block-base(
+   $bg-color,
+   $border-color,
+   $border-left-color,
+   $title-color,
+   $text-color,
+   $code-bg,
+   $code-color,
+   $code-shadow-color,
+   $code-block-bg,
+   $code-block-border,
+   $link-color,
+   $em-color,
+   $blockquote-border,
+   $blockquote-color,
+   $hr-color,
+   $table-bg: $bg-color,
+   $table-border: $border-color,
+   $table-header-bg: rgba($border-left-color, 0.08),
+   $table-header-text: $title-color,
+   $table-hover-bg: rgba($border-left-color, 0.05),
+   $table-text: $text-color
+) {
+   background-color: $bg-color;
+   border: 1px solid $border-color;
+   border-left: 4px solid $border-left-color;
+   border-radius: 8px;
+   padding: 16px;
+   margin: 16px 0;
+
+   .custom-block-title {
+      color: $title-color;
+      font-weight: 600;
+      font-size: 14px;
+   }
+
+   p,
+   li {
+      color: $text-color;
+      font-size: 14px;
+      line-height: 1.6;
+   }
+
+   // 表格样式
+   table {
+      background-color: $table-bg;
+      border: none;
+      border-collapse: collapse;
+      width: auto;
+      margin: 12px 0;
+
+      th {
+         background-color: $table-header-bg;
+         color: $table-header-text;
+         font-weight: 600;
+         text-align: left;
+         padding: 8px 12px;
+      }
+
+      td {
+         padding: 8px 12px;
+         color: $table-text;
+         font-size: 14px;
+         line-height: 1.6;
+      }
+
+      tr {
+         transition: background-color 0.2s ease;
+
+         &:hover {
+            background-color: $table-hover-bg;
+         }
+      }
+
+      // 表格内的行内代码
+      code {
+         background-color: $code-bg !important;
+         color: $code-color !important;
+      }
+
+      // 表格内的链接
+      a {
+         color: $link-color;
+      }
+   }
+
+   // 行内代码（不在 pre 中的）
+   :not(pre) > code {
+      background-color: $code-bg !important;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family:
+         "Fira Code", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: $code-color !important;
+      box-shadow: 0 1px 2px 0 $code-shadow-color;
+      transition: background 0.2s;
+   }
+
+   // 代码块容器
+   div[class*="language-"] {
+      background-color: $code-block-bg !important;
+      border: 1px solid $code-block-border !important;
+      border-radius: 6px;
+      margin: 12px 0;
+
+      pre {
+         background-color: transparent !important;
+      }
+
+      code {
+         background-color: transparent !important;
+      }
+   }
+
+   // 链接
+   a {
+      color: $link-color;
+      text-decoration: underline;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+         opacity: 0.8;
+      }
+   }
+
+   // 加粗 - 使用深色文字保持可读性
+   strong {
+      color: #24292f;
+      font-weight: 700;
+   }
+
+   // 斜体
+   em {
+      color: $em-color;
+      font-style: italic;
+   }
+
+   em strong,
+   strong em {
+      color: $em-color;
+      font-weight: 700;
+      font-style: italic;
+   }
+
+   // 引用
+   blockquote {
+      border-left: 3px solid $blockquote-border;
+      color: $blockquote-color;
+   }
+
+   // 分割线
+   hr {
+      border-top: 1px solid $hr-color;
+   }
+}
+
+/**
+ * Custom Block Styles (VitePress & GitHub Alerts)
+ * 包含所有自定义容器样式: :::tip, :::warning, :::info, :::danger, :::details
+ * 以及 GitHub Alert 样式: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
+ * @description 暗黑模式下的样式
+ */
+
+/**
+* @param $bg-color-dark 背景色
+* @param $border-color-dark 边框颜色
+* @param $border-left-color-dark 左侧边框颜色
+* @param $title-color-dark 标题颜色
+* @param $text-color-dark 文字颜色
+* @param $code-bg-dark 行内代码背景色
+* @param $code-color-dark 行内代码文字颜色
+* @param $code-shadow-color-dark 行内代码阴影颜色
+* @param $code-block-bg-dark 代码块背景色
+* @param $code-block-border-dark 代码块边框颜色
+* @param $link-color-dark 链接颜色
+* @param $em-color-dark 斜体文字颜色
+* @param $blockquote-border-dark 引用边框颜色
+* @param $blockquote-color-dark 引用文字颜色
+* @param $hr-color-dark 分割线颜色
+* @param $table-bg-dark 表格背景色
+* @param $table-border-dark 表格边框颜色
+* @param $table-header-bg-dark 表格头部背景色
+* @param $table-header-text-dark 表格头部文字颜色
+* @param $table-hover-bg-dark 表格行悬停背景色
+* @param $table-text-dark 表格文字颜色
+*/
+@mixin custom-block-base-dark(
+   $bg-color-dark,
+   $border-color-dark,
+   $border-left-color-dark,
+   $title-color-dark,
+   $text-color-dark,
+   $code-bg-dark,
+   $code-color-dark,
+   $code-shadow-color-dark,
+   $code-block-bg-dark,
+   $code-block-border-dark,
+   $link-color-dark,
+   $em-color-dark,
+   $blockquote-border-dark,
+   $blockquote-color-dark,
+   $hr-color-dark,
+   $table-bg-dark: transparent,
+   $table-border-dark: $border-color-dark,
+   $table-header-bg-dark: rgba($border-left-color-dark, 0.15),
+   $table-header-text-dark: $title-color-dark,
+   $table-hover-bg-dark: rgba($border-left-color-dark, 0.1),
+   $table-text-dark: $text-color-dark
+) {
+   background-color: $bg-color-dark !important;
+   border-color: $border-color-dark !important;
+   border-left-color: $border-left-color-dark !important;
+
+   .custom-block-title {
+      color: $title-color-dark !important;
+   }
+
+   p,
+   li {
+      color: $text-color-dark !important;
+   }
+
+   // 表格样式
+   table {
+      background-color: $table-bg-dark;
+      border: none;
+      border-collapse: collapse;
+      width: auto;
+      margin: 12px 0;
+
+      th {
+         background-color: $table-header-bg-dark;
+         color: $table-header-text-dark;
+         font-weight: 600;
+         text-align: left;
+         padding: 8px 12px;
+      }
+
+      td {
+         padding: 8px 12px;
+         color: $table-text-dark;
+         font-size: 14px;
+         line-height: 1.6;
+      }
+
+      tr {
+         transition: background-color 0.2s ease;
+
+         &:hover {
+            background-color: $table-hover-bg-dark;
+         }
+      }
+
+      // 表格内的行内代码
+      code {
+         background-color: $code-bg-dark !important;
+         color: $code-color-dark !important;
+      }
+
+      // 表格内的链接
+      a {
+         color: $link-color-dark;
+      }
+   }
+
+   // 行内代码（不在 pre 中的）
+   :not(pre) > code {
+      background-color: $code-bg-dark !important;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family:
+         "Fira Code", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: $code-color-dark !important;
+      box-shadow: 0 1px 2px 0 $code-shadow-color-dark;
+      transition: background 0.2s;
+   }
+
+   // 代码块容器
+   div[class*="language-"] {
+      background-color: $code-block-bg-dark !important;
+      border-color: $code-block-border-dark !important;
+      border-radius: 6px;
+      margin: 12px 0;
+
+      pre {
+         background-color: transparent !important;
+      }
+
+      code {
+         background-color: transparent !important;
+      }
+   }
+
+   // 链接
+   a {
+      color: $link-color-dark !important;
+      text-decoration: underline;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+         opacity: 0.8;
+      }
+   }
+
+   // 斜体
+   em {
+      color: $em-color-dark !important;
+      font-style: italic;
+   }
+
+   em strong,
+   strong em {
+      color: $em-color-dark !important;
+      font-weight: 700;
+      font-style: italic;
+   }
+
+   // 引用
+   blockquote {
+      border-left-color: $blockquote-border-dark !important;
+      color: $blockquote-color-dark !important;
+   }
+
+   // 分割线
+   hr {
+      border-top-color: $hr-color-dark !important;
+   }
+}

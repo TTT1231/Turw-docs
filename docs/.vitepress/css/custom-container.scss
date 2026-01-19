@@ -1,0 +1,359 @@
+@use "./mixins.scss" as customBlockTipNamespace;
+
+// ==================== 明亮模式样式 ====================
+//:::tip 样式 - 蓝色主题
+.vp-doc .custom-block.tip {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #f0f9ff,
+      $border-color: #b3e5fc,
+      $border-left-color: #0077ff,
+      $title-color: #0077ff,
+      $text-color: #333,
+      $code-bg: #ddf0fe,
+      $code-color: #0d71e4,
+      $code-shadow-color: rgba(23, 78, 166, 0.04),
+      $code-block-bg: #f6fbff,
+      $code-block-border: #d9eeff,
+      $link-color: #0077ff,
+      $em-color: #0077ff,
+      $blockquote-border: #0077ff,
+      $blockquote-color: #666,
+      $hr-color: rgba(0, 119, 255, 0.2)
+   );
+}
+
+//:::warning 样式 - 黄色主题
+.vp-doc .custom-block.warning {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #fff9e7,
+      $border-color: #ffe9a6,
+      $border-left-color: #907b3f,
+      $title-color: #89653e,
+      $text-color: #6b5d42,
+      $code-bg: #fdf0d2,
+      $code-color: #8c7738,
+      $code-shadow-color: rgba(144, 123, 63, 0.04),
+      $code-block-bg: #fffaf0,
+      $code-block-border: #f5e6d3,
+      $link-color: #907b3f,
+      $em-color: #907b3f,
+      $blockquote-border: #907b3f,
+      $blockquote-color: #7a8487,
+      $hr-color: rgba(144, 123, 63, 0.2)
+   );
+
+   .custom-block-title {
+      font-size: 1.002rem;
+   }
+}
+
+//:::info 样式 - 蓝灰色主题
+.vp-doc .custom-block.info {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #f0f4f8,
+      $border-color: #cbd5e0,
+      $border-left-color: #4a5568,
+      $title-color: #2d3748,
+      $text-color: #4a5568,
+      $code-bg: #e2e8f0,
+      $code-color: #2d3748,
+      $code-shadow-color: rgba(74, 85, 104, 0.04),
+      $code-block-bg: #f7fafc,
+      $code-block-border: #e2e8f0,
+      $link-color: #4a5568,
+      $em-color: #4a5568,
+      $blockquote-border: #4a5568,
+      $blockquote-color: #718096,
+      $hr-color: rgba(74, 85, 104, 0.2)
+   );
+}
+
+//:::danger 样式 - 红色主题 (与 GitHub CAUTION 一致)
+.vp-doc .custom-block.danger {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #fff0ee,
+      $border-color: #ffccc7,
+      $border-left-color: #cf222e,
+      $title-color: #cf222e,
+      $text-color: #24292f,
+      $code-bg: #ffe3e0,
+      $code-color: #a40e26,
+      $code-shadow-color: rgba(207, 34, 46, 0.04),
+      $code-block-bg: #fffbfa,
+      $code-block-border: #ffe8e5,
+      $link-color: #cf222e,
+      $em-color: #cf222e,
+      $blockquote-border: #cf222e,
+      $blockquote-color: #57606a,
+      $hr-color: rgba(207, 34, 46, 0.2)
+   );
+}
+
+//:::details 样式 - 灰色主题
+.vp-doc .custom-block.details {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #f7fafc,
+      $border-color: #e2e8f0,
+      $border-left-color: #718096,
+      $title-color: #4a5568,
+      $text-color: #4a5568,
+      $code-bg: #edf2f7,
+      $code-color: #2d3748,
+      $code-shadow-color: rgba(113, 128, 150, 0.04),
+      $code-block-bg: #ffffff,
+      $code-block-border: #e2e8f0,
+      $link-color: #718096,
+      $em-color: #718096,
+      $blockquote-border: #718096,
+      $blockquote-color: #a0aec0,
+      $hr-color: rgba(113, 128, 150, 0.2)
+   );
+}
+
+// Github Note:  > [!NOTE] 样式 - 蓝色主题
+.vp-doc .custom-block.note {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #e8f4fd,
+      $border-color: #b3d9f2,
+      $border-left-color: #0969da,
+      $title-color: #0969da,
+      $text-color: #24292f,
+      $code-bg: #d0e8f7,
+      $code-color: #0550ae,
+      $code-shadow-color: rgba(9, 105, 218, 0.04),
+      $code-block-bg: #f6f8fa,
+      $code-block-border: #d0d7de,
+      $link-color: #0969da,
+      $em-color: #0969da,
+      $blockquote-border: #0969da,
+      $blockquote-color: #57606a,
+      $hr-color: rgba(9, 105, 218, 0.2)
+   );
+}
+
+// Github Important:  > [!IMPORTANT] 样式 - 紫色主题
+.vp-doc .custom-block.important {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #f6f3ff,
+      $border-color: #d4b8ff,
+      $border-left-color: #8250df,
+      $title-color: #8250df,
+      $text-color: #24292f,
+      $code-bg: #ebe4ff,
+      $code-color: #6e40c9,
+      $code-shadow-color: rgba(130, 80, 223, 0.04),
+      $code-block-bg: #fbf8ff,
+      $code-block-border: #e8ddff,
+      $link-color: #8250df,
+      $em-color: #8250df,
+      $blockquote-border: #8250df,
+      $blockquote-color: #57606a,
+      $hr-color: rgba(130, 80, 223, 0.2)
+   );
+}
+
+// Github Caution:  > [!CAUTION] 样式 - 红色主题
+.vp-doc .custom-block.caution {
+   @include customBlockTipNamespace.custom-block-base(
+      $bg-color: #fff0ee,
+      $border-color: #ffccc7,
+      $border-left-color: #cf222e,
+      $title-color: #cf222e,
+      $text-color: #24292f,
+      $code-bg: #ffe3e0,
+      $code-color: #a40e26,
+      $code-shadow-color: rgba(207, 34, 46, 0.04),
+      $code-block-bg: #fffbfa,
+      $code-block-border: #ffe8e5,
+      $link-color: #cf222e,
+      $em-color: #cf222e,
+      $blockquote-border: #cf222e,
+      $blockquote-color: #57606a,
+      $hr-color: rgba(207, 34, 46, 0.2)
+   );
+}
+
+// ==================== 暗黑模式样式 ====================
+.dark {
+   // 加粗文字颜色
+   .vp-doc .custom-block {
+      strong {
+         color: #f0f6fc !important;
+      }
+   }
+   //:::tip 样式 - 蓝色主题暗黑模式
+   .vp-doc .custom-block.tip {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(56, 139, 253, 0.1),
+         $border-color-dark: rgba(56, 139, 253, 0.3),
+         $border-left-color-dark: #58a6ff,
+         $title-color-dark: #58a6ff,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(56, 139, 253, 0.15),
+         $code-color-dark: #58a6ff,
+         $code-shadow-color-dark: rgba(56, 139, 253, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(56, 139, 253, 0.2),
+         $link-color-dark: #58a6ff,
+         $em-color-dark: #58a6ff,
+         $blockquote-border-dark: #58a6ff,
+         $blockquote-color-dark: #8b949e,
+         $hr-color-dark: rgba(56, 139, 253, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+
+   // :::warning - 黄色主题暗黑模式
+   .vp-doc .custom-block.warning {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(210, 153, 34, 0.1),
+         $border-color-dark: rgba(210, 153, 34, 0.3),
+         $border-left-color-dark: #d29922,
+         $title-color-dark: #e3b341,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(210, 153, 34, 0.15),
+         $code-color-dark: #e3b341,
+         $code-shadow-color-dark: rgba(210, 153, 34, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(210, 153, 34, 0.2),
+         $link-color-dark: #e3b341,
+         $em-color-dark: #e3b341,
+         $blockquote-border-dark: #e3b341,
+         $blockquote-color-dark: #8b949e,
+         $hr-color-dark: rgba(210, 153, 34, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+
+   // :::info - 蓝灰色主题暗黑模式
+   .vp-doc .custom-block.info {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(110, 118, 129, 0.1),
+         $border-color-dark: rgba(110, 118, 129, 0.3),
+         $border-left-color-dark: #8b949e,
+         $title-color-dark: #8b949e,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(110, 118, 129, 0.15),
+         $code-color-dark: #8b949e,
+         $code-shadow-color-dark: rgba(110, 118, 129, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(110, 118, 129, 0.2),
+         $link-color-dark: #8b949e,
+         $em-color-dark: #8b949e,
+         $blockquote-border-dark: #8b949e,
+         $blockquote-color-dark: #6e7681,
+         $hr-color-dark: rgba(110, 118, 129, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+
+   // :::danger - 红色主题暗黑模式
+   .vp-doc .custom-block.danger {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(248, 81, 73, 0.1),
+         $border-color-dark: rgba(248, 81, 73, 0.3),
+         $border-left-color-dark: #f85149,
+         $title-color-dark: #f85149,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(248, 81, 73, 0.15),
+         $code-color-dark: #f85149,
+         $code-shadow-color-dark: rgba(248, 81, 73, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(248, 81, 73, 0.2),
+         $link-color-dark: #f85149,
+         $em-color-dark: #f85149,
+         $blockquote-border-dark: #f85149,
+         $blockquote-color-dark: #8b949e,
+         $hr-color-dark: rgba(248, 81, 73, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+
+   // :::details - 灰色主题暗黑模式
+   .vp-doc .custom-block.details {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(110, 118, 129, 0.08),
+         $border-color-dark: rgba(110, 118, 129, 0.2),
+         $border-left-color-dark: #6e7681,
+         $title-color-dark: #8b949e,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(110, 118, 129, 0.12),
+         $code-color-dark: #8b949e,
+         $code-shadow-color-dark: rgba(110, 118, 129, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(110, 118, 129, 0.2),
+         $link-color-dark: #8b949e,
+         $em-color-dark: #8b949e,
+         $blockquote-border-dark: #6e7681,
+         $blockquote-color-dark: #6e7681,
+         $hr-color-dark: rgba(110, 118, 129, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+
+   // > [!NOTE] - 蓝色主题暗黑模式
+   .vp-doc .custom-block.note {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(56, 139, 253, 0.1),
+         $border-color-dark: rgba(56, 139, 253, 0.3),
+         $border-left-color-dark: #58a6ff,
+         $title-color-dark: #58a6ff,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(56, 139, 253, 0.15),
+         $code-color-dark: #58a6ff,
+         $code-shadow-color-dark: rgba(56, 139, 253, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(56, 139, 253, 0.2),
+         $link-color-dark: #58a6ff,
+         $em-color-dark: #58a6ff,
+         $blockquote-border-dark: #58a6ff,
+         $blockquote-color-dark: #8b949e,
+         $hr-color-dark: rgba(56, 139, 253, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+
+   // > [!IMPORTANT] - 紫色主题暗黑模式
+   .vp-doc .custom-block.important {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(187, 129, 235, 0.1),
+         $border-color-dark: rgba(187, 129, 235, 0.3),
+         $border-left-color-dark: #a371f7,
+         $title-color-dark: #a371f7,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(187, 129, 235, 0.15),
+         $code-color-dark: #a371f7,
+         $code-shadow-color-dark: rgba(187, 129, 235, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(187, 129, 235, 0.2),
+         $link-color-dark: #a371f7,
+         $em-color-dark: #a371f7,
+         $blockquote-border-dark: #a371f7,
+         $blockquote-color-dark: #8b949e,
+         $hr-color-dark: rgba(187, 129, 235, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+
+   // > [!CAUTION] - 红色主题暗黑模式
+   .vp-doc .custom-block.caution {
+      @include customBlockTipNamespace.custom-block-base-dark(
+         $bg-color-dark: rgba(248, 81, 73, 0.1),
+         $border-color-dark: rgba(248, 81, 73, 0.3),
+         $border-left-color-dark: #f85149,
+         $title-color-dark: #f85149,
+         $text-color-dark: #c9d1d9,
+         $code-bg-dark: rgba(248, 81, 73, 0.15),
+         $code-color-dark: #f85149,
+         $code-shadow-color-dark: rgba(248, 81, 73, 0.4),
+         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $code-block-border-dark: rgba(248, 81, 73, 0.2),
+         $link-color-dark: #f85149,
+         $em-color-dark: #f85149,
+         $blockquote-border-dark: #f85149,
+         $blockquote-color-dark: #8b949e,
+         $hr-color-dark: rgba(248, 81, 73, 0.2),
+         $table-text-dark: #e6edf3
+      );
+   }
+}
