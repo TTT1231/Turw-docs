@@ -56,7 +56,7 @@ export default defineConfig({
             items: [
                { text: '前端FAQ', link: '/frontdesign/common-problems' },
                { text: 'NuxtFAQ', link: '/nuxt/config-solutions' },
-               { text: 'electron', link: '/electron' },
+               { text: 'Electron', link: '/frontdesign/electron' },
                { text: 'Node', link: '/server/Nodejs' },
                { text: 'Nest', link: '/server/Nestjs' },
                { text: 'vscode配置', link: '/code-style/vscode-setting' },
@@ -103,6 +103,16 @@ export default defineConfig({
                   link: '/frontdesign/front-security'
                },
                {
+                  text: 'electron',
+                  collapsed: true,
+                  link: '/frontdesign/electron'
+               },
+               {
+                  text: 'WebAssembly',
+                  collapsed: true,
+                  link: '/frontdesign/WebAssembly'
+               },
+               {
                   text: 'VUE3',
                   collapsed: true,
                   items: [
@@ -127,16 +137,6 @@ export default defineConfig({
                { text: 'SEO-SSR', link: '/nuxt/seo-ssr' },
                { text: 'FAQ', link: '/nuxt/config-solutions' }
             ]
-         },
-         {
-            text: 'electron',
-            collapsed: true,
-            link: '/electron'
-         },
-         {
-            text: 'WebAssembly',
-            collapsed: true,
-            link: '/WebAssembly'
          },
          {
             text: '代码风格和规范',
