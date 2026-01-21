@@ -16,3 +16,6 @@ docs/.vitepress/.build-temp
 .husky/*
 !.husky/_
 !.husky/pre-push
+
+# claude
+.claude/settings.local.json
