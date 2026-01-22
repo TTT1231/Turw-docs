@@ -13,8 +13,8 @@ hero:
         text: 快速开始
         link: /frontdesign/common-problems
       - theme: alt
-        text: vscode配置
-        link: /code-style/vscode-setting
+        text: claude
+        link: /claude
 
 features:
    - icon: 📚

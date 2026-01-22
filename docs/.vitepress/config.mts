@@ -144,13 +144,7 @@ export default defineConfig({
             items: [
                { text: '格式化代码与检查', link: '/code-style/eslint-format' },
                { text: 'vscode编译器设置', link: '/code-style/vscode-setting' },
-               { text: 'TsSchema', link: '/code-style/ts-schema' }
-            ]
-         },
-         {
-            text: '网络代理工具',
-            collapsed: true,
-            items: [
+               { text: 'TsSchema', link: '/code-style/ts-schema' },
                {
                   text: 'WSL2代理',
                   collapsed: true,
@@ -181,6 +175,11 @@ export default defineConfig({
                   link: '/server/Nestjs'
                }
             ]
+         },
+         {
+            text: 'claude',
+            collapsed: true,
+            link: '/claude'
          }
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
