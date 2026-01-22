@@ -155,11 +155,12 @@ TS5+版本默认是开启stage3的，因此如果想要使用stage3就需要关�
 MetadataScanner现在只保留了**getAllMethodNames**，用来获取类原型上面的所有方法名称，用于发现控制器方法和AOP增强方法
 :::
 
-## 缓存监控与埋点
+## 缓存监控
 
-> 详情代码：[stackblitz](https://stackblitz.com/edit/ttt1231-nestjs-cachemonoitor?file=README.md)
-
-> 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor)
+<CodeViewer
+public-path="/Turw-docs/codeview-container/nest-cache-monitor"
+default-file="main.ts"
+theme="dark"/>
 
 ## 动态模块
 
