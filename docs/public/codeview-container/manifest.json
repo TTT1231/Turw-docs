@@ -1,0 +1,225 @@
+[
+  {
+    "name": "nest-dynamic-module",
+    "path": "/Turw-docs/codeview-container/nest-dynamic-module",
+    "type": "directory",
+    "children": [
+      {
+        "name": "src",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/src",
+        "type": "directory",
+        "children": [
+          {
+            "name": "dynamic-module",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module",
+            "type": "directory",
+            "children": [
+              {
+                "name": "config",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module/config",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "third.config.ts",
+                    "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module/config/third.config.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  }
+                ]
+              },
+              {
+                "name": "constant.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module/constant.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "third-config.validator.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module/third-config.validator.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "third-module.d.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module/third-module.d.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "third.module.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module/third.module.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "third.service.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/dynamic-module/third.service.ts",
+                "type": "file",
+                "extension": ".ts"
+              }
+            ]
+          },
+          {
+            "name": "forRoot-module",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/forRoot-module",
+            "type": "directory",
+            "children": [
+              {
+                "name": "forRoot.constants.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/forRoot-module/forRoot.constants.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "forRoot.module.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/forRoot-module/forRoot.module.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "forRoot.service.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/forRoot-module/forRoot.service.ts",
+                "type": "file",
+                "extension": ".ts"
+              }
+            ]
+          },
+          {
+            "name": "test1",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/test1",
+            "type": "directory",
+            "children": [
+              {
+                "name": "test1.controller.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/test1/test1.controller.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "test1.module.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/test1/test1.module.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "test1.service.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/test1/test1.service.ts",
+                "type": "file",
+                "extension": ".ts"
+              }
+            ]
+          },
+          {
+            "name": "validator",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/validator",
+            "type": "directory",
+            "children": [
+              {
+                "name": "third-config.validator.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/validator/third-config.validator.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "third-config2.validator.ts",
+                "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/validator/third-config2.validator.ts",
+                "type": "file",
+                "extension": ".ts"
+              }
+            ]
+          },
+          {
+            "name": "app.controller.ts",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/app.controller.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "app.module.ts",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/app.module.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "app.service.ts",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/app.service.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "main.ts",
+            "path": "/Turw-docs/codeview-container/nest-dynamic-module/src/main.ts",
+            "type": "file",
+            "extension": ".ts"
+          }
+        ]
+      },
+      {
+        "name": ".env",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/.env",
+        "type": "file",
+        "extension": ""
+      },
+      {
+        "name": ".gitignore",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/.gitignore",
+        "type": "file",
+        "extension": ""
+      },
+      {
+        "name": ".prettierrc",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/.prettierrc",
+        "type": "file",
+        "extension": ""
+      },
+      {
+        "name": "env.d.ts",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/env.d.ts",
+        "type": "file",
+        "extension": ".ts"
+      },
+      {
+        "name": "eslint.config.mjs",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/eslint.config.mjs",
+        "type": "file",
+        "extension": ".mjs"
+      },
+      {
+        "name": "nest-cli.json",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/nest-cli.json",
+        "type": "file",
+        "extension": ".json"
+      },
+      {
+        "name": "package.json",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/package.json",
+        "type": "file",
+        "extension": ".json"
+      },
+      {
+        "name": "README.md",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/README.md",
+        "type": "file",
+        "extension": ".md"
+      },
+      {
+        "name": "tsconfig.build.json",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/tsconfig.build.json",
+        "type": "file",
+        "extension": ".json"
+      },
+      {
+        "name": "tsconfig.json",
+        "path": "/Turw-docs/codeview-container/nest-dynamic-module/tsconfig.json",
+        "type": "file",
+        "extension": ".json"
+      }
+    ]
+  },
+  {
+    "name": "qwe.txt",
+    "path": "/Turw-docs/codeview-container/qwe.txt",
+    "type": "file",
+    "extension": ".txt"
+  }
+]

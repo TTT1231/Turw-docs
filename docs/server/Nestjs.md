@@ -165,11 +165,11 @@ MetadataScanner现在只保留了**getAllMethodNames**，用来获取类原型�
 
 > 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-cachemonitor)
 
-## 动态模块配置验证与实现
+## 动态模块
 
-### 模块配置实践
+### 模块配置
 
-**nestjs官方设计实践:**
+**nestjs官方设计:**
 
 | 方法前缀 |    语义     |     设计意图     |
 | :------: | :---------: | :--------------: |
@@ -185,11 +185,12 @@ MetadataScanner现在只保留了**getAllMethodNames**，用来获取类原型�
 >
 > 注意这个asyncRegister，如果声明了global那么其内部提供的moduleId中token会被覆盖,也即是这个moduleId的token被全局注册了,显然违背了模块设计思想,因为根本用不着,全局模块提供的服务应该是唯一的单例的可复用的
 
-### 实际使用
+### 使用
 
-> 详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-dynamicmodule-rte9xnqd)
-
-> 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-dynamicmodule-rte9xnqd)
+<CodeViewer
+public-path="/Turw-docs/codeview-container/nest-dynamic-module"
+default-file="main.ts"
+theme="dark"/>
 
 ## passport策略与webSocket
 
