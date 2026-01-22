@@ -217,9 +217,267 @@
     ]
   },
   {
-    "name": "qwe.txt",
-    "path": "/Turw-docs/codeview-container/qwe.txt",
-    "type": "file",
-    "extension": ".txt"
+    "name": "nestjs-password-websocket",
+    "path": "/Turw-docs/codeview-container/nestjs-password-websocket",
+    "type": "directory",
+    "children": [
+      {
+        "name": "src",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src",
+        "type": "directory",
+        "children": [
+          {
+            "name": "auth",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth",
+            "type": "directory",
+            "children": [
+              {
+                "name": "config",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/config",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "jwt.config.ts",
+                    "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/config/jwt.config.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  }
+                ]
+              },
+              {
+                "name": "db",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/db",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "user.ts",
+                    "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/db/user.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  }
+                ]
+              },
+              {
+                "name": "decorator",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/decorator",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "public.decorator.ts",
+                    "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/decorator/public.decorator.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  }
+                ]
+              },
+              {
+                "name": "guard",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/guard",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "jwt.guard.ts",
+                    "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/guard/jwt.guard.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  }
+                ]
+              },
+              {
+                "name": "strategy",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/strategy",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "jwt.strategy.ts",
+                    "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/strategy/jwt.strategy.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  }
+                ]
+              },
+              {
+                "name": "types",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/types",
+                "type": "directory",
+                "children": [
+                  {
+                    "name": "userEntitty.ts",
+                    "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/types/userEntitty.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  }
+                ]
+              },
+              {
+                "name": "auth.controller.ts",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/auth.controller.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "auth.module.ts",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/auth.module.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "auth.service.ts",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/auth/auth.service.ts",
+                "type": "file",
+                "extension": ".ts"
+              }
+            ]
+          },
+          {
+            "name": "exception-filter",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/exception-filter",
+            "type": "directory",
+            "children": [
+              {
+                "name": "AllExceptions.filter.ts",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/exception-filter/AllExceptions.filter.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "customer.filter.ts",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/exception-filter/customer.filter.ts",
+                "type": "file",
+                "extension": ".ts"
+              }
+            ]
+          },
+          {
+            "name": "socket",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/socket",
+            "type": "directory",
+            "children": [
+              {
+                "name": "socket.gateway.ts",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/socket/socket.gateway.ts",
+                "type": "file",
+                "extension": ".ts"
+              },
+              {
+                "name": "socket.module.ts",
+                "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/socket/socket.module.ts",
+                "type": "file",
+                "extension": ".ts"
+              }
+            ]
+          },
+          {
+            "name": "app.controller.spec.ts",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/app.controller.spec.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "app.controller.ts",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/app.controller.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "app.module.ts",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/app.module.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "app.service.ts",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/app.service.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "main.ts",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/main.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "tips.d.ts",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/src/tips.d.ts",
+            "type": "file",
+            "extension": ".ts"
+          }
+        ]
+      },
+      {
+        "name": "test",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/test",
+        "type": "directory",
+        "children": [
+          {
+            "name": "app.e2e-spec.ts",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/test/app.e2e-spec.ts",
+            "type": "file",
+            "extension": ".ts"
+          },
+          {
+            "name": "jest-e2e.json",
+            "path": "/Turw-docs/codeview-container/nestjs-password-websocket/test/jest-e2e.json",
+            "type": "file",
+            "extension": ".json"
+          }
+        ]
+      },
+      {
+        "name": ".gitignore",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/.gitignore",
+        "type": "file",
+        "extension": ""
+      },
+      {
+        "name": ".prettierrc",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/.prettierrc",
+        "type": "file",
+        "extension": ""
+      },
+      {
+        "name": "eslint.config.mjs",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/eslint.config.mjs",
+        "type": "file",
+        "extension": ".mjs"
+      },
+      {
+        "name": "nest-cli.json",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/nest-cli.json",
+        "type": "file",
+        "extension": ".json"
+      },
+      {
+        "name": "package.json",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/package.json",
+        "type": "file",
+        "extension": ".json"
+      },
+      {
+        "name": "README.md",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/README.md",
+        "type": "file",
+        "extension": ".md"
+      },
+      {
+        "name": "test-websocket-client.html",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/test-websocket-client.html",
+        "type": "file",
+        "extension": ".html"
+      },
+      {
+        "name": "tsconfig.build.json",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/tsconfig.build.json",
+        "type": "file",
+        "extension": ".json"
+      },
+      {
+        "name": "tsconfig.json",
+        "path": "/Turw-docs/codeview-container/nestjs-password-websocket/tsconfig.json",
+        "type": "file",
+        "extension": ".json"
+      }
+    ]
   }
 ]

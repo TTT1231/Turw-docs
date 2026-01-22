@@ -1,7 +1,3 @@
----
-outline: deep
----
-
 # Nestjs
 
 ## 源码逻辑
@@ -192,11 +188,14 @@ public-path="/Turw-docs/codeview-container/nest-dynamic-module"
 default-file="main.ts"
 theme="dark"/>
 
-## passport策略与webSocket
+## passport和webSocket
 
-> 详情代码：[stackblitz](https://stackblitz.com/edit/nestjs-passport-websocket-zwhyb6vz?file=README.md)
-
-> 详情Github仓库：[Github](https://github.com/TTT1231/nestjs-passport-websocket-zwhyb6vz)
+<CodeViewer
+public-path="/Turw-docs/codeview-container/nestjs-password-websocket"
+default-file="main.ts"
+theme="dark"
+height="600px"
+/>
 
 ## redis多节点部署
 

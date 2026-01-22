@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket JWT 测试客户端</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      input,
+      button {
+        padding: 10px;
+        margin: 5px;
+        font-size: 14px;
+      }
+      input {
+        width: 500px;
+      }
+      button {
+        background: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      #logs {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 5px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .log-item {
+        margin: 5px 0;
+        padding: 5px;
+      }
+      .log-success {
+        color: green;
+      }
+      .log-error {
+        color: red;
+      }
+      .log-info {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔌 WebSocket JWT 测试客户端</h1>
+
+    <div class="section">
+      <h3>步骤 1: 获取 JWT Token</h3>
+      <p>先通过 HTTP 登录接口获取 token</p>
+      <button onclick="login()">登录获取 Token</button>
+      <div style="margin-top: 10px">
+        <strong>当前 Token:</strong>
+        <input type="text" id="token" placeholder="将自动填充或手动输入你的 JWT token" />
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>步骤 2: 连接 WebSocket</h3>
+      <button onclick="connectWebSocket()">连接 WebSocket (带 JWT)</button>
+      <button onclick="connectWithoutAuth()">连接 WebSocket (不带 JWT - 应该失败)</button>
+      <button onclick="disconnect()">断开连接</button>
+    </div>
+
+    <div class="section">
+      <h3>步骤 3: 发送私聊消息</h3>
+      <input type="number" id="targetUserId" placeholder="目标用户ID" value="2" style="width: 200px" />
+      <input type="text" id="message" placeholder="输入消息内容" value="Hello from browser client!" />
+      <button onclick="sendPrivateMessage()">发送私聊消息</button>
+    </div>
+
+    <div class="section">
+      <h3>📋 日志</h3>
+      <div id="logs"></div>
+    </div>
+
+    <script>
+      let socket = null;
+
+      function addLog(message, type = 'info') {
+        const logs = document.getElementById('logs');
+        const logItem = document.createElement('div');
+        logItem.className = `log-item log-${type}`;
+        logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        logs.appendChild(logItem);
+        logs.scrollTop = logs.scrollHeight;
+      }
+
+      // 模拟登录获取 token
+      async function login() {
+        try {
+          addLog('🔄 正在登录...', 'info');
+          const data = {
+            userId: 1,
+            username: 'test1',
+          };
+          const response = await fetch('http://localhost:3000/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            document.getElementById('token').value = data.access_token || data.token;
+            addLog('✅ 登录成功，Token 已获取', 'success');
+            addLog(`Token: ${data.access_token || data.token}`, 'info');
+          } else {
+            addLog(`❌ 登录失败: ${response.status} ${response.statusText}`, 'error');
+          }
+        } catch (error) {
+          addLog(`❌ 登录出错: ${error.message}`, 'error');
+        }
+      }
+
+      function connectWebSocket() {
+        const token = document.getElementById('token').value;
+
+        if (!token) {
+          addLog('❌ 请先获取 Token！', 'error');
+          return;
+        }
+
+        if (socket) {
+          socket.close();
+        }
+
+        addLog('🔄 正在连接 WebSocket (带 JWT)...', 'info');
+        addLog(`使用 Token: ${token.substring(0, 20)}...`, 'info');
+
+        socket = io('http://localhost:3001/socket', {
+          transports: ['websocket'],
+          auth: {
+            token: token, // ← 关键：在 auth 中传递 token
+          },
+        });
+
+        socket.on('connect', () => {
+          addLog(`✅ WebSocket 已连接，客户端 ID: ${socket.id}`, 'success');
+        });
+
+        socket.on('connect_error', (error) => {
+          addLog(`❌ 连接错误: ${error.message}`, 'error');
+        });
+
+        socket.on('message', (data) => {
+          addLog(`📨 收到服务器消息: ${JSON.stringify(data)}`, 'success');
+        });
+
+        socket.on('private-message', (data) => {
+          addLog(`📨 收到私聊消息响应: ${JSON.stringify(data)}`, 'success');
+        });
+
+        socket.on('disconnect', (reason) => {
+          addLog(`❌ 连接断开: ${reason}`, 'info');
+        });
+
+        socket.on('error', (error) => {
+          addLog(`❌ 错误: ${JSON.stringify(error)}`, 'error');
+        });
+      }
+
+      function connectWithoutAuth() {
+        if (socket) {
+          socket.close();
+        }
+
+        addLog('🔄 正在连接 WebSocket (不带 JWT - 测试失败场景)...', 'info');
+
+        socket = io('http://localhost:3001/socket', {
+          transports: ['websocket'],
+          // 注意：没有传递 auth.token
+        });
+
+        socket.on('connect', () => {
+          addLog(`⚠️ WebSocket 已连接 (不应该成功！)，客户端 ID: ${socket.id}`, 'error');
+        });
+
+        socket.on('connect_error', (error) => {
+          addLog(`✅ 连接被拒绝 (符合预期): ${error.message}`, 'success');
+        });
+
+        socket.on('disconnect', (reason) => {
+          addLog(`❌ 连接断开: ${reason}`, 'info');
+        });
+      }
+
+      function disconnect() {
+        if (socket) {
+          socket.close();
+          socket = null;
+          addLog('👋 已断开 WebSocket 连接', 'info');
+        } else {
+          addLog('⚠️ 没有活动的连接', 'info');
+        }
+      }
+
+      function sendPrivateMessage() {
+        if (!socket || !socket.connected) {
+          addLog('❌ 请先连接 WebSocket！', 'error');
+          return;
+        }
+
+        const targetUserId = parseInt(document.getElementById('targetUserId').value);
+        const content = document.getElementById('message').value;
+
+        if (!targetUserId || isNaN(targetUserId)) {
+          addLog('❌ 请输入有效的目标用户ID！', 'error');
+          return;
+        }
+
+        addLog(`📤 发送私聊消息给用户 ${targetUserId}: ${content}`, 'info');
+        socket.emit('private-message', {
+          targetUserId: targetUserId,
+          content: content,
+        });
+      }
+
+      // 页面关闭时断开连接
+      window.addEventListener('beforeunload', () => {
+        if (socket) {
+          socket.close();
+        }
+      });
+    </script>
+  </body>
+</html>
