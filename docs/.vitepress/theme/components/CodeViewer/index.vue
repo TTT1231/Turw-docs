@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import FileTree from './FileTree.vue';
 import CodeDisplay from './CodeDisplay.vue';
 import ImagePreview from './ImagePreview.vue';
@@ -190,7 +190,18 @@ watch(contextMenuVisible, (visible, _, onCleanup) => {
    }
 });
 
-watch(() => props.publicPath, initializeFileTree, { immediate: true });
+// 只在客户端初始化，避免 SSR 时 fetch 错误
+const isMounted = ref(false);
+onMounted(() => {
+   isMounted.value = true;
+   initializeFileTree();
+});
+
+watch(() => props.publicPath, () => {
+   if (isMounted.value) {
+      initializeFileTree();
+   }
+});
 </script>
 
 <template>
