@@ -4,12 +4,10 @@ import type { Theme } from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
 import './style.scss';
 import '../css/tailwind.css';
-/**
- * @deprecated
- */
 import FlexProperty from './components/FlexProperty.vue';
 import GridProperty from './components/GridProperty.vue';
 import JwtValProcess from './components/JwtValProcess.vue';
+import CodeViewer from './components/CodeViewer/index.vue';
 
 import NuxterrorHandling from './components/NuxterrorHandling.vue';
 export default {
@@ -24,5 +22,6 @@ export default {
       app.component('GridProperty', GridProperty);
       app.component('NuxterrorHandling', NuxterrorHandling);
       app.component('JwtValProcess', JwtValProcess);
+      app.component('CodeViewer', CodeViewer);
    }
 } satisfies Theme;
