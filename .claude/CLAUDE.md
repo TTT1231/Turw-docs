@@ -66,7 +66,7 @@ docs/
 
 - `FlexProperty.vue` css flex布局属性展示组件
 - `GridProperty.vue` css grid布局属性展示组件
-- `JwtValProcess.vue` nuxtjs中jwt验证流程图片展示组件
+- `ImgPreview.vue` 图片预览组件
 - `NuxterrorHandling.vue` nuxtjs中错误处理展示组件
 - `CopyBtn.vue` 全局复制按钮组件，为代码复制提供支持
 

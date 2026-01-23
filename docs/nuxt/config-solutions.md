@@ -483,7 +483,7 @@ pnpm install -D typescript
 
 ### 验证流程
 
-<JwtValProcess/>
+<ImgPreview showImgPath="jwt_validate_process.png"/>
 
 **状态判断逻辑**：
 

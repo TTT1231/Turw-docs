@@ -6,8 +6,8 @@ import './style.scss';
 import '../css/tailwind.css';
 import FlexProperty from './components/FlexProperty.vue';
 import GridProperty from './components/GridProperty.vue';
-import JwtValProcess from './components/JwtValProcess.vue';
 import CodeViewer from './components/CodeViewer/index.vue';
+import ImgPreview from './components/ImgPreview.vue';
 
 import NuxterrorHandling from './components/NuxterrorHandling.vue';
 export default {
@@ -21,7 +21,7 @@ export default {
       app.component('FlexProperty', FlexProperty);
       app.component('GridProperty', GridProperty);
       app.component('NuxterrorHandling', NuxterrorHandling);
-      app.component('JwtValProcess', JwtValProcess);
       app.component('CodeViewer', CodeViewer);
+      app.component('ImgPreview', ImgPreview);
    }
 } satisfies Theme;

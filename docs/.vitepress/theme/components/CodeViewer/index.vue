@@ -197,11 +197,14 @@ onMounted(() => {
    initializeFileTree();
 });
 
-watch(() => props.publicPath, () => {
-   if (isMounted.value) {
-      initializeFileTree();
+watch(
+   () => props.publicPath,
+   () => {
+      if (isMounted.value) {
+         initializeFileTree();
+      }
    }
-});
+);
 </script>
 
 <template>

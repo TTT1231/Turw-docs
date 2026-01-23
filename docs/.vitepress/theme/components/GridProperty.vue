@@ -85,40 +85,47 @@ const dynamicStyle = computed(() => {
    </div>
 </template>
 
-<style scoped>
-.item-1 {
-   background: linear-gradient(135deg, #ef4444, #dc2626);
-}
+<style scoped lang="scss">
+@use 'sass:list';
 
-.item-2 {
-   background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
+$gradients: (
+   1: (
+      #ef4444,
+      #dc2626
+   ),
+   2: (
+      #3b82f6,
+      #2563eb
+   ),
+   3: (
+      #10b981,
+      #059669
+   ),
+   4: (
+      #f59e0b,
+      #d97706
+   ),
+   5: (
+      #a21caf,
+      #7c3aed
+   ),
+   6: (
+      #14b8a6,
+      #06b6d4
+   ),
+   7: (
+      #f43f5e,
+      #f97316
+   ),
+   8: (
+      #84cc16,
+      #22d3ee
+   )
+);
 
-.item-3 {
-   background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.item-4 {
-   background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.item-5 {
-   background: linear-gradient(135deg, #a21caf, #7c3aed);
-   /* 紫到靛蓝 */
-}
-
-.item-6 {
-   background: linear-gradient(135deg, #14b8a6, #06b6d4);
-   /* 青到蓝绿 */
-}
-
-.item-7 {
-   background: linear-gradient(135deg, #f43f5e, #f97316);
-   /* 粉到橙 */
-}
-
-.item-8 {
-   background: linear-gradient(135deg, #84cc16, #22d3ee);
-   /* 绿到青蓝 */
+@each $i, $colors in $gradients {
+   .item-#{$i} {
+      background: linear-gradient(135deg, list.nth($colors, 1), list.nth($colors, 2));
+   }
 }
 </style>
