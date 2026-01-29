@@ -201,6 +201,26 @@ interface ImportMeta {
 }
 ```
 
+全部放在一个文件也是可以的，例如下面这段代码:
+
+```ts
+/// <reference types="vite/client" />
+
+interface MyEnvType {
+   qwe: string;
+}
+
+declare global {
+   interface ImportMetaEnv extends MyEnvType {}
+
+   interface ImportMeta {
+      readonly env: ImportMetaEnv;
+   }
+}
+
+export {};
+```
+
 ::: tip 提示
 这里其实也可以不用导入这个`.d.ts`，定义全局类型也是一样的，或者`import type`,然后该声明文件会变为局部声明文件，使用`export {}` 导出，变为全局声明文件也是一样可以的。
 :::
