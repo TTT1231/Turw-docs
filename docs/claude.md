@@ -549,3 +549,66 @@ git worktree add .trees/[feature-name]
 ::: tip 提示
 在准备推送到生产仓库之前，应该要编写详细的规范并减少歧义。越具体，最后的更改成本就越少。
 :::
+
+## playground可视化交互
+
+当碰到项目架构、前端组件/布局/间距/颜色/排版、业务流程不清楚的时候可以使用它，它提供一个可视化界面，生成HTML进行交互。
+
+::: tip 内部模板
+
+| 模板              | 用途         | 示例场景                                   |
+| ----------------- | ------------ | ------------------------------------------ |
+| design-playground | 视觉设计     | 按钮、卡片、布局样式配置                   |
+| data-explorer     | 数据查询构建 | SQL 生成、API 参数、正则表达式             |
+| concept-map       | 知识学习探索 | 概念关系图、知识图谱                       |
+| document-critique | 文档审查     | 审批/评论工作流                            |
+| diff-review       | 代码审查     | Git diff、PR 逐行审查（类似`copilot`审查） |
+| code-map          | 代码架构     | 组件关系、数据流图                         |
+
+:::
+
+下面是特定场景使用示例，实际情况也可以直接让claude针对场景使用playground skill，claude会自动调用。例如`请使用playground skill创建一个playground，展示这个项目架构`。
+
+::: code-group
+
+```md [design-playground-usage.md]
+<!-- 前端设计类 -->
+
+使用playground skill创建一个playground 表单样式探索工具，控制边框、圆角、焦点状态、错误状态
+```
+
+```md [data-explorer-usage.md]
+<!-- SQL语句可视化类 -->
+
+使用playground skill创建一个SQL查询playground 用户SQL
+```
+
+```md [concept-map-usage.md]
+<!-- 概念学习类 -->
+
+使用playground skill创建一个创建系统设计知识点图谱
+```
+
+```md [document-critique.md]
+<!-- 文档类主动审查变更、拒绝或接受 -->
+
+使用playground skill去review我的`example.md`请给我一些建议，我可以批准、拒绝或评论
+```
+
+```md [diff-review-usage.md]
+<!-- 主动审查变更、拒绝或接受场景下使用 -->
+
+修复这些Bug，使用playground skill创建一个playground 让我审查这些文件的变更
+```
+
+```md [code-map-usage.md]
+<!-- 主动审查变更、拒绝或接受场景下使用 -->
+
+使用playground skill创建一个项目架构的playground 并允许我对架构中的特定节点进行评论，以便提出问题、进行编辑等
+```
+
+:::
+
+::: tip 提示
+上诉示例的6个场景中，可以让claude自己选择，而不用记住各自使用，直接使用通用提示词`请使用playground skill创建[需求（主题+类型即可）]playground`完成需求即可。
+:::
