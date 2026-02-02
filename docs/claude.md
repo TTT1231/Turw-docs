@@ -11,7 +11,7 @@ outline: deep
 
 - plugins 一些系列`skill`和`sub agents`集合
 - skill 用于拓展`LLM`在特定任务上的能力，例如ui/ux skill
-- agents 任务专家，专门处理特定任务，例如前端任务
+- agents 任务专家，专门处理特定任务，用于任务并行（不关心上下文具体细节情况），例如代码审查agent、安全审查agent两者不关心各自具体上下文因此可以并行处理
 
 三者都可以自动触发和手动触发。
 
