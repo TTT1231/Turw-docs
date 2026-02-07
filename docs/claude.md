@@ -612,3 +612,11 @@ git worktree add .trees/[feature-name]
 ::: tip 提示
 上诉示例的6个场景中，可以让claude自己选择，而不用记住各自使用，直接使用通用提示词`请使用playground skill创建[需求（主题+类型即可）]playground`完成需求即可。
 :::
+
+## playwright 验证注意
+
+如果是页面测试需要AI操作游览器的，如果使用的是playwright等，这在AI场景方面就不适合使用，里面的HTML标签和样式会浪费很多Token和干扰AI上下文，同时还有dom节点操作也是还要去关心无关dom节点。
+
+::: tip 提示
+这里就可以使用[agent-browser](https://github.com/vercel-labs/agent-browser)代理服务器进行操作，进而简化HTML标签抽象层，过滤不需要对象将dom树转化为简洁的语义操作的可操作对象。
+:::
