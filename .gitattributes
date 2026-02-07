@@ -1,0 +1,7 @@
+# 统一使用 LF 换行符
+* text=auto eol=lf
+
+# Windows 批处理脚本保持 CRLF（如果有的话）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
