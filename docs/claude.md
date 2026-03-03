@@ -10,7 +10,7 @@ outline: deep
 ## plugins/skill/agents
 
 - plugins 一些系列`skill`和`sub agents`集合
-- skill 用于拓展`LLM`在特定任务上的能力，例如ui/ux skill
+- skill 用于扩展`LLM`在特定任务上的能力，例如ui/ux skill
 - agents 任务专家，专门处理特定任务，用于任务并行（不关心上下文具体细节情况），例如代码审查agent、安全审查agent两者不关心各自具体上下文因此可以并行处理
 
 三者都可以自动触发和手动触发。
@@ -38,7 +38,7 @@ outline: deep
 | `pr-review-toolkit` |    PR审查工具包，专注注释、测试、错误处理和代码质量    |
 |  `commit-commands`  |                     Git工作流命令                      |
 |       `figma`       |   Figma集成，设计稿转代码。<mark>需要Api key</mark>    |
-|    `playwright`     |                    游览器自动化测试                    |
+|    `playwright`     |                    浏览器自动化测试                    |
 |    `ralph-loop`     |               用于AI反复迭代，而不会中断               |
 
 ## LSP
@@ -62,7 +62,7 @@ outline: deep
 因而在复杂任务处理场景下可以使用`总线型团队模式`，类似网络架构设计中`总线`，具体使用如下:
 
 ```md
-promopt:
+prompt:
 【具体需求】, 创建并初始化以下4个sub agent，
 其中架构师负责需求分析、技术选型、生成计划，
 构建师负责代码编写、依赖管理,
@@ -112,7 +112,7 @@ promopt:
 :::
 
 ::: warning 注意
-上诉过程跳过了`PRD`直接到开发技术文档(实施方案)，实际上需要进行需求验证验证**可行性**，然后在是技术选型、方案设计、实施方案。
+上述过程跳过了`PRD`直接到开发技术文档(实施方案)，实际上需要进行需求验证验证**可行性**，然后在是技术选型、方案设计、实施方案。
 :::
 
 ::: danger 危险
@@ -204,7 +204,7 @@ promopt:
 
 ## 注意事项
 
-上诉cli使用之所以要在文件中列出详细需求，主要就是解决和避免包含换行符时，这个Ralph-loop插件在处理多行提示词时会触发安全错误
+上述cli使用之所以要在文件中列出详细需求，主要就是解决和避免包含换行符时，这个Ralph-loop插件在处理多行提示词时会触发安全错误
 ```
 
 ## 规则
@@ -649,12 +649,12 @@ git worktree list
 :::
 
 ::: tip 提示
-上诉示例的6个场景中，可以让claude自己选择，而不用记住各自使用，直接使用通用提示词`请使用playground skill创建[需求（主题+类型即可）]playground`完成需求即可。
+上述示例的6个场景中，可以让claude自己选择，而不用记住各自使用，直接使用通用提示词`请使用playground skill创建[需求（主题+类型即可）]playground`完成需求即可。
 :::
 
 ## playwright 验证注意
 
-如果是页面测试需要AI操作游览器的，如果使用的是playwright等，这在AI场景方面就不适合使用，里面的HTML标签和样式会浪费很多Token和干扰AI上下文，同时还有dom节点操作也是还要去关心无关dom节点。
+如果是页面测试需要AI操作浏览器的，如果使用的是playwright等，这在AI场景方面就不适合使用，里面的HTML标签和样式会浪费很多Token和干扰AI上下文，同时还有dom节点操作也是还要去关心无关dom节点。
 
 ::: tip 提示
 这里就可以使用[agent-browser](https://github.com/vercel-labs/agent-browser)代理服务器进行操作，进而简化HTML标签抽象层，过滤不需要对象将dom树转化为简洁的语义操作的可操作对象。
