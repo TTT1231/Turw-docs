@@ -270,11 +270,50 @@ promopt:
 
 claude结合`worktree`可以实现并行任务并发，从而单个任务失败或者成功在不合并到主分支之前，对主分支不会造成任何影响。
 
+**基础命令**
+
+| 命令                                        | 描述                       |
+| ------------------------------------------- | -------------------------- |
+| `git worktree add .trees/[feature-name]`    | 创建新的 worktree          |
+| `git worktree list`                         | 列出所有 worktree          |
+| `git worktree move <old> <new>`             | 移动 worktree 到新位置     |
+| `git worktree remove .trees/[feature-name]` | 删除 worktree 及其引用     |
+| `git worktree prune`                        | 清理已删除的 worktree 引用 |
+
+**完整工作流示例**
+
+假设需要同时开发两个独立功能：用户认证和支付集成
+
 ```sh
-git worktree add .trees/[feature-name]
+# 步骤1: 创建两个 worktree
+git worktree add .trees/feature-auth -b feature/auth
+git worktree add .trees/feature-payment -b feature/payment
+
+# 步骤2: 查看已创建的 worktree
+git worktree list
+
+# 步骤3: 分别在两个终端中打开 Claude，针对不同目录工作。在各自worktree中正常使用Git等命令。
+
+# 步骤4: 功能完成后，合并回主分支。然后清理已完成的worktree
 ```
 
-创建完分支之后，可以在针对这个分支目录开一个claude终端进行任务。
+**工作流最佳实践**
+
+::: tip 提示
+
+1. **统一目录命名**: 使用 `.trees/` 前缀组织所有 worktree，方便管理
+2. **及时清理**: 任务完成后及时删除 worktree，避免累积过多目录
+3. **独立终端**: 每个 worktree 使用独立的 Claude 终端，避免上下文混乱
+4. **原子性**: 每个 worktree 专注单一功能，保持任务边界清晰
+   :::
+
+::: warning 注意
+手动删除分支文件之后，分支引用还是会存在，这是还需要去git中删除这个分支引用。
+
+`git worktree remove .trees/[feature-name]`。
+
+最后别忘了分支还是存在的，还是需要手动去删除`git branch -d .trees/[feature-name]`
+:::
 
 ## 重新规划计划
 
