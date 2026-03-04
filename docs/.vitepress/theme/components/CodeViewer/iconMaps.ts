@@ -11,7 +11,7 @@ function buildIconPath(iconName: string): string {
 }
 
 // ==================== 精确匹配映射 ====================
-export const EXACT_MATCH_MAP: Record<string, string> = {
+const EXACT_MATCH_MAP: Record<string, string> = {
    // TypeScript / Vite
    'tsconfig.json': 'typescript',
    'tsconfig.app.json': 'typescript',
@@ -45,7 +45,7 @@ export const EXACT_MATCH_MAP: Record<string, string> = {
 };
 
 // ==================== 正则匹配映射 ====================
-export const REGEX_MATCH_MAP: Array<[RegExp, string]> = [
+const REGEX_MATCH_MAP: Array<[RegExp, string]> = [
    [/^eslint\.config\.(js|mjs|cjs|ts)$/i, 'eslint'],
    [/^(.*)\.config\.(js|ts|mjs|cjs)$/i, 'js'],
    [/^(.*)\.config\.(json)$/i, 'json'],
@@ -55,7 +55,7 @@ export const REGEX_MATCH_MAP: Array<[RegExp, string]> = [
 ];
 
 // ==================== 扩展名映射 ====================
-export const EXTENSION_MAP: Record<string, string> = {
+const EXTENSION_MAP: Record<string, string> = {
    '.ts': 'typescript',
    '.tsx': 'typescript',
    '.js': 'js',
@@ -118,18 +118,4 @@ export function getFileExtension(filename: string): string {
    const lastDotIndex = filename.lastIndexOf('.');
    if (lastDotIndex <= 0) return ''; // 无扩展名或隐藏文件
    return filename.slice(lastDotIndex);
-}
-
-// ==================== 动态添加映射 ====================
-
-export function addExactMatch(filename: string, iconName: string): void {
-   EXACT_MATCH_MAP[filename] = iconName;
-}
-
-export function addRegexMatch(regex: RegExp, iconName: string): void {
-   REGEX_MATCH_MAP.unshift([regex, iconName]);
-}
-
-export function addExtensionMatch(ext: string, iconName: string): void {
-   EXTENSION_MAP[ext] = iconName;
 }

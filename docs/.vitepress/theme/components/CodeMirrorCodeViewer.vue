@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, shallowRef } from 'vue'
-import { useData } from 'vitepress'
+import { ref, computed, watch, onMounted, onUnmounted, shallowRef } from 'vue';
+import { useData } from 'vitepress';
 import {
    EditorView,
    lineNumbers,
@@ -10,38 +10,44 @@ import {
    highlightSpecialChars,
    rectangularSelection,
    crosshairCursor
-} from '@codemirror/view'
-import { EditorState, type Extension } from '@codemirror/state'
+} from '@codemirror/view';
+import { EditorState, type Extension } from '@codemirror/state';
 import {
    defaultHighlightStyle,
    syntaxHighlighting,
    indentOnInput,
    bracketMatching,
    foldGutter
-} from '@codemirror/language'
-import { highlightSelectionMatches } from '@codemirror/search'
-import { javascript } from '@codemirror/lang-javascript'
-import { oneDark } from '@codemirror/theme-one-dark'
-import { loadManifest, convertManifestToFileNodes, loadFileContent, findFileByName, findFileByPath } from './CodeViewer/utils'
-import { getFileIconPath, getFolderIconPath } from './CodeViewer/iconMaps'
-import type { FileNode } from './CodeViewer/types'
+} from '@codemirror/language';
+import { highlightSelectionMatches } from '@codemirror/search';
+import { javascript } from '@codemirror/lang-javascript';
+import { oneDark } from '@codemirror/theme-one-dark';
+import {
+   loadManifest,
+   convertManifestToFileNodes,
+   loadFileContent,
+   findFileByName,
+   findFileByPath
+} from './CodeViewer/utils';
+import { getFileIconPath, getFolderIconPath } from './CodeViewer/iconMaps';
+import type { FileNode } from './CodeViewer/types';
 
 // ===== 类型定义 =====
-type ThemeMode = 'light' | 'dark'
+type ThemeMode = 'light' | 'dark';
 
 interface Props {
    /** 公共路径，如 /Turw-docs/codeview-container */
-   publicPath: string
+   publicPath: string;
    /** 默认选中的文件名（相对于 publicPath） */
-   defaultFile?: string
+   defaultFile?: string;
    /** 主题模式 (auto = 跟随 VitePress 主题) */
-   theme?: ThemeMode | 'auto'
+   theme?: ThemeMode | 'auto';
    /** 组件最小高度 */
-   minHeight?: string
+   minHeight?: string;
    /** 组件最大高度 */
-   maxHeight?: string
+   maxHeight?: string;
    /** 是否启用代码折叠 */
-   enableFolding?: boolean
+   enableFolding?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -50,54 +56,57 @@ const props = withDefaults(defineProps<Props>(), {
    minHeight: '420px',
    maxHeight: '680px',
    enableFolding: true
-})
+});
 
 // ===== VitePress 主题检测 =====
-const { isDark } = useData()
+const { isDark } = useData();
 
 // 计算实际使用的主题
 const actualTheme = computed<ThemeMode>(() => {
    if (props.theme === 'auto') {
-      return isDark.value ? 'dark' : 'light'
+      return isDark.value ? 'dark' : 'light';
    }
-   return props.theme
-})
+   return props.theme;
+});
 
 // ===== Refs =====
-const editorContainer = ref<HTMLElement | null>(null)
-const editorView = shallowRef<EditorView | null>(null)
-const fileTree = ref<FileNode[]>([])
-const isLoading = ref(true)
-const error = ref<string | null>(null)
-const currentFile = ref<FileNode | null>(null)
-const currentContent = ref('')
-const expandedFolders = ref<Set<string>>(new Set())
+const editorContainer = ref<HTMLElement | null>(null);
+const editorView = shallowRef<EditorView | null>(null);
+const fileTree = ref<FileNode[]>([]);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+const currentFile = ref<FileNode | null>(null);
+const currentContent = ref('');
+const expandedFolders = ref<Set<string>>(new Set());
 
 // ===== 文件类型颜色映射 =====
-const EXT_TO_LANG: Record<string, { lang: 'json' | 'js' | 'ts' | 'mjs' | 'cjs'; color: string; label: string }> = {
+const EXT_TO_LANG: Record<
+   string,
+   { lang: 'json' | 'js' | 'ts' | 'mjs' | 'cjs'; color: string; label: string }
+> = {
    '.json': { lang: 'json', color: '#fbbf24', label: 'JSON' },
    '.js': { lang: 'js', color: '#facc15', label: 'JS' },
    '.ts': { lang: 'ts', color: '#3b82f6', label: 'TS' },
    '.mjs': { lang: 'mjs', color: '#facc15', label: 'MJS' },
    '.cjs': { lang: 'cjs', color: '#facc15', label: 'CJS' }
-}
+};
 
 // ===== 文件图标获取（使用 iconMaps 模块）=====
 function getFileIcon(node: FileNode): string {
    if (node.type === 'directory') {
-      return getFolderIconPath(false)
+      return getFolderIconPath(false);
    }
-   return getFileIconPath(node.name)
+   return getFileIconPath(node.name);
 }
 
 // 获取文件夹图标（展开/折叠）
 function getFolderIcon(isExpanded: boolean): string {
-   return getFolderIconPath(isExpanded)
+   return getFolderIconPath(isExpanded);
 }
 
 // ===== 主题色板 =====
 const editorColors = computed(() => {
-   const dark = actualTheme.value === 'dark'
+   const dark = actualTheme.value === 'dark';
    return {
       editorBg: dark ? '#1e1e2e' : '#ffffff',
       editorText: dark ? '#cdd6f4' : '#1f1f1f',
@@ -128,71 +137,82 @@ const editorColors = computed(() => {
       sidebarHoverBg: dark ? '#1e1e2e' : '#ebebeb',
       sidebarActiveBg: dark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.12)',
       sidebarActiveBorder: dark ? '#6366f1' : '#4f46e5'
-   }
-})
+   };
+});
+
+// ===== 扩展名标准化工具 =====
+function normalizeExtension(extension: string | undefined): string {
+   if (!extension) return '';
+   const ext = extension.toLowerCase();
+   return ext.startsWith('.') ? ext : `.${ext}`;
+}
 
 // ===== 计算当前文件信息 =====
 const currentLang = computed(() => {
-   if (!currentFile.value) return 'js'
-   // manifest 中的 extension 已包含点号
-   const ext = (currentFile.value.extension || '').toLowerCase()
-   const extWithDot = ext.startsWith('.') ? ext : `.${ext}`
-   return EXT_TO_LANG[extWithDot]?.lang || 'js'
-})
+   if (!currentFile.value) return 'js';
+   const extWithDot = normalizeExtension(currentFile.value.extension);
+   return EXT_TO_LANG[extWithDot]?.lang || 'js';
+});
 
 const currentBadge = computed(() => {
-   if (!currentFile.value) return { color: '#facc15', label: 'JS' }
-   // manifest 中的 extension 已包含点号
-   const ext = (currentFile.value.extension || '').toLowerCase()
-   const extWithDot = ext.startsWith('.') ? ext : `.${ext}`
-   return { color: EXT_TO_LANG[extWithDot]?.color || '#facc15', label: EXT_TO_LANG[extWithDot]?.label || 'JS' }
-})
+   if (!currentFile.value) return { color: '#facc15', label: 'JS' };
+   const extWithDot = normalizeExtension(currentFile.value.extension);
+   const langInfo = EXT_TO_LANG[extWithDot];
+   return {
+      color: langInfo?.color || '#facc15',
+      label: langInfo?.label || 'JS'
+   };
+});
 
 // ===== 扁平化文件树用于显示 =====
 const flatNodes = computed(() => {
-   const result: Array<FileNode & { level: number }> = []
+   const result: Array<FileNode & { level: number }> = [];
    function traverse(nodes: FileNode[], depth = 0) {
       for (const node of nodes) {
-         result.push({ ...node, level: depth })
-         if (node.type === 'directory' && node.children?.length && expandedFolders.value.has(node.path)) {
-            traverse(node.children, depth + 1)
+         result.push({ ...node, level: depth });
+         if (
+            node.type === 'directory' &&
+            node.children?.length &&
+            expandedFolders.value.has(node.path)
+         ) {
+            traverse(node.children, depth + 1);
          }
       }
    }
-   traverse(fileTree.value)
-   return result
-})
+   traverse(fileTree.value);
+   return result;
+});
 
 // ===== 折叠 Gutter SVG 箭头 =====
 function createFoldMarkerSVG(open: boolean): SVGSVGElement {
-   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-   svg.setAttribute('width', '10')
-   svg.setAttribute('height', '10')
-   svg.setAttribute('viewBox', '0 0 10 10')
-   svg.setAttribute('fill', 'currentColor')
+   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+   svg.setAttribute('width', '10');
+   svg.setAttribute('height', '10');
+   svg.setAttribute('viewBox', '0 0 10 10');
+   svg.setAttribute('fill', 'currentColor');
 
-   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
    if (open) {
-      path.setAttribute('d', 'M2 3.5 L5 6.5 L8 3.5')
+      path.setAttribute('d', 'M2 3.5 L5 6.5 L8 3.5');
    } else {
-      path.setAttribute('d', 'M3.5 2 L6.5 5 L3.5 8')
+      path.setAttribute('d', 'M3.5 2 L6.5 5 L3.5 8');
    }
-   path.setAttribute('stroke', 'currentColor')
-   path.setAttribute('stroke-width', '1.4')
-   path.setAttribute('stroke-linecap', 'round')
-   path.setAttribute('stroke-linejoin', 'round')
-   path.setAttribute('fill', 'none')
+   path.setAttribute('stroke', 'currentColor');
+   path.setAttribute('stroke-width', '1.4');
+   path.setAttribute('stroke-linecap', 'round');
+   path.setAttribute('stroke-linejoin', 'round');
+   path.setAttribute('fill', 'none');
 
-   svg.appendChild(path)
-   return svg
+   svg.appendChild(path);
+   return svg;
 }
 
 function makeFoldMarker(open: boolean): HTMLElement {
-   const el = document.createElement('span')
-   el.className = open ? 'cm-fold-open' : 'cm-fold-closed'
-   el.title = open ? 'Collapse' : 'Expand'
-   el.appendChild(createFoldMarkerSVG(open))
-   return el
+   const el = document.createElement('span');
+   el.className = open ? 'cm-fold-open' : 'cm-fold-closed';
+   el.title = open ? 'Collapse' : 'Expand';
+   el.appendChild(createFoldMarkerSVG(open));
+   return el;
 }
 
 // ===== 获取语言扩展 =====
@@ -203,8 +223,8 @@ function getLanguageExtension(lang: 'json' | 'js' | 'ts' | 'mjs' | 'cjs') {
       ts: { jsx: true, typescript: true },
       mjs: { jsx: true, typescript: false },
       cjs: { jsx: true, typescript: false }
-   }
-   return javascript({ ...config[lang] })
+   };
+   return javascript({ ...config[lang] });
 }
 
 // ===== 构建编辑器扩展 =====
@@ -223,53 +243,50 @@ function buildExtensions(): Extension[] {
       highlightActiveLineGutter(),
       indentOnInput(),
       highlightSelectionMatches()
-   ]
+   ];
 
    if (props.enableFolding) {
-      extensions.push(foldGutter({ markerDOM: makeFoldMarker }))
+      extensions.push(foldGutter({ markerDOM: makeFoldMarker }));
    }
 
-   return extensions
+   return extensions;
 }
 
 // ===== 初始化/更新编辑器 =====
 function initEditor() {
    if (editorView.value) {
-      editorView.value.destroy()
-      editorView.value = null
+      editorView.value.destroy();
+      editorView.value = null;
    }
    if (!editorContainer.value || !currentContent.value) {
-      return
+      return;
    }
 
    try {
       const state = EditorState.create({
          doc: currentContent.value,
-         extensions: [
-            ...buildExtensions(),
-            actualTheme.value === 'dark' ? oneDark : []
-         ]
-      })
+         extensions: [...buildExtensions(), actualTheme.value === 'dark' ? oneDark : []]
+      });
 
       editorView.value = new EditorView({
          state,
          parent: editorContainer.value
-      })
+      });
    } catch (err) {
-      console.error('[CodeMirror] Failed to create editor:', err)
+      console.error('[CodeMirror] Failed to create editor:', err);
    }
 }
 
 // 更新编辑器内容（使用事务避免闪烁）
 function updateEditorContent(content: string) {
    if (!editorView.value) {
-      initEditor()
-      return
+      initEditor();
+      return;
    }
 
    // 使用事务更新内容，而不是重建编辑器
-   const currentDoc = editorView.value.state.doc.toString()
-   if (currentDoc === content) return
+   const currentDoc = editorView.value.state.doc.toString();
+   if (currentDoc === content) return;
 
    editorView.value.dispatch({
       changes: {
@@ -277,74 +294,72 @@ function updateEditorContent(content: string) {
          to: editorView.value.state.doc.length,
          insert: content
       }
-   })
+   });
 }
 
 function updateEditor() {
    if (!editorView.value) {
-      initEditor()
-      return
+      initEditor();
+      return;
    }
 
    const newState = EditorState.create({
       doc: currentContent.value,
-      extensions: [
-         ...buildExtensions(),
-         actualTheme.value === 'dark' ? oneDark : []
-      ]
-   })
-   editorView.value.setState(newState)
+      extensions: [...buildExtensions(), actualTheme.value === 'dark' ? oneDark : []]
+   });
+   editorView.value.setState(newState);
 }
 
 // ===== 文件操作 =====
 async function selectFile(node: FileNode) {
    if (node.type !== 'file') {
-      toggleFolder(node.path)
-      return
+      toggleFolder(node.path);
+      return;
    }
 
    // 如果是同一个文件，不做任何操作
    if (currentFile.value?.path === node.path) {
-      return
+      return;
    }
 
-   currentFile.value = node
-   const content = await loadFileContent(node.path)
-   currentContent.value = content || ''
+   currentFile.value = node;
+   const content = await loadFileContent(node.path);
+   currentContent.value = content || '';
 }
 
 function toggleFolder(path: string) {
    if (expandedFolders.value.has(path)) {
-      expandedFolders.value.delete(path)
+      expandedFolders.value.delete(path);
    } else {
-      expandedFolders.value.add(path)
+      expandedFolders.value.add(path);
    }
 }
 
 function isExpanded(path: string) {
-   return expandedFolders.value.has(path)
+   return expandedFolders.value.has(path);
 }
 
 // ===== 初始化 =====
 async function initialize() {
-   isLoading.value = true
-   error.value = null
+   isLoading.value = true;
+   error.value = null;
 
    try {
-      const manifest = await loadManifest(props.publicPath)
-      fileTree.value = convertManifestToFileNodes(manifest)
+      const manifest = await loadManifest(props.publicPath);
+      fileTree.value = convertManifestToFileNodes(manifest);
 
       if (props.defaultFile) {
-         const defaultNode = findFileByName(fileTree.value, props.defaultFile) ||
-                            findFileByPath(fileTree.value, `${props.publicPath}/${props.defaultFile}`)
+         const defaultNode =
+            findFileByName(fileTree.value, props.defaultFile) ||
+            findFileByPath(fileTree.value, `${props.publicPath}/${props.defaultFile}`);
          if (defaultNode) {
-            await selectFile(defaultNode)
+            await selectFile(defaultNode);
          }
       }
    } catch (err) {
-      error.value = err instanceof Error ? err.message : String(err)
+      error.value = err instanceof Error ? err.message : String(err);
    } finally {
-      isLoading.value = false
+      isLoading.value = false;
    }
 }
 
@@ -354,45 +369,45 @@ watch(
    isLoading,
    (loading) => {
       if (!loading && currentContent.value && editorContainer.value && !editorView.value) {
-         initEditor()
+         initEditor();
       }
    },
    { flush: 'post' }
-)
+);
 
 // 记录上一次的语言，用于检测语言变化
-let previousLang = currentLang.value
+let previousLang = currentLang.value;
 
 // 监听内容变化，使用事务更新避免闪烁
 watch(currentContent, (content) => {
    if (content && editorView.value) {
       // 检测语言是否变化
-      const langChanged = previousLang !== currentLang.value
-      previousLang = currentLang.value
+      const langChanged = previousLang !== currentLang.value;
+      previousLang = currentLang.value;
 
       if (langChanged) {
          // 语言变化时需要更新整个状态（包括语法高亮扩展）
-         updateEditor()
+         updateEditor();
       } else {
          // 仅内容变化，使用事务更新避免闪烁
-         updateEditorContent(content)
+         updateEditorContent(content);
       }
    } else if (content && editorContainer.value && !editorView.value) {
-      initEditor()
+      initEditor();
    }
-})
+});
 
-watch(() => props.publicPath, initialize)
-watch(actualTheme, updateEditor)
+watch(() => props.publicPath, initialize);
+watch(actualTheme, updateEditor);
 
-onMounted(initialize)
+onMounted(initialize);
 
 onUnmounted(() => {
    if (editorView.value) {
-      editorView.value.destroy()
-      editorView.value = null
+      editorView.value.destroy();
+      editorView.value = null;
    }
-})
+});
 </script>
 
 <template>
@@ -405,7 +420,11 @@ onUnmounted(() => {
          <span>{{ error }}</span>
       </div>
 
-      <div v-else class="editor-layout" :style="{ minHeight: props.minHeight, maxHeight: props.maxHeight }">
+      <div
+         v-else
+         class="editor-layout"
+         :style="{ minHeight: props.minHeight, maxHeight: props.maxHeight }"
+      >
          <!-- 侧边栏 -->
          <aside class="sidebar">
             <div class="sidebar-header">
@@ -443,12 +462,7 @@ onUnmounted(() => {
                         :alt="node.name"
                         class="file-icon"
                      />
-                     <img
-                        v-else
-                        :src="getFileIcon(node)"
-                        :alt="node.name"
-                        class="file-icon"
-                     />
+                     <img v-else :src="getFileIcon(node)" :alt="node.name" class="file-icon" />
                   </span>
 
                   <span class="node-name">{{ node.name }}</span>
@@ -487,7 +501,9 @@ onUnmounted(() => {
 .cm-code-viewer {
    width: 100%;
    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-   transition: background-color 0.3s ease, color 0.3s ease;
+   transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
 }
 
 .loading-state,
@@ -742,7 +758,9 @@ onUnmounted(() => {
       line-height: 1.6;
       background: v-bind('editorColors.editorBg');
       color: v-bind('editorColors.editorText');
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition:
+         background-color 0.3s ease,
+         color 0.3s ease;
 
       &.cm-focused {
          outline: none;
@@ -836,7 +854,9 @@ onUnmounted(() => {
       height: 16px;
       border-radius: 3px;
       color: transparent;
-      transition: color 0.12s, background 0.12s;
+      transition:
+         color 0.12s,
+         background 0.12s;
    }
 
    :deep(.cm-gutters:hover .cm-fold-open) {
