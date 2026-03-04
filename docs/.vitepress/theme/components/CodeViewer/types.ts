@@ -26,7 +26,7 @@ export interface CodeViewerProps {
 // 主题类型
 export type ThemeMode = 'light' | 'dark';
 
-// 语言映射类型
+// 语言映射类型（用于 Shiki 高亮）
 export const LANGUAGE_MAP: Record<string, string> = {
    '.ts': 'typescript',
    '.tsx': 'typescript',
@@ -48,7 +48,7 @@ export const LANGUAGE_MAP: Record<string, string> = {
 
 // 主题映射：light 使用 vitesse-light 对比度更高，dark 使用 github-dark
 export const THEME_MAP: Record<ThemeMode, string> = {
-   light: 'vitesse-light', // 使用 vitesse-light 主题，对比度更高
+   light: 'vitesse-light',
    dark: 'github-dark'
 };
 
@@ -65,29 +65,25 @@ export function getShikiTheme(theme: ThemeMode): string {
 // 图片文件扩展名集合
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp']);
 
-// 获取文件扩展名
-function getFileExtension(filename: string): string {
-   const lastDotIndex = filename.lastIndexOf('.');
-   if (lastDotIndex <= 0) return '';
-   return filename.slice(lastDotIndex).toLowerCase();
-}
+// 从 iconMaps 导入 getFileExtension
+import { getFileExtension } from './iconMaps'
 
 // 判断是否为图片文件
 export function isImageFile(filename: string): boolean {
-   return IMAGE_EXTENSIONS.has(getFileExtension(filename));
+   return IMAGE_EXTENSIONS.has(getFileExtension(filename).toLowerCase());
 }
 
 // 判断是否为代码文件
 export function isCodeFile(filename: string): boolean {
-   return Object.prototype.hasOwnProperty.call(LANGUAGE_MAP, getFileExtension(filename));
+   return Object.prototype.hasOwnProperty.call(LANGUAGE_MAP, getFileExtension(filename).toLowerCase());
 }
 
-// 导出文件图标映射函数
+// Re-export icon functions from iconMaps
 export {
    getFileIconPath,
    getFolderIconPath,
-   getFileExtension as getIconFileExtension,
    addExactMatch,
    addRegexMatch,
-   addExtensionMatch
+   addExtensionMatch,
+   getFileExtension
 } from './iconMaps';

@@ -6,8 +6,6 @@ import './style.scss';
 import '../css/tailwind.css';
 import FlexProperty from './components/FlexProperty.vue';
 import GridProperty from './components/GridProperty.vue';
-import CodeViewer from './components/CodeViewer/index.vue';
-import CodeMirrorViewer from './components/CodeMirrorViewer.vue';
 import CodeMirrorCodeViewer from './components/CodeMirrorCodeViewer.vue';
 import ImgPreview from './components/ImgPreview.vue';
 
@@ -24,7 +22,6 @@ export default {
       app.component('GridProperty', GridProperty);
       app.component('NuxterrorHandling', NuxterrorHandling);
       app.component('CodeViewer', CodeMirrorCodeViewer);
-      app.component('CodeMirrorViewer', CodeMirrorViewer);
       app.component('CodeMirrorCodeViewer', CodeMirrorCodeViewer);
       app.component('ImgPreview', ImgPreview);
    }
