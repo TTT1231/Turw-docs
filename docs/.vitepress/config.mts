@@ -108,6 +108,11 @@ export default defineConfig({
                   link: '/frontdesign/electron'
                },
                {
+                  text: 'uniapp',
+                  collapsed: true,
+                  link: '/frontdesign/uniapp'
+               },
+               {
                   text: 'WebAssembly',
                   collapsed: true,
                   link: '/frontdesign/WebAssembly'
