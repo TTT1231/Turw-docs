@@ -178,6 +178,10 @@ export default defineConfig({
                {
                   text: 'Nestjs',
                   link: '/server/Nestjs'
+               },
+               {
+                  text: 'GraphQL',
+                  link: '/server/GraphQL'
                }
             ]
          },
