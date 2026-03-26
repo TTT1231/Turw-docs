@@ -1,8 +1,48 @@
+---
+outline: deep
+---
+
 # GraphQL
 
 graphQL统一用`POST`请求，即使是`GET`，主要是如果是用`GET`请求，query查询很容易超过浏览器URL长度（2048）。
 
 同时由于统一采用了`POST`请求，因此`GET`请求缓存没用了，因此需要在客户端中进行缓存，如果需要缓存的前提下。
+
+> [!IMPORTANT] 重要
+> graphQL最重要的一大优势就是便利性，例如它可以直接查询`user`相关联的实体`other1`和`other2...`等等，就免去了拿到了`user`要去对应表中再次查询，但是这样数据库查询次数会变多，本质上也就是拿数据库的查询次数去简化开发的便利性。
+
+```graphql
+type User {
+   id: Int!
+   name: String
+   other1: Other1! # one - one
+   other2: [Other2!] # one - many
+}
+
+type Other1 {
+   id: Int!
+   userId: Int!
+   user: User! # 反向关联，用来确定是否通过other1去反向查询用户，根据需要添加即可
+   # some filed....
+}
+type Other2 {
+   id: Int!
+   userId: Int!
+   # some filed....
+}
+```
+
+上诉由于GraphQL的默认字段解析器，如果数据库返回的`user`对象不带`other1`...的话，就必须手动写一个User.Other1 resolver来做关联查询，用GraphQL自动生成器也是一样的。
+
+::: danger 危险
+虽然graphQL支持循环引用，但是前端查询的时候最好不这样做，这样会有调用地狱问题还有性能问题（响应体积爆炸）。
+
+因此根据需要最多嵌套3层即可，其他的也没必要嵌套那么多。
+:::
+
+::: tip 提示
+这个便利性就是自动化了：假如有一个`user`表和一个`other1`....表，然后需要先拿到userId然后根据userId去查询每个用户对应的`other1`...等等，这样的查询次数也是**N+1** 这里的N指的是与用户相关联的实体个数。
+:::
 
 ## 流程
 
@@ -15,9 +55,7 @@ graphQL统一用`POST`请求，即使是`GET`，主要是如果是用`GET`请求
 
 ```
 
-## 服务端
-
-### fastify
+## 服务端（fastify）
 
 以该框架使用`mercurius`为例，
 
@@ -25,7 +63,7 @@ graphQL统一用`POST`请求，即使是`GET`，主要是如果是用`GET`请求
 pnpm add mercurius
 ```
 
-#### 缓存问题
+### 缓存问题
 
 > [!TIP]
 > `mercurius` 的缓存机制以 `fieldName + args` 作为缓存键。即相同字段名 + 相同参数会命中缓存，因此如果参数不同（如 `user(id: 1)` 和 `user(id: 2)`）则不会命中。
@@ -67,7 +105,7 @@ query {
 >
 > **客户端** 不知道这个响应是否满足另一个查询的字段需求，因此需要包含完整query进行判断。
 
-#### 开启缓存
+### 开启缓存
 
 **注意：** `mercurius`开启缓存需要插件，直接使用官方提供的`mercurius-cache`即可。
 
