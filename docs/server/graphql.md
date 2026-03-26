@@ -32,7 +32,7 @@ type Other2 {
 }
 ```
 
-上诉由于GraphQL的默认字段解析器，如果数据库返回的`user`对象不带`other1`...的话，就必须手动写一个User.Other1 resolver来做关联查询，用GraphQL自动生成器也是一样的。
+上述由于GraphQL的默认字段解析器，如果数据库返回的`user`对象不带`other1`...的话，就必须手动写一个User.Other1 resolver来做关联查询，用GraphQL自动生成器也是一样的。
 
 ::: danger 危险
 虽然graphQL支持循环引用，但是前端查询的时候最好不这样做，这样会有调用地狱问题还有性能问题（响应体积爆炸）。
@@ -179,4 +179,35 @@ await app.register(MercuriusCache, {
 
 ::: warning 注意
 类型不匹配会缓存错误 - 如果 resolver 返回与 schema 不匹配的类型，错误结果也会被缓存
+:::
+
+### N+1问题
+
+该问题本质是：**graphQL解析器** 缺乏全局视角，它不知道当前的实体需要哪一个所依赖的实体，导致不知道可以一次性把所有有关依赖的实体查出来，最终导致每个节点独立发起一次数据库查询，而不是批量一次性获取。
+
+因而可以从问题源头出发：将多次独立的按需加载合并为一次批量查询，并且同一请求内自动去重缓存。
+
+这里可以选用`dataloader`去解决这个问题，但是这个`dataloader`核心机制是基于Nodejs的事件循环微任务队列的——将tick请求全部搜集起来利用去重缓存和批处理统一管理，因而在不是nodejs环境下可以选用别的。
+
+::: warning 注意
+由于这个`n+1`问题解决聚焦多次独立请求，同时这个`dataloader`只聚焦解决这个问题，如果还需要缓存只关注应用层面在应用层面解决即可。
+
+如果是`mercurius-cache `注意缓存key和缓存依赖，因为每个用户的缓存key和每个用户的依赖other1...不应该相同，同时当缓存失效的时候相关的缓存依赖关系应该也要去失效。例如：
+
+```
+policy: {
+  Query: {
+    users: { ttl: 60 },
+  },
+  User: {
+    Other1: {
+      ttl: 60,
+      extendKey: (parent) => parent.id,     // 区分不同用户的缓存
+      references: ['Query.users'],           // users 失效时，Other1 跟着失效
+    },
+  },
+}
+
+```
+
 :::
