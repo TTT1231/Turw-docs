@@ -1004,17 +1004,17 @@ functionList[1] = intReturnAdapter;
 
 ### 输出与模块化
 
-|             选项             |      默认值       |                        说明                        |
-| :--------------------------: | :---------------: | :------------------------------------------------: |
-|         `-o <file>`          |        -          |            <mark>指定输出文件名</mark>             |
-|        `-sMODULARIZE`        |      false        |  <mark>将 JS 代码转化工厂函数(转化为异步)</mark>   |
-|        `-sEXPORT_ES6`        |      false        | <mark>生成 ES6 模块格式（需配合MODULARIZE）</mark> |
-|       `-sEXPORT_NAME`        |      Module       |                 指定导出的模块名称                 |
-|       `-sSINGLE_FILE`        |      false        |         将 wasm 以 base64 内嵌到 JS 文件中         |
-|     `--emit-tsd <file>`      |        ''         | <mark>生成 TypeScript 类型声明文件，JS生效</mark>  |
+|             选项             |         默认值          |                        说明                        |
+| :--------------------------: | :---------------------: | :------------------------------------------------: |
+|         `-o <file>`          |            -            |            <mark>指定输出文件名</mark>             |
+|        `-sMODULARIZE`        |          false          |  <mark>将 JS 代码转化工厂函数(转化为异步)</mark>   |
+|        `-sEXPORT_ES6`        |          false          | <mark>生成 ES6 模块格式（需配合MODULARIZE）</mark> |
+|       `-sEXPORT_NAME`        |         Module          |                 指定导出的模块名称                 |
+|       `-sSINGLE_FILE`        |          false          |         将 wasm 以 base64 内嵌到 JS 文件中         |
+|     `--emit-tsd <file>`      |           ''            | <mark>生成 TypeScript 类型声明文件，JS生效</mark>  |
 |       `-sENVIRONMENT`        | web,webview,worker,node |              **运行环境(会增加体积)**              |
-|    `-sEXPORTED_FUNCTIONS`    |      _main        | <mark>指定导出的 C/C++ 函数（需加 \_ 前缀）</mark> |
-| `-sEXPORTED_RUNTIME_METHODS` |    ccall,cwrap     |   <mark>导出运行时辅助方法如 ccall, cwrap</mark>   |
+|    `-sEXPORTED_FUNCTIONS`    |         \_main          | <mark>指定导出的 C/C++ 函数（需加 \_ 前缀）</mark> |
+| `-sEXPORTED_RUNTIME_METHODS` |       ccall,cwrap       |   <mark>导出运行时辅助方法如 ccall, cwrap</mark>   |
 
 ::: tip 提示
 这里注意[模块导出问题](#导出模块问题)。
@@ -1041,13 +1041,13 @@ int add(int x,int y){
 
 ### 调试选项
 
-|           选项           | 默认值 |                         说明                          |
-| :----------------------: | :----: | :---------------------------------------------------: |
-|           `-g`           | disabled | <mark>保留调试信息（-g3 更详细，-g4 包含源码）</mark> |
-|      `-gsource-map`      |  false |             <mark>生成 source map </mark>             |
-|      `-sASSERTIONS`      |   1    |   <mark>启用运行时断言检查（0 关闭，1 基础，2 详细，-O0 默认 1）</mark>   |
-|      `-sSAFE_HEAP`       |   0    |            检测内存访问错误（性能开销大）             |
-| `-sSTACK_OVERFLOW_CHECK` |   0    |                      栈溢出检测                       |
+|           选项           |  默认值  |                                 说明                                  |
+| :----------------------: | :------: | :-------------------------------------------------------------------: |
+|           `-g`           | disabled |         <mark>保留调试信息（-g3 更详细，-g4 包含源码）</mark>         |
+|      `-gsource-map`      |  false   |                     <mark>生成 source map </mark>                     |
+|      `-sASSERTIONS`      |    1     | <mark>启用运行时断言检查（0 关闭，1 基础，2 详细，-O0 默认 1）</mark> |
+|      `-sSAFE_HEAP`       |    0     |                    检测内存访问错误（性能开销大）                     |
+| `-sSTACK_OVERFLOW_CHECK` |    0     |                              栈溢出检测                               |
 
 ::: tip 提示
 在准备应用到生产模式中，要关闭所有调试。
@@ -1055,12 +1055,12 @@ int add(int x,int y){
 
 ### 内存配置
 
-|          选项           |      默认值      |                说明                |
-| :---------------------: | :--------------: | :--------------------------------: |
-|   `-sINITIAL_MEMORY`    |       -1         | 初始内存大小（-1 自动计算，否则必须是 64KB 的倍数） |
-|   `-sMAXIMUM_MEMORY`    | 2147483648 (2GB) |            最大内存限制            |
-| `-sALLOW_MEMORY_GROWTH` |      false       |   <mark>允许内存动态增长</mark>    |
-|     `-sSTACK_SIZE`      |   65536 (64KB)   |             设置栈大小             |
+|          选项           |      默认值      |                        说明                         |
+| :---------------------: | :--------------: | :-------------------------------------------------: |
+|   `-sINITIAL_MEMORY`    |        -1        | 初始内存大小（-1 自动计算，否则必须是 64KB 的倍数） |
+|   `-sMAXIMUM_MEMORY`    | 2147483648 (2GB) |                    最大内存限制                     |
+| `-sALLOW_MEMORY_GROWTH` |      false       |            <mark>允许内存动态增长</mark>            |
+|     `-sSTACK_SIZE`      |   65536 (64KB)   |                     设置栈大小                      |
 
 ::: tip 提示
 由于wasm运行在游览器或者`Nodejs`内存中的，因此这里内存配置主要是配置wasm的沙箱内存。
@@ -1068,12 +1068,12 @@ int add(int x,int y){
 
 ### 文件系统配置
 
-|         选项         | 默认值 |            说明             |
-| :------------------: | :----: | :-------------------------: |
-|   `-sFILESYSTEM`     |   1    |      启用文件系统支持       |
-| `-sFORCE_FILESYSTEM` |   0    |      强制包含文件系统       |
-|   `--preload-file`   |   ''   |  预加载文件到虚拟文件系统   |
-|    `--embed-file`    |   ''   |     嵌入文件到JS/wasm中     |
+|         选项         | 默认值 |           说明           |
+| :------------------: | :----: | :----------------------: |
+|    `-sFILESYSTEM`    |   1    |     启用文件系统支持     |
+| `-sFORCE_FILESYSTEM` |   0    |     强制包含文件系统     |
+|   `--preload-file`   |   ''   | 预加载文件到虚拟文件系统 |
+|    `--embed-file`    |   ''   |   嵌入文件到JS/wasm中    |
 
 ::: tip 提示
 游览器环境中运行代码无法访问DOM，也无法直接访问本地文件系统，因此可以使用`EMCC`的虚拟文件系统，可以预加载数据或链接到URL，方便懒加载。
@@ -1087,9 +1087,9 @@ int add(int x,int y){
 
 ### Embind (C++ 与 JS 绑定)
 
-|      选项       | 默认值 |                     说明                      |
-| :-------------: | :----: | :-------------------------------------------: |
-|   `-lembind`    |  false |  <mark>链接 Embind 库（C++ 与 JS 绑定）</mark>   |
+|      选项       | 默认值 |                            说明                             |
+| :-------------: | :----: | :---------------------------------------------------------: |
+|   `-lembind`    | false  |        <mark>链接 Embind 库（C++ 与 JS 绑定）</mark>        |
 | `-sWASM_BIGINT` |   1    | <mark>支持 JS BigInt 与 i64 互操作（0 关闭，1 启用）</mark> |
 
 ::: tip 提示
@@ -1100,24 +1100,28 @@ int add(int x,int y){
 `--bind` 是 `-lembind` 的便捷封装，一站式自动完成链接 Embind 库、导出必要符号、配置 JS 并生成 `.d.ts` 类型定义。
 
 ::: info 编译时使用 `--bind`
+
 ```bash
 emcc --bind example.cpp -o example.js
 ```
+
 等价于：
+
 ```bash
 emcc -lembind example.cpp -o example.js
 ```
+
 :::
 
 ### WebAssembly 特性
 
-|            选项            | 默认值 |                         说明                         |
-| :------------------------: | :----: | :--------------------------------------------------: |
-|          `-sWASM`          |   1    | <mark>输出 WebAssembly（0 输出 asm.js，1 输出 wasm）</mark>                   |
-| `-sWASM_ASYNC_COMPILATION` |   1    | <mark>异步编译 wasm（0 同步，1 异步）</mark>                     |
-|    `-sSTANDALONE_WASM`     |  false | 生成一个尽量独立的 WASM，减少对外部依赖(最小imports) |
-|     `-sIMPORT_MEMORY`      |  false |                    从外部导入内存                    |
-|       `-sEXPORT_ALL`       |  false |                导出所有函数（调试用）                |
+|            选项            | 默认值 |                            说明                             |
+| :------------------------: | :----: | :---------------------------------------------------------: |
+|          `-sWASM`          |   1    | <mark>输出 WebAssembly（0 输出 asm.js，1 输出 wasm）</mark> |
+| `-sWASM_ASYNC_COMPILATION` |   1    |        <mark>异步编译 wasm（0 同步，1 异步）</mark>         |
+|    `-sSTANDALONE_WASM`     | false  |    生成一个尽量独立的 WASM，减少对外部依赖(最小imports)     |
+|     `-sIMPORT_MEMORY`      | false  |                       从外部导入内存                        |
+|       `-sEXPORT_ALL`       | false  |                   导出所有函数（调试用）                    |
 
 ::: tip 提示
 如果只是简单的计算，没有用到C++的特性如类、指针等，可以只生成wasm格式，这是占用内存和大小会小好多，而且使用也方便。
@@ -1131,9 +1135,9 @@ emcc -lembind example.cpp -o example.js
 
 |         选项          | 默认值 |                说明                |
 | :-------------------: | :----: | :--------------------------------: |
-|      `-pthread`       |  false | <mark> 启用 Pthreads 多线程</mark> |
+|      `-pthread`       | false  | <mark> 启用 Pthreads 多线程</mark> |
 | `-sPTHREAD_POOL_SIZE` |   0    |    线程池大小（0 表示按需创建）    |
-| `-sPROXY_TO_PTHREAD`  |  false |    主线程执行在 pthread 中运行     |
+| `-sPROXY_TO_PTHREAD`  | false  |    主线程执行在 pthread 中运行     |
 
 ::: warning 注意
 这里需要配置HTTP头，`Cross-Origin-Opener-Policy: same-origin`和`Cross-Origin-Embedder-Policy: require-corp`。
@@ -1143,11 +1147,11 @@ emcc -lembind example.cpp -o example.js
 
 ### 异常处理
 
-|              选项              | 默认值 |                   说明                   |
-| :----------------------------: | :----: | :--------------------------------------: |
-|         `-fexceptions`         |  false | <mark> 启用 C++ 异常（Wasm 原生异常处理）</mark> |
-| `-sDISABLE_EXCEPTION_CATCHING` |   1    |      禁用异常捕获控制（0 启用 JS 模拟，1 禁用，默认 1）      |
-|   `-sEXCEPTION_STACK_TRACES`   |  false |            异常时显示栈跟踪（ASSERTIONS=1 时默认 true）            |
+|              选项              | 默认值 |                        说明                        |
+| :----------------------------: | :----: | :------------------------------------------------: |
+|         `-fexceptions`         | false  |  <mark> 启用 C++ 异常（Wasm 原生异常处理）</mark>  |
+| `-sDISABLE_EXCEPTION_CATCHING` |   1    | 禁用异常捕获控制（0 启用 JS 模拟，1 禁用，默认 1） |
+|   `-sEXCEPTION_STACK_TRACES`   | false  |    异常时显示栈跟踪（ASSERTIONS=1 时默认 true）    |
 
 ::: tip 提示
 启用它之后，JS层面使用它时，只需像`try..catch...finally`一样使用即可。
@@ -1157,33 +1161,33 @@ emcc -lembind example.cpp -o example.js
 
 ### 代码体积优化
 
-|                选项                 |   默认值   |                     说明                     |
-| :---------------------------------: | :--------: | :------------------------------------------: |
-|            `--closure`              |     0      | <mark>使用 Closure Compiler 压缩 JS（0 关闭，1 压缩支持代码，2 压缩全部）</mark> |
-|       `--closure-args <args>`       |     ''     |             传递参数给 Closure Compiler             |
-|       `-sIGNORE_MISSING_MAIN`       |     1      |             缺少 main 函数时不报错（默认 1）             |
-|             `-sMALLOC`              |  dlmalloc  |       <mark>内存分配器</mark>（dlmalloc 默认，emmalloc 更小但慢，mimalloc 适合多线程）       |
-|           `-sEVAL_CTORS`            |   false    |              编译时执行构造函数（减少运行时开销）              |
-| `-sAGGRESSIVE_VARIABLE_ELIMINATION` |   false    |                激进的变量消除                |
+|                选项                 |  默认值  |                                       说明                                       |
+| :---------------------------------: | :------: | :------------------------------------------------------------------------------: |
+|             `--closure`             |    0     | <mark>使用 Closure Compiler 压缩 JS（0 关闭，1 压缩支持代码，2 压缩全部）</mark> |
+|       `--closure-args <args>`       |    ''    |                           传递参数给 Closure Compiler                            |
+|       `-sIGNORE_MISSING_MAIN`       |    1     |                         缺少 main 函数时不报错（默认 1）                         |
+|             `-sMALLOC`              | dlmalloc | <mark>内存分配器</mark>（dlmalloc 默认，emmalloc 更小但慢，mimalloc 适合多线程） |
+|           `-sEVAL_CTORS`            |  false   |                       编译时执行构造函数（减少运行时开销）                       |
+| `-sAGGRESSIVE_VARIABLE_ELIMINATION` |  false   |                                  激进的变量消除                                  |
 
 ### 优化级别
 
-| 选项  | 默认值 |         说明          |
-| :---: | :----: | :-------------------: |
-| `-O0` |  true  |   无优化，编译最快（默认）    |
-| `-O1` |  false |       基础优化        |
-| `-O2` |  false | <mark>标准优化</mark> |
-| `-O3` |  false |       激进优化        |
-| `-Os` |  false |     优化代码体积      |
-| `-Oz` |  false |   极限压缩代码体积    |
+| 选项  | 默认值 |           说明           |
+| :---: | :----: | :----------------------: |
+| `-O0` |  true  | 无优化，编译最快（默认） |
+| `-O1` | false  |         基础优化         |
+| `-O2` | false  |  <mark>标准优化</mark>   |
+| `-O3` | false  |         激进优化         |
+| `-Os` | false  |       优化代码体积       |
+| `-Oz` | false  |     极限压缩代码体积     |
 
 ### 网络与 Web API
 
 |          选项           | 默认值 |               说明               |
 | :---------------------: | :----: | :------------------------------: |
-|        `-sFETCH`        |  false |       <mark>启用 Fetch API 支持</mark>        |
-|    `-sWEBSOCKET_URL`    |  ws://  |          WebSocket 连接 URL          |
-| `-sPROXY_POSIX_SOCKETS` |  false | 通过 WebSocket 代理 POSIX socket |
+|        `-sFETCH`        | false  | <mark>启用 Fetch API 支持</mark> |
+|    `-sWEBSOCKET_URL`    | ws://  |        WebSocket 连接 URL        |
+| `-sPROXY_POSIX_SOCKETS` | false  | 通过 WebSocket 代理 POSIX socket |
 
 ::: tip 提示
 这里主要体现在c++/c调用fetch、websocket、webGL。
@@ -1193,31 +1197,31 @@ emcc -lembind example.cpp -o example.js
 
 ### 库支持
 
-|         选项          | 默认值 |          说明           |
-| :-------------------: | :----: | :---------------------: |
+|         选项          | 默认值 |                 说明                 |
+| :-------------------: | :----: | :----------------------------------: |
 |      `-sUSE_SDL`      |   0    | <mark>使用 SDL</mark>（2 表示 SDL2） |
-|     `-sUSE_ZLIB`      |  false |        使用 zlib        |
-|    `-sUSE_LIBPNG`     |  false |       使用 libpng       |
-|   `-sUSE_FREETYPE`    |  false |      使用 FreeType      |
-| `-sUSE_BOOST_HEADERS` |  false |    使用 Boost 头文件    |
+|     `-sUSE_ZLIB`      | false  |              使用 zlib               |
+|    `-sUSE_LIBPNG`     | false  |             使用 libpng              |
+|   `-sUSE_FREETYPE`    | false  |            使用 FreeType             |
+| `-sUSE_BOOST_HEADERS` | false  |          使用 Boost 头文件           |
 
 ### 运行时行为
 
-|          选项           | 默认值 |         说明          |
-| :---------------------: | :----: | :-------------------: |
-|     `-sINVOKE_RUN`      |  true  |    <mark>自动运行 main()</mark>    |
-|    `-sEXIT_RUNTIME`     |  false | main 结束后清理运行时（调用 atexit 等） |
-|   `-sNO_EXIT_RUNTIME`   |  false |    防止运行时退出（保持运行时活跃）     |
-| `-sMODULARIZE_INSTANCE` |  false | 导出实例而非工厂函数（需配合 MODULARIZE）  |
+|          选项           | 默认值 |                   说明                    |
+| :---------------------: | :----: | :---------------------------------------: |
+|     `-sINVOKE_RUN`      |  true  |       <mark>自动运行 main()</mark>        |
+|    `-sEXIT_RUNTIME`     | false  |  main 结束后清理运行时（调用 atexit 等）  |
+|   `-sNO_EXIT_RUNTIME`   | false  |     防止运行时退出（保持运行时活跃）      |
+| `-sMODULARIZE_INSTANCE` | false  | 导出实例而非工厂函数（需配合 MODULARIZE） |
 
 ### 其他高级选项
 
-|            选项            | 默认值 |               说明                |
-| :------------------------: | :----: | :-------------------------------: |
-|         `-sSTRICT`         |  false |     <mark>严格模式</mark>（检查废弃选项，向前兼容）      |
-|        `-sVERBOSE`         |  false |             编译过程详细输出              |
-|   `-sMIN_CHROME_VERSION`   |   85   |         最低 Chrome 版本（85 = 2020-08 发布）         |
-|  `-sMIN_FIREFOX_VERSION`   |   79   |         最低 Firefox 版本（79 = 2020-07 发布）         |
+|            选项            | 默认值 |                        说明                        |
+| :------------------------: | :----: | :------------------------------------------------: |
+|         `-sSTRICT`         | false  |  <mark>严格模式</mark>（检查废弃选项，向前兼容）   |
+|        `-sVERBOSE`         | false  |                  编译过程详细输出                  |
+|   `-sMIN_CHROME_VERSION`   |   85   |       最低 Chrome 版本（85 = 2020-08 发布）        |
+|  `-sMIN_FIREFOX_VERSION`   |   79   |       最低 Firefox 版本（79 = 2020-07 发布）       |
 | `-sINCOMING_MODULE_JS_API` |   []   | 指定导入的 Module 属性（空表示不使用 Module 属性） |
-|   `-sAUTO_JS_LIBRARIES`    |  true  |          自动链接 JS 库           |
-|   `-sLEGACY_VM_SUPPORT`    |  false |    支持旧版 VM（iOS 11.2 之前）     |
+|   `-sAUTO_JS_LIBRARIES`    |  true  |                   自动链接 JS 库                   |
+|   `-sLEGACY_VM_SUPPORT`    | false  |            支持旧版 VM（iOS 11.2 之前）            |

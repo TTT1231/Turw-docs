@@ -260,3 +260,34 @@
       background-color: #161b22;
    }
 }
+
+/**
+ * ==================== 自定义容器内代码块视觉增强 ====================
+ * 确保代码块与容器背景有清晰的视觉层次
+ */
+
+// 明亮模式 - 代码块视觉增强
+.vp-doc .custom-block {
+   // 代码块添加微妙阴影，增加层次感
+   div[class*="language-"] {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+   }
+
+   // 行内代码增加边框，更清晰
+   :not(pre) > code {
+      border: 1px solid rgba(0, 0, 0, 0.06);
+   }
+}
+
+// 暗黑模式 - 代码块视觉增强
+.dark .vp-doc .custom-block {
+   // 代码块添加暗黑模式阴影
+   div[class*="language-"] {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+   }
+
+   // 行内代码增加边框
+   :not(pre) > code {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+   }
+}

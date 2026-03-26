@@ -1,45 +1,45 @@
 @use "./mixins.scss" as customBlockTipNamespace;
 
 // ==================== 明亮模式样式 ====================
-//:::tip 样式 - 蓝色主题
+//:::tip 样式 - 蓝色主题（清爽风格）
 .vp-doc .custom-block.tip {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #f0f9ff,
-      $border-color: #b3e5fc,
-      $border-left-color: #0077ff,
-      $title-color: #0077ff,
-      $text-color: #333,
-      $code-bg: #ddf0fe,
-      $code-color: #0d71e4,
-      $code-shadow-color: rgba(23, 78, 166, 0.04),
-      $code-block-bg: #f6fbff,
-      $code-block-border: #d9eeff,
-      $link-color: #0077ff,
-      $em-color: #0077ff,
-      $blockquote-border: #0077ff,
-      $blockquote-color: #666,
-      $hr-color: rgba(0, 119, 255, 0.2)
+      $bg-color: #f0f7ff,
+      $border-color: #c7dffb,
+      $border-left-color: #0969da,
+      $title-color: #0969da,
+      $text-color: #24292f,
+      $code-bg: #d8eeff,
+      $code-color: #0550ae,
+      $code-shadow-color: rgba(9, 105, 218, 0.15),
+      $code-block-bg: #ffffff,
+      $code-block-border: #c7dffb,
+      $link-color: #0969da,
+      $em-color: #0969da,
+      $blockquote-border: #0969da,
+      $blockquote-color: #57606a,
+      $hr-color: rgba(9, 105, 218, 0.15)
    );
 }
 
-//:::warning 样式 - 黄色主题
+//:::warning 样式 - 琥珀橙色主题（现代清爽风格）
 .vp-doc .custom-block.warning {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #fff9e7,
-      $border-color: #ffe9a6,
-      $border-left-color: #907b3f,
-      $title-color: #89653e,
-      $text-color: #6b5d42,
-      $code-bg: #fdf0d2,
-      $code-color: #8c7738,
-      $code-shadow-color: rgba(144, 123, 63, 0.04),
-      $code-block-bg: #fffaf0,
-      $code-block-border: #f5e6d3,
-      $link-color: #907b3f,
-      $em-color: #907b3f,
-      $blockquote-border: #907b3f,
-      $blockquote-color: #7a8487,
-      $hr-color: rgba(144, 123, 63, 0.2)
+      $bg-color: #fff8eb,
+      $border-color: #fddca7,
+      $border-left-color: #d97d0a,
+      $title-color: #bf6100,
+      $text-color: #24292f,
+      $code-bg: #ffe4c2,
+      $code-color: #9a5700,
+      $code-shadow-color: rgba(217, 125, 10, 0.15),
+      $code-block-bg: #fffbf5,
+      $code-block-border: #fddca7,
+      $link-color: #d97d0a,
+      $em-color: #d97d0a,
+      $blockquote-border: #d97d0a,
+      $blockquote-color: #57606a,
+      $hr-color: rgba(217, 125, 10, 0.15)
    );
 
    .custom-block-title {
@@ -47,129 +47,129 @@
    }
 }
 
-//:::info 样式 - 蓝灰色主题
+//:::info 样式 - 青灰色主题（清爽风格）
 .vp-doc .custom-block.info {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #f0f4f8,
-      $border-color: #cbd5e0,
-      $border-left-color: #4a5568,
-      $title-color: #2d3748,
-      $text-color: #4a5568,
-      $code-bg: #e2e8f0,
-      $code-color: #2d3748,
-      $code-shadow-color: rgba(74, 85, 104, 0.04),
-      $code-block-bg: #f7fafc,
-      $code-block-border: #e2e8f0,
-      $link-color: #4a5568,
-      $em-color: #4a5568,
-      $blockquote-border: #4a5568,
-      $blockquote-color: #718096,
-      $hr-color: rgba(74, 85, 104, 0.2)
+      $bg-color: #f6f8fa,
+      $border-color: #d0d7de,
+      $border-left-color: #57606a,
+      $title-color: #42453b,
+      $text-color: #24292f,
+      $code-bg: #d8dee4,
+      $code-color: #24292f,
+      $code-shadow-color: rgba(87, 96, 106, 0.12),
+      $code-block-bg: #ffffff,
+      $code-block-border: #d0d7de,
+      $link-color: #57606a,
+      $em-color: #57606a,
+      $blockquote-border: #57606a,
+      $blockquote-color: #57606a,
+      $hr-color: rgba(87, 96, 106, 0.15)
    );
 }
 
-//:::danger 样式 - 红色主题 (与 GitHub CAUTION 一致)
+//:::danger 样式 - 红色主题（清爽风格）
 .vp-doc .custom-block.danger {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #fff0ee,
-      $border-color: #ffccc7,
+      $bg-color: #fff0eb,
+      $border-color: #ffc1b8,
       $border-left-color: #cf222e,
       $title-color: #cf222e,
       $text-color: #24292f,
-      $code-bg: #ffe3e0,
+      $code-bg: #ffd5cf,
       $code-color: #a40e26,
-      $code-shadow-color: rgba(207, 34, 46, 0.04),
-      $code-block-bg: #fffbfa,
-      $code-block-border: #ffe8e5,
+      $code-shadow-color: rgba(207, 34, 46, 0.12),
+      $code-block-bg: #ffffff,
+      $code-block-border: #ffc1b8,
       $link-color: #cf222e,
       $em-color: #cf222e,
       $blockquote-border: #cf222e,
       $blockquote-color: #57606a,
-      $hr-color: rgba(207, 34, 46, 0.2)
+      $hr-color: rgba(207, 34, 46, 0.15)
    );
 }
 
-//:::details 样式 - 灰色主题
+//:::details 样式 - 灰色主题（清爽风格）
 .vp-doc .custom-block.details {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #f7fafc,
-      $border-color: #e2e8f0,
-      $border-left-color: #718096,
-      $title-color: #4a5568,
-      $text-color: #4a5568,
-      $code-bg: #edf2f7,
-      $code-color: #2d3748,
-      $code-shadow-color: rgba(113, 128, 150, 0.04),
+      $bg-color: #f6f8fa,
+      $border-color: #d0d7de,
+      $border-left-color: #656d76,
+      $title-color: #42453b,
+      $text-color: #24292f,
+      $code-bg: #d8dee4,
+      $code-color: #24292f,
+      $code-shadow-color: rgba(101, 109, 118, 0.1),
       $code-block-bg: #ffffff,
-      $code-block-border: #e2e8f0,
-      $link-color: #718096,
-      $em-color: #718096,
-      $blockquote-border: #718096,
-      $blockquote-color: #a0aec0,
-      $hr-color: rgba(113, 128, 150, 0.2)
+      $code-block-border: #d0d7de,
+      $link-color: #656d76,
+      $em-color: #656d76,
+      $blockquote-border: #656d76,
+      $blockquote-color: #656d76,
+      $hr-color: rgba(101, 109, 118, 0.12)
    );
 }
 
-// Github Note:  > [!NOTE] 样式 - 蓝色主题
+// Github Note:  > [!NOTE] 样式 - 蓝色主题（清爽风格）
 .vp-doc .custom-block.note {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #e8f4fd,
-      $border-color: #b3d9f2,
+      $bg-color: #f0f7ff,
+      $border-color: #c7dffb,
       $border-left-color: #0969da,
       $title-color: #0969da,
       $text-color: #24292f,
-      $code-bg: #d0e8f7,
+      $code-bg: #d8eeff,
       $code-color: #0550ae,
-      $code-shadow-color: rgba(9, 105, 218, 0.04),
-      $code-block-bg: #f6f8fa,
-      $code-block-border: #d0d7de,
+      $code-shadow-color: rgba(9, 105, 218, 0.15),
+      $code-block-bg: #ffffff,
+      $code-block-border: #c7dffb,
       $link-color: #0969da,
       $em-color: #0969da,
       $blockquote-border: #0969da,
       $blockquote-color: #57606a,
-      $hr-color: rgba(9, 105, 218, 0.2)
+      $hr-color: rgba(9, 105, 218, 0.15)
    );
 }
 
-// Github Important:  > [!IMPORTANT] 样式 - 紫色主题
+// Github Important:  > [!IMPORTANT] 样式 - 紫色主题（清爽风格）
 .vp-doc .custom-block.important {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #f6f3ff,
+      $bg-color: #f5f0ff,
       $border-color: #d4b8ff,
       $border-left-color: #8250df,
       $title-color: #8250df,
       $text-color: #24292f,
-      $code-bg: #ebe4ff,
+      $code-bg: #ead6ff,
       $code-color: #6e40c9,
-      $code-shadow-color: rgba(130, 80, 223, 0.04),
-      $code-block-bg: #fbf8ff,
+      $code-shadow-color: rgba(130, 80, 223, 0.12),
+      $code-block-bg: #ffffff,
       $code-block-border: #e8ddff,
       $link-color: #8250df,
       $em-color: #8250df,
       $blockquote-border: #8250df,
       $blockquote-color: #57606a,
-      $hr-color: rgba(130, 80, 223, 0.2)
+      $hr-color: rgba(130, 80, 223, 0.12)
    );
 }
 
-// Github Caution:  > [!CAUTION] 样式 - 红色主题
+// Github Caution:  > [!CAUTION] 样式 - 红色主题（清爽风格）
 .vp-doc .custom-block.caution {
    @include customBlockTipNamespace.custom-block-base(
-      $bg-color: #fff0ee,
-      $border-color: #ffccc7,
+      $bg-color: #fff0eb,
+      $border-color: #ffc1b8,
       $border-left-color: #cf222e,
       $title-color: #cf222e,
       $text-color: #24292f,
-      $code-bg: #ffe3e0,
+      $code-bg: #ffd5cf,
       $code-color: #a40e26,
-      $code-shadow-color: rgba(207, 34, 46, 0.04),
-      $code-block-bg: #fffbfa,
-      $code-block-border: #ffe8e5,
+      $code-shadow-color: rgba(207, 34, 46, 0.12),
+      $code-block-bg: #ffffff,
+      $code-block-border: #ffc1b8,
       $link-color: #cf222e,
       $em-color: #cf222e,
       $blockquote-border: #cf222e,
       $blockquote-color: #57606a,
-      $hr-color: rgba(207, 34, 46, 0.2)
+      $hr-color: rgba(207, 34, 46, 0.15)
    );
 }
 
@@ -181,178 +181,178 @@
          color: #f0f6fc !important;
       }
    }
-   //:::tip 样式 - 蓝色主题暗黑模式
+   //:::tip 样式 - 蓝色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.tip {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(56, 139, 253, 0.1),
-         $border-color-dark: rgba(56, 139, 253, 0.3),
+         $bg-color-dark: rgba(56, 139, 253, 0.08),
+         $border-color-dark: rgba(56, 139, 253, 0.2),
          $border-left-color-dark: #58a6ff,
          $title-color-dark: #58a6ff,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(56, 139, 253, 0.15),
-         $code-color-dark: #58a6ff,
-         $code-shadow-color-dark: rgba(56, 139, 253, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
-         $code-block-border-dark: rgba(56, 139, 253, 0.2),
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(56, 139, 253, 0.18),
+         $code-color-dark: #79c0ff,
+         $code-shadow-color-dark: rgba(56, 139, 253, 0.3),
+         $code-block-bg-dark: #0d1117,
+         $code-block-border-dark: rgba(56, 139, 253, 0.25),
          $link-color-dark: #58a6ff,
          $em-color-dark: #58a6ff,
          $blockquote-border-dark: #58a6ff,
          $blockquote-color-dark: #8b949e,
-         $hr-color-dark: rgba(56, 139, 253, 0.2),
+         $hr-color-dark: rgba(56, 139, 253, 0.15),
          $table-text-dark: #e6edf3
       );
    }
 
-   // :::warning - 黄色主题暗黑模式
+   // :::warning - 琥珀橙色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.warning {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(210, 153, 34, 0.1),
-         $border-color-dark: rgba(210, 153, 34, 0.3),
-         $border-left-color-dark: #d29922,
+         $bg-color-dark: rgba(217, 125, 10, 0.08),
+         $border-color-dark: rgba(217, 125, 10, 0.2),
+         $border-left-color-dark: #e3b341,
          $title-color-dark: #e3b341,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(210, 153, 34, 0.15),
-         $code-color-dark: #e3b341,
-         $code-shadow-color-dark: rgba(210, 153, 34, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
-         $code-block-border-dark: rgba(210, 153, 34, 0.2),
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(217, 125, 10, 0.18),
+         $code-color-dark: #f0883e,
+         $code-shadow-color-dark: rgba(217, 125, 10, 0.3),
+         $code-block-bg-dark: #0d1117,
+         $code-block-border-dark: rgba(217, 125, 10, 0.25),
          $link-color-dark: #e3b341,
          $em-color-dark: #e3b341,
          $blockquote-border-dark: #e3b341,
          $blockquote-color-dark: #8b949e,
-         $hr-color-dark: rgba(210, 153, 34, 0.2),
+         $hr-color-dark: rgba(217, 125, 10, 0.15),
          $table-text-dark: #e6edf3
       );
    }
 
-   // :::info - 蓝灰色主题暗黑模式
+   // :::info - 青灰色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.info {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(110, 118, 129, 0.1),
-         $border-color-dark: rgba(110, 118, 129, 0.3),
+         $bg-color-dark: rgba(110, 118, 129, 0.08),
+         $border-color-dark: rgba(110, 118, 129, 0.18),
          $border-left-color-dark: #8b949e,
          $title-color-dark: #8b949e,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(110, 118, 129, 0.15),
-         $code-color-dark: #8b949e,
-         $code-shadow-color-dark: rgba(110, 118, 129, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
-         $code-block-border-dark: rgba(110, 118, 129, 0.2),
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(110, 118, 129, 0.16),
+         $code-color-dark: #adbac7,
+         $code-shadow-color-dark: rgba(110, 118, 129, 0.25),
+         $code-block-bg-dark: #0d1117,
+         $code-block-border-dark: rgba(110, 118, 129, 0.22),
          $link-color-dark: #8b949e,
          $em-color-dark: #8b949e,
          $blockquote-border-dark: #8b949e,
          $blockquote-color-dark: #6e7681,
-         $hr-color-dark: rgba(110, 118, 129, 0.2),
+         $hr-color-dark: rgba(110, 118, 129, 0.12),
          $table-text-dark: #e6edf3
       );
    }
 
-   // :::danger - 红色主题暗黑模式
+   // :::danger - 红色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.danger {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(248, 81, 73, 0.1),
-         $border-color-dark: rgba(248, 81, 73, 0.3),
-         $border-left-color-dark: #f85149,
-         $title-color-dark: #f85149,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(248, 81, 73, 0.15),
-         $code-color-dark: #f85149,
-         $code-shadow-color-dark: rgba(248, 81, 73, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
-         $code-block-border-dark: rgba(248, 81, 73, 0.2),
-         $link-color-dark: #f85149,
-         $em-color-dark: #f85149,
-         $blockquote-border-dark: #f85149,
+         $bg-color-dark: rgba(248, 81, 73, 0.08),
+         $border-color-dark: rgba(248, 81, 73, 0.2),
+         $border-left-color-dark: #ff7b72,
+         $title-color-dark: #ff7b72,
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(248, 81, 73, 0.18),
+         $code-color-dark: #ffa198,
+         $code-shadow-color-dark: rgba(248, 81, 73, 0.3),
+         $code-block-bg-dark: #0d1117,
+         $code-block-border-dark: rgba(248, 81, 73, 0.25),
+         $link-color-dark: #ff7b72,
+         $em-color-dark: #ff7b72,
+         $blockquote-border-dark: #ff7b72,
          $blockquote-color-dark: #8b949e,
-         $hr-color-dark: rgba(248, 81, 73, 0.2),
+         $hr-color-dark: rgba(248, 81, 73, 0.15),
          $table-text-dark: #e6edf3
       );
    }
 
-   // :::details - 灰色主题暗黑模式
+   // :::details - 灰色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.details {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(110, 118, 129, 0.08),
-         $border-color-dark: rgba(110, 118, 129, 0.2),
-         $border-left-color-dark: #6e7681,
-         $title-color-dark: #8b949e,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(110, 118, 129, 0.12),
-         $code-color-dark: #8b949e,
-         $code-shadow-color-dark: rgba(110, 118, 129, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
+         $bg-color-dark: rgba(110, 118, 129, 0.06),
+         $border-color-dark: rgba(110, 118, 129, 0.16),
+         $border-left-color-dark: #768390,
+         $title-color-dark: #909dab,
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(110, 118, 129, 0.14),
+         $code-color-dark: #adbac7,
+         $code-shadow-color-dark: rgba(110, 118, 129, 0.22),
+         $code-block-bg-dark: #0d1117,
          $code-block-border-dark: rgba(110, 118, 129, 0.2),
-         $link-color-dark: #8b949e,
-         $em-color-dark: #8b949e,
-         $blockquote-border-dark: #6e7681,
+         $link-color-dark: #768390,
+         $em-color-dark: #909dab,
+         $blockquote-border-dark: #768390,
          $blockquote-color-dark: #6e7681,
-         $hr-color-dark: rgba(110, 118, 129, 0.2),
+         $hr-color-dark: rgba(110, 118, 129, 0.1),
          $table-text-dark: #e6edf3
       );
    }
 
-   // > [!NOTE] - 蓝色主题暗黑模式
+   // > [!NOTE] - 蓝色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.note {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(56, 139, 253, 0.1),
-         $border-color-dark: rgba(56, 139, 253, 0.3),
+         $bg-color-dark: rgba(56, 139, 253, 0.08),
+         $border-color-dark: rgba(56, 139, 253, 0.2),
          $border-left-color-dark: #58a6ff,
          $title-color-dark: #58a6ff,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(56, 139, 253, 0.15),
-         $code-color-dark: #58a6ff,
-         $code-shadow-color-dark: rgba(56, 139, 253, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
-         $code-block-border-dark: rgba(56, 139, 253, 0.2),
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(56, 139, 253, 0.18),
+         $code-color-dark: #79c0ff,
+         $code-shadow-color-dark: rgba(56, 139, 253, 0.3),
+         $code-block-bg-dark: #0d1117,
+         $code-block-border-dark: rgba(56, 139, 253, 0.25),
          $link-color-dark: #58a6ff,
          $em-color-dark: #58a6ff,
          $blockquote-border-dark: #58a6ff,
          $blockquote-color-dark: #8b949e,
-         $hr-color-dark: rgba(56, 139, 253, 0.2),
+         $hr-color-dark: rgba(56, 139, 253, 0.15),
          $table-text-dark: #e6edf3
       );
    }
 
-   // > [!IMPORTANT] - 紫色主题暗黑模式
+   // > [!IMPORTANT] - 紫色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.important {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(187, 129, 235, 0.1),
-         $border-color-dark: rgba(187, 129, 235, 0.3),
+         $bg-color-dark: rgba(187, 129, 235, 0.08),
+         $border-color-dark: rgba(187, 129, 235, 0.2),
          $border-left-color-dark: #a371f7,
          $title-color-dark: #a371f7,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(187, 129, 235, 0.15),
-         $code-color-dark: #a371f7,
-         $code-shadow-color-dark: rgba(187, 129, 235, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
-         $code-block-border-dark: rgba(187, 129, 235, 0.2),
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(187, 129, 235, 0.18),
+         $code-color-dark: #c5a5ff,
+         $code-shadow-color-dark: rgba(187, 129, 235, 0.3),
+         $code-block-bg-dark: #0d1117,
+         $code-block-border-dark: rgba(187, 129, 235, 0.25),
          $link-color-dark: #a371f7,
          $em-color-dark: #a371f7,
          $blockquote-border-dark: #a371f7,
          $blockquote-color-dark: #8b949e,
-         $hr-color-dark: rgba(187, 129, 235, 0.2),
+         $hr-color-dark: rgba(187, 129, 235, 0.12),
          $table-text-dark: #e6edf3
       );
    }
 
-   // > [!CAUTION] - 红色主题暗黑模式
+   // > [!CAUTION] - 红色主题暗黑模式（清爽风格）
    .vp-doc .custom-block.caution {
       @include customBlockTipNamespace.custom-block-base-dark(
-         $bg-color-dark: rgba(248, 81, 73, 0.1),
-         $border-color-dark: rgba(248, 81, 73, 0.3),
-         $border-left-color-dark: #f85149,
-         $title-color-dark: #f85149,
-         $text-color-dark: #c9d1d9,
-         $code-bg-dark: rgba(248, 81, 73, 0.15),
-         $code-color-dark: #f85149,
-         $code-shadow-color-dark: rgba(248, 81, 73, 0.4),
-         $code-block-bg-dark: rgba(22, 27, 34, 0.8),
-         $code-block-border-dark: rgba(248, 81, 73, 0.2),
-         $link-color-dark: #f85149,
-         $em-color-dark: #f85149,
-         $blockquote-border-dark: #f85149,
+         $bg-color-dark: rgba(248, 81, 73, 0.08),
+         $border-color-dark: rgba(248, 81, 73, 0.2),
+         $border-left-color-dark: #ff7b72,
+         $title-color-dark: #ff7b72,
+         $text-color-dark: #e6edf3,
+         $code-bg-dark: rgba(248, 81, 73, 0.18),
+         $code-color-dark: #ffa198,
+         $code-shadow-color-dark: rgba(248, 81, 73, 0.3),
+         $code-block-bg-dark: #0d1117,
+         $code-block-border-dark: rgba(248, 81, 73, 0.25),
+         $link-color-dark: #ff7b72,
+         $em-color-dark: #ff7b72,
+         $blockquote-border-dark: #ff7b72,
          $blockquote-color-dark: #8b949e,
-         $hr-color-dark: rgba(248, 81, 73, 0.2),
+         $hr-color-dark: rgba(248, 81, 73, 0.15),
          $table-text-dark: #e6edf3
       );
    }
