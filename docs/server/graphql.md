@@ -211,3 +211,47 @@ policy: {
 ```
 
 :::
+
+## 客户端（apollo）
+
+### 归一化缓存
+
+为啥apollo要选用归一化缓存而不是其他，主要是如果每个查询都独立的时候那么修改一份查询另一份查询就过期了例如:
+
+```js
+query1: { user: { id: "1", avatar: "new.jpg" } }
+query2: { user: { id: "1", avatar: "old.jpg" } } // 过期了！
+```
+
+而归一化缓存将引用进行关联同时实现扁平存储就可以解决这个问题例如：
+
+```js
+// 所有引用指向同一份数据
+"User:1": { id: "1", avatar: "new.jpg" }  // 只存一份
+```
+
+还一种就是使用了这个 Persisted Queries（白名单模式） 也就是将graphQL的前端的请求query放到后端，然后前端只需传递参数即可，使得原本一大串query简化为hash和参数体。
+
+::: warning 注意
+客户端也可以不用apollo的 Persisted Queries 但是需要自己手动去实现，手动实现的效果就与这种开箱即用的方式就违背了。
+
+还有就是这个**persisted**在客户端开启的时候，那么后端也要针对这个**persisted**进行支持或者认识，或者使用**redis**也是可以的。
+:::
+
+### link中间件
+
+类似`express`的中间件一样，不过这个是在客户端中因此不需要担心并发和耗时问题，
+
+默认链:
+
+```
+  [1. ErrorLink]  →  [2. QueryBatcher]  →  [3. HttpLink]
+    错误处理           批量合并请求           发HTTP请求
+```
+
+这里可以做请求重试例如：
+
+```
+[1. ErrorLink]  →  [2. RetryLink]  →  [3. QueryBatcher]  →  [4. HttpLink]
+  全局错误处理      请求自动重试       批量合并GraphQL请求      发送HTTP请求
+```
