@@ -4,9 +4,9 @@ outline: deep
 
 # GraphQL
 
-graphQL统一用`POST`请求，即使是`GET`，主要是如果是用`GET`请求，query查询很容易超过浏览器URL长度（2048）。
+graphQL统一用`POST`请求，即使是`GET`。主要是如果是用`GET`请求，query查询很容易超过浏览器URL长度（2048）。
 
-同时由于统一采用了`POST`请求，因此`GET`请求缓存没用了，因此需要在客户端中进行缓存，如果需要缓存的前提下。
+因此统一采用了`POST`请求，因此`GET`请求缓存没用了，因此需要在客户端中进行缓存，如果需要缓存的前提下。
 
 > [!IMPORTANT] 重要
 > graphQL最重要的一大优势就是便利性，例如它可以直接查询`user`相关联的实体`other1`和`other2...`等等，就免去了拿到了`user`要去对应表中再次查询，但是这样数据库查询次数会变多，本质上也就是拿数据库的查询次数去简化开发的便利性。
@@ -232,11 +232,25 @@ query2: { user: { id: "1", avatar: "old.jpg" } } // 过期了！
 
 还一种就是使用了这个 Persisted Queries（白名单模式） 也就是将graphQL的前端的请求query放到后端，然后前端只需传递参数即可，使得原本一大串query简化为hash和参数体。
 
+::: tip 提示
+这个**APQ**（Automatic Persisted Queries）在一开始的时候会发送hash，后端没有初始化的时候会返回`PersistedQueryNotFound`，而后第二次的时候会进行重试然后会发生query+hash给后端，后端然后再进行映射和存储。
+
+这个**APQ**本质上是用来减少query请求大小（将query直接转化为hash，cdn或者后端针对hash找到映射结果）以及用于cdn缓存加速（query参数基本上变化不大结果可以直接存储下来，然后将数据直接返回给前端，这样多次相同请求不会直接请求到后端），避免多个用户相同query请求触发多次造成资源浪费，也是用数据的时效性换取资源的利用率。
+
+但是由于graphQL默认是`POST`所以将这个 query 查询转化为`Get`的时候，如果不用 cdn 那么就完全没必要，query的相关信息在body里面虽然将其转化hash去映射query然后传递参数这样确实能够减少网络带宽，但是在现代网络发达的时候减少的微小带宽没有必要，但是cdn就不一样了，cdn是直接存储相关hash和数据，减少数据库带宽和cpu的压力。
+:::
+
 ::: warning 注意
 客户端也可以不用apollo的 Persisted Queries 但是需要自己手动去实现，手动实现的效果就与这种开箱即用的方式就违背了。
 
 还有就是这个**persisted**在客户端开启的时候，那么后端也要针对这个**persisted**进行支持或者认识，或者使用**redis**也是可以的。
-:::
+
+同时apollo针对**APQ**的version版本是固定为1，这是一个协议协商机制，表示:
+
+- hash 算法固定为SHA-256
+- hash字段名固定为sha256Hash
+- 回退机制：当收到PersistedQueryNotFound 说明后端找不到这个hash此时客户端（前端）会再次发送query+hash
+  :::
 
 ### link中间件
 
@@ -254,4 +268,26 @@ query2: { user: { id: "1", avatar: "old.jpg" } } // 过期了！
 ```
 [1. ErrorLink]  →  [2. RetryLink]  →  [3. QueryBatcher]  →  [4. HttpLink]
   全局错误处理      请求自动重试       批量合并GraphQL请求      发送HTTP请求
+```
+
+同时也可以用link三元表达式，例如只针对query进行**PQS**(Persisted Queries)，放弃对mutation的PQS因为mutation走get hash query的话完全没必要:
+
+```ts
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
+import { PersistedQueryLink } from '@apollo/client/link/persisted-queries';
+
+import { sha256 } from 'crypto-hash';
+const uri = 'http://localhost:3000/graphql';
+
+const httpLink = new HttpLink({ uri });
+
+const apqLink = new PersistedQueryLink({
+   useGETForHashedQueries: true,
+   sha256: (queryString) => sha256(queryString)
+}).concat(httpLink);
+
+export const apolloClient = new ApolloClient({
+   link: ApolloLink.split(({ operationType }) => operationType === 'query', apqLink, httpLink),
+   cache: new InMemoryCache()
+});
 ```

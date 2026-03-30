@@ -181,7 +181,7 @@ export default defineConfig({
                },
                {
                   text: 'GraphQL',
-                  link: '/server/GraphQL'
+                  link: '/server/graphql'
                }
             ]
          },
