@@ -6,7 +6,6 @@
 
 ```json [settings.json]
 {
-   //[!code ++]
    // =============================== 编辑器爱好设置 ================================
    // 缩进与格式化
    "editor.tabSize": 3, // 制表符宽度为3空格（匹配 Prettier）
@@ -25,7 +24,6 @@
    "editor.cursorBlinking": "expand", // 光标闪烁带扩展效果
    "editor.cursorSmoothCaretAnimation": "on", // 启用平滑光标移动动画
    "editor.largeFileOptimizations": true, // 优化大文件编辑性能
-   //[!code ++]
    // =============================== 代码辅助功能 ================================
    // 智能建议
    "editor.inlineSuggest.enabled": true, // 启用内联代码建议（如Copilot）
@@ -35,15 +33,12 @@
    "editor.bracketPairColorization.enabled": true, // 彩色括号配对
    "editor.autoClosingBrackets": "beforeWhitespace", // 智能括号闭合
    "editor.autoClosingOvertype": "always", // 自动覆盖闭合符号
-   //[!code ++]
    // ========================== TypeScript专项优化 ===============================
-   "typescript.inlayHints.enumMemberValues.enabled": true, // 显示枚举值提示
-   "typescript.preferences.preferTypeOnlyAutoImports": true, // 优先使用import type
-   "typescript.preferences.includePackageJsonAutoImports": "on", //允许从package.json的依赖中自动导入模块
-   "typescript.preferences.importModuleSpecifier": "relative", // 使用相对路径导入
-   "typescript.suggest.autoImports": true, // 启用自动导入建议
-   "typescript.tsserver.exclude": ["**/node_modules", "**/dist", "**/.turbo"], //文件忽略
-   //[!code ++]
+   "js/ts.inlayHints.enumMemberValues.enabled": true, // 显示枚举值提示
+   "js/ts.preferences.preferTypeOnlyAutoImports": true, // 优先使用import type
+   "js/ts.preferences.includePackageJsonAutoImports": "on", //允许从package.json的依赖中自动导入模块
+   "js/ts.preferences.importModuleSpecifier": "relative", // 使用相对路径导入
+   "js/ts.suggest.autoImports": true, // 启用自动导入建议
    // ===== 语言特定格式化 =====
    "[html]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -65,12 +60,10 @@
    "[json]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode"
    },
-   //[!code ++]
    // ===== 终端配置 =====
    "terminal.integrated.cursorBlinking": true, // 终端光标闪烁
    "terminal.integrated.tabs.enabled": true, // 启用终端标签页
    "terminal.integrated.scrollback": 10000, // 保留10000行历史记录
-   //[!code ++]
    //======= 文件 =========
    "files.watcherExclude": {
       "**/.git/objects/**": true,
@@ -111,7 +104,6 @@
    },
    //默认包管理工具
    "npm.packageManager": "pnpm",
-   //[!code ++]
    //===== 折叠文件夹（美观优化） =====
    "explorer.fileNesting.enabled": true, // 启用文件嵌套功能
    "explorer.fileNesting.expand": false, // 默认折叠嵌套文件（不展开）
@@ -131,7 +123,6 @@
       "vite.renderer.config.ts": "vite.*.config.ts",
       "forge.config.ts": "forge.env.d.ts"
    },
-   //[!code ++]
    // =============================== 插件配置 ================================
    //Better Comments
    "better-comments.multilineComments": true,
@@ -152,8 +143,7 @@
       }
    ],
    "workbench.iconTheme": "vscode-icons",
-   //version len
-   "versionlens.suggestions.showOnStartup": true,
+
    //error lens
    "errorLens.enabledDiagnosticLevels": ["warning", "error"],
    //error len 主动排除eslint和cSpell错误，交给各自的插件进行
@@ -184,7 +174,7 @@
    ],
 
    //使用项目中的ts编译器进行ts检查，而不是vscode自带的
-   "typescript.tsdk": "node_modules/typescript/lib",
+   "js/ts.tsdk.path": "node_modules/typescript/lib",
 
    //cspell,这些默认合法
    "cSpell.words": ["archiver", "axios", "dotenv", "rollup", "vitest"]

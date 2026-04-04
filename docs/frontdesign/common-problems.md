@@ -549,10 +549,6 @@ defineExpose({} as ButtonInstance);
 </template>
 ```
 
-## DevTools 和 Env提示
-
-[详情见](./Vite.md#vite-dev-tools-和-增强import-meta提示)
-
 ## Axios封装
 
 ### 参数序列化
