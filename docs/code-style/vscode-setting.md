@@ -109,7 +109,7 @@
    "explorer.fileNesting.expand": false, // 默认折叠嵌套文件（不展开）
    "explorer.fileNesting.patterns": {
       //file fold
-      "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, cspell.json",
+      "package.json": "pnpm-lock.yaml, .gitignore, .browserslistrc, .gitattributes, .gitconfig, .npmrc, cspell.json ,README.md",
       "eslint.config.mjs": ".prettierignore, .prettierrc.json,.prettier,.editorconfig",
       "tsconfig.json": "tsconfig.*.json",
       "tailwind.config.js": "postcss.config.js",

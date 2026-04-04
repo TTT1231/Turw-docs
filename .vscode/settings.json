@@ -26,11 +26,11 @@
   "editor.autoClosingOvertype": "always",
 
   // ===== TypeScript专项优化 =====
-  "typescript.inlayHints.enumMemberValues.enabled": true,
-  "typescript.preferences.preferTypeOnlyAutoImports": true,
-  "typescript.preferences.includePackageJsonAutoImports": "on",
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.suggest.autoImports": true,
+   "js/ts.inlayHints.enumMemberValues.enabled": true, // 显示枚举值提示
+   "js/ts.preferences.preferTypeOnlyAutoImports": true, // 优先使用import type
+   "js/ts.preferences.includePackageJsonAutoImports": "on", //允许从package.json的依赖中自动导入模块
+   "js/ts.preferences.importModuleSpecifier": "relative", // 使用相对路径导入
+   "js/ts.suggest.autoImports": true, // 启用自动导入建议
 
   // ===== 语言特定格式化 =====
   "[typescript]": {
@@ -57,7 +57,7 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "package.json": "pnpm-lock.yaml, .gitignore,  .gitattributes, .gitconfig, .env*, cspell.json",
+    "package.json": "pnpm-lock.yaml, .gitignore,  .gitattributes, .gitconfig, .env*, cspell.json, README.md",
     ".prettierrc.json": ".prettierignore, .editorconfig ",
     "vite.config.{js,ts}": "vite.*.{js,ts}",
     "tailwind.config.js": "postcss.config.js"
