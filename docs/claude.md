@@ -716,3 +716,89 @@ git worktree list
 > - 一个验证测试覆盖率
 >   各自先审查并各报告各领域发现的问题和改进建议，然后彼此质疑交叉论证并提出顾虑和替代方案，最后权衡各方建议形成共识
 > ```
+
+## Agent标准与Claude的差异
+
+本节主要介绍 `AGENTS.md` 与 `CLAUDE.md`、以及 Agent Skill 与 Claude Skill 之间的差异，包含以下两方面：
+
+- **Agent Skill 与 Claude Skill** 区别
+- **Agent README** 区别
+
+### Skill 区别
+
+::: tip 架构差异
+Agent Skills 标准，它会把skill定义为目录，这样通用性更强，但是创建成本更高，而且更加规范性没有灵活性，不过却更加通用。
+
+agent skills在初始的时候会有标准的**三次**加载，
+
+- 首先读取 `SKILL.md` 的 frontmatter 元数据，判断当前上下文是否应激活该 skill
+- 其次是当skill被激活的时候会加载`SKILL.md`的内容
+- 最后根据`SKILL.md`的内容，按需加载(scripts/、 references/、 assets/ )
+
+```
+skill-name/
+├── SKILL.md # 必需：元数据 + 指令
+├── scripts/ # 可选：可执行代码
+├── references/ # 可选：参考文档
+├── assets/ # 可选：模板、资源
+└── ...
+```
+
+claude skill纯靠语义理解，它有专门的`frontmatter`进行验证，因此不需要严格的元数据就能精准触发和匹配，而且它采用的是**单文件结构**，因此能够快速创建，但是只适配claude移植性很差，同时它还有它专门的特性。
+
+claude skill 只有**2次**加载，
+
+- 首先是加载skill的name和description匹配和用户主动选择
+- 然后skill加载后一次加载完整个的`SKILL.md`中的所有内容
+
+```
+.claude/skill-name/
+└── SKILL.md
+```
+
+:::
+
+::: tip 特性区别
+
+标准的agent skill只有以下字段：
+
+```md
+| 字段          | 是否必需 | 约束条件                                                             |
+| ------------- | -------- | -------------------------------------------------------------------- |
+| name          | 是       | 最多 64 个字符。仅限小写字母、数字和连字符。不能以连字符开头或结尾。 |
+| description   | 是       | 最多 1024 个字符。不能为空。描述技能的功能及使用时机。               |
+| license       | 否       | 许可证名称，或对捆绑的许可证文件的引用。                             |
+| compatibility | 否       | 最多 500 个字符。指明环境要求（目标产品、系统包、网络访问等）。      |
+| metadata      | 否       | 用于存放额外元数据的任意键值对映射。                                 |
+| allowed-tools | 否       | 空格分隔的字符串，列出技能可使用的预批准工具。（实验性特性）         |
+```
+
+而claude拥有以下特性：
+
+```md
+| 特性                       | 作用说明                                                             |
+| -------------------------- | -------------------------------------------------------------------- |
+| `model`                    | 为 Skill 指定特定模型，简单任务可用最快模型执行                      |
+| `effort`                   | 控制思考深度，困难任务可设置为 `max` 使用最大思考深度                |
+| `context: fork`            | 新建独立会话执行 Skill，防止主对话上下文 token 爆炸                  |
+| `agent`                    | 指定由哪个子代理（Agent）来执行该 Skill                              |
+| `user-invocable`           | 控制用户是否可以主动调用该 Skill                                     |
+| `disable-model-invocation` | 禁止模型自动触发 Skill（仅允许用户手动调用）                         |
+| `argument-hint`            | 调用 Skill 时显示的参数提示（如 `[version]`）                        |
+| `hooks`                    | 在 Skill 执行期间（前/后/出错时）触发特定行为                        |
+| `!` 插值命令               | 在 Skill 正文中嵌入命令，执行时自动插入命令输出结果                  |
+| `allowed-tools`            | 允许 Skill 使用的工具及命令权限控制（支持 `Bash(git:*)` 等精确过滤） |
+```
+
+这些特性与claude深入集成，但移植性很弱，这里主要是为了解决标准agent skill的**api成本问题**还有**上下文窗口问题**、**用户体验问题**、**权限问题**。
+:::
+
+### Agent README 区别
+
+`AGENTS.md` 是给通用 AI Agent 的 README，类似项目的 `README.md`，而 `CLAUDE.md` 是专门给 Claude 使用的。
+
+::: tip 提示
+通用 AI Agent 包括 Codex、Cursor、Claude 等，`AGENTS.md` 作为通用配置文件，每个 Agent 都可以识别它。而各个 Agent 也有自己专属的配置文件，例如 Claude 的 `CLAUDE.md`。
+
+`CLAUDE.md` 支持 Claude 特有的 `@` 导入语法，Claude 解析到 `@` 路径后会递归加载对应文件，将内容内联展开到 `CLAUDE.md` 中作为项目指令加载。例如在 `CLAUDE.md` 中写 `@../AGENTS.md`，就会把 `AGENTS.md` 的内容完整注入进来。
+:::
