@@ -57,9 +57,7 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "package.json": "pnpm-lock.yaml, .gitignore,  .gitattributes, .gitconfig, .env*, cspell.json, README.md",
+    "package.json": "pnpm-lock.yaml, .gitignore,  .gitattributes, .gitconfig, cspell.json, README.md,postcss.config.js,AGENTS.md",
     ".prettierrc.json": ".prettierignore, .editorconfig ",
-    "vite.config.{js,ts}": "vite.*.{js,ts}",
-    "tailwind.config.js": "postcss.config.js"
   }
 }
