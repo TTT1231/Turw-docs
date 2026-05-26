@@ -1,5 +1,105 @@
 import { defineConfig } from 'vitepress';
 
+interface FoldCodeEntry {
+   lang: string;
+   title: string;
+   code: string;
+}
+
+const CODE_GROUP_FOLD_OPEN_RE = /^:::\s*(?:code-group-fold|code-block)(?:\s+(.*))?$/;
+const FENCE_RE = /^```([^\n]*)\n([\s\S]*?)^```\s*$/gm;
+
+function escapeHtml(value: string): string {
+   return value
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+}
+
+function parseFenceInfo(info: string, index: number) {
+   const normalized = info.trim();
+   const titleMatch = normalized.match(/\[([^\]]+)\]/);
+   const lang = normalized.split(/\s|\[/)[0] || 'ts';
+   const title = titleMatch?.[1] || lang.toUpperCase() || `Code ${index + 1}`;
+
+   return { lang, title };
+}
+
+function parseFoldCodeEntries(content: string, fallbackLang: string): FoldCodeEntry[] {
+   const entries: FoldCodeEntry[] = [];
+
+   for (const match of content.matchAll(FENCE_RE)) {
+      const { lang, title } = parseFenceInfo(match[1] || fallbackLang, entries.length);
+      entries.push({
+         lang,
+         title,
+         code: match[2].replace(/\n$/, '')
+      });
+   }
+
+   if (!entries.length && content.trim()) {
+      entries.push({
+         lang: fallbackLang || 'ts',
+         title: (fallbackLang || 'ts').toUpperCase(),
+         code: content
+      });
+   }
+
+   return entries;
+}
+
+function foldCodeBlockPlugin(md: any) {
+   const renderFoldCodeGroup = (entries: FoldCodeEntry[], options: string) => {
+      const encodedBlocks = encodeURIComponent(JSON.stringify(entries));
+      const lineNumbers = /\bline-numbers\b/.test(options) ? ' line-numbers' : '';
+
+      return `<FoldCodeGroup encoded-blocks="${escapeHtml(encodedBlocks)}"${lineNumbers} />\n`;
+   };
+
+   const rule = (state: any, startLine: number, endLine: number, silent: boolean) => {
+      const start = state.bMarks[startLine] + state.tShift[startLine];
+      const max = state.eMarks[startLine];
+      const marker = state.src.slice(start, max).trim();
+      const openMatch = marker.match(CODE_GROUP_FOLD_OPEN_RE);
+
+      if (!openMatch) return false;
+      if (silent) return true;
+
+      let nextLine = startLine + 1;
+      for (; nextLine < endLine; nextLine++) {
+         const lineStart = state.bMarks[nextLine] + state.tShift[nextLine];
+         const lineMax = state.eMarks[nextLine];
+         if (state.src.slice(lineStart, lineMax).trim() === ':::') break;
+      }
+
+      if (nextLine >= endLine) return false;
+
+      const options = openMatch[1] || '';
+      const fallbackLang =
+         options.split(/\s+/).find((item: string) => item && item !== 'line-numbers') || 'ts';
+      const content = state.getLines(startLine + 1, nextLine, state.blkIndent, false);
+      const entries = parseFoldCodeEntries(content, fallbackLang);
+
+      const token = state.push('html_block', '', 0);
+      token.content = renderFoldCodeGroup(entries, options);
+      token.map = [startLine, nextLine + 1];
+      state.line = nextLine + 1;
+
+      return true;
+   };
+
+   try {
+      md.block.ruler.before('container', 'fold_code_group', rule, {
+         alt: ['paragraph', 'reference', 'blockquote', 'list']
+      });
+   } catch {
+      md.block.ruler.before('fence', 'fold_code_group', rule, {
+         alt: ['paragraph', 'reference', 'blockquote', 'list']
+      });
+   }
+}
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
    vite: {
@@ -12,7 +112,10 @@ export default defineConfig({
       }
    },
    markdown: {
-      lineNumbers: true // 启用代码块行号
+      lineNumbers: true, // 启用代码块行号
+      config(md) {
+         md.use(foldCodeBlockPlugin);
+      }
    },
    lang: 'zh-CN',
    base: '/Turw-docs/', // Set to your desired base path
