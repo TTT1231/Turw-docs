@@ -8,10 +8,10 @@
 
 :root {
    --eng-c-bg: #f8fafc;
-   --eng-c-bg-alt: #f1f5f9;
+   --eng-c-bg-alt: #f8fafc;
    --eng-c-surface: #ffffff;
    --eng-c-surface-soft: #f6f8fb;
-   --eng-c-sidebar: #f7f9fc;
+   --eng-c-sidebar: #ffffff;
    --eng-c-text: #111827;
    --eng-c-text-soft: #334155;
    --eng-c-muted: #64748b;
@@ -33,13 +33,13 @@
    --eng-c-table-stripe: #f8fafc;
    --eng-c-table-hover: #eff6ff;
    --eng-c-code-bg: #ffffff;
-   --eng-c-code-panel: #f3f6fb;
+   --eng-c-code-panel: #ffffff;
    --eng-c-code-border: #d8e1ee;
    --eng-c-code-text: #24292f;
    --eng-c-code-muted: #64748b;
    --eng-c-code-line-number: #94a3b8;
-   --eng-c-code-tab-hover: rgba(37, 99, 235, 0.06);
-   --eng-c-code-tab-active: #eaf2ff;
+   --eng-c-code-tab-hover: #f8fafc;
+   --eng-c-code-tab-active: #ffffff;
    --eng-c-code-tab-line: #2563eb;
    --eng-c-code-copy-bg: #f8fafc;
    --eng-c-code-copy-hover-bg: #eef4ff;
@@ -302,11 +302,16 @@ body {
 
 .VPSidebar .VPSidebarItem .text,
 .VPSidebar .VPSidebarGroup .title {
+   box-sizing: border-box;
+   padding-right: 8px;
+   padding-left: 8px;
    -webkit-user-select: none;
    user-select: none;
 }
 
 .VPSidebarItem .item {
+   margin-right: 8px;
+   margin-left: 8px;
    border-radius: 6px;
    transition:
       background-color 0.14s ease,
