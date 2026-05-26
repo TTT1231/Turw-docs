@@ -1,8 +1,10 @@
 # VSCode设置
 
+vscode设置，用作备份。
+
 ## 配置文件配置
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```json [settings.json]
 {

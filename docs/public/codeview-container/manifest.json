@@ -181,12 +181,6 @@
         "extension": ""
       },
       {
-        "name": "bun.lock",
-        "path": "/Turw-docs/codeview-container/nest-cache-monitor/bun.lock",
-        "type": "file",
-        "extension": ".lock"
-      },
-      {
         "name": "nest-cli.json",
         "path": "/Turw-docs/codeview-container/nest-cache-monitor/nest-cli.json",
         "type": "file",
@@ -380,22 +374,10 @@
         "extension": ""
       },
       {
-        "name": ".prettierrc",
-        "path": "/Turw-docs/codeview-container/nest-dynamic-module/.prettierrc",
-        "type": "file",
-        "extension": ""
-      },
-      {
         "name": "env.d.ts",
         "path": "/Turw-docs/codeview-container/nest-dynamic-module/env.d.ts",
         "type": "file",
         "extension": ".ts"
-      },
-      {
-        "name": "eslint.config.mjs",
-        "path": "/Turw-docs/codeview-container/nest-dynamic-module/eslint.config.mjs",
-        "type": "file",
-        "extension": ".mjs"
       },
       {
         "name": "nest-cli.json",

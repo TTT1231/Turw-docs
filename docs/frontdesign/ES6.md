@@ -12,7 +12,9 @@ Symbol() 会生成**全新且唯一**的值，核心作用是避免对象属性�
 
 ### Symbol.iterator 实现可迭代对象或者数组
 
-```js
+::: code-group-fold line-numbers
+
+```js [demo.js]
 //可迭代对象
 const myObj = {
     let targetIndex = 0;
@@ -35,13 +37,17 @@ let [a,b] = arr; //解构赋值
 for (const c of arr){} // for .. of
 ```
 
+:::
+
 ::: tip 提示
 迭代器对象必须实现next方法，迭代协议要求。
 :::
 
 #### Symbol属性或方法
 
-```js
+::: code-group-fold line-numbers
+
+```js [demo.js]
 const GREET = Symbol('Gret');
 class A {
    constructor() {
@@ -55,6 +61,8 @@ class A {
 const a = new A();
 a[GREET]();
 ```
+
+:::
 
 ## Proxy
 
@@ -77,7 +85,9 @@ set(target,propertyKey,value,receiver),set拦截器。
 - value 要赋值给属性的值
 - receiver: 代理本身也即Proxy本身,避免原型链问题导致this指向windows。
 
-```js
+::: code-group-fold line-numbers
+
+```js [demo.js]
 //set，get一般配合Reflect(js操作对象工具箱，简单明了)
 
 //使用示例
@@ -97,6 +107,7 @@ const proxy = new Proxy(obj, {
 });
 ```
 
+:::
 ::: tip 提示
 当代理用完不想用时，或者代理就使用一次，就可以**取消代理**Proxy.revocable revocable:可撤销的，可取消的
 :::
@@ -145,7 +156,7 @@ commonjs
 
 ## stage3装饰器
 
-::: code-group
+::: code-group-fold line-numbers
 
 <!-- prettier-ignore-start -->
 ```ts [class-decorator.ts]

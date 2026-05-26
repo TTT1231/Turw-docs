@@ -59,7 +59,9 @@ const targetMap = new WeakMap<object, KeyToDepMap>()              // [!code warn
 但是会使的同步代码逻辑执行两次。也即第一段同步代码执行到目标【异步改同步】直接抛出promise中断同步执行队列,第二段重新执行同步代码,此时这里已经出结果了，就屏蔽了异步特性
 :::
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo.ts]
 //Promise缓存
 const cache: {
    status: 'pending' | 'fulfilled' | 'rejected';
@@ -128,6 +130,8 @@ function main() {
    }
 }
 ```
+
+:::
 
 ## slot工作原理
 

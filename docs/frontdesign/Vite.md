@@ -10,125 +10,77 @@
 
 假设我菜单路由如下:
 
-::: details 菜单路由配置
+::: code-group-fold line-numbers
 
-```json
+```json [demo.json]
 [
    {
-      path: '/main',
-      name: 'main',
-      component: 'MainForm',
-      meta: {
-         ishide: false,
-         ishome: true
+      "path": "/main",
+      "name": "main",
+      "component": "MainForm",
+      "meta": {
+         "ishome": true
       },
-      children: [
+      "children": [
          {
-            path: 'home',
-            name: 'home',
-            component: '',
-            meta: {
-               ishide: false,
-               ishome: false
-            },
-            children: [
+            "path": "home",
+            "name": "home",
+            "children": [
                {
-                  path: 'analysis',
-                  name: 'analysis',
-                  component: 'sys/home/Analysis',
-                  meta: {
-                     ishide: false,
-                     ishome: false
-                  },
-                  children: []
+                  "path": "analysis",
+                  "name": "analysis",
+                  "component": "sys/home/Analysis"
                },
                {
-                  path: 'workbench',
-                  name: 'workbench',
-                  component: 'sys/home/WorkBench',
-                  meta: {
-                     ishide: true,
-                     ishome: false
-                  },
-                  children: []
+                  "path": "workbench",
+                  "name": "workbench",
+                  "component": "sys/home/WorkBench",
+                  "meta": {
+                     "ishide": true
+                  }
                }
             ]
          },
          {
-            path: '/:patchMatch(.*)',
-            name: 'error',
-            component: 'error/Error',
-            meta: {
-               ishide: false,
-               ishome: false
-            },
-            children: []
+            "path": "/:patchMatch(.*)",
+            "name": "error",
+            "component": "error/Error"
          },
          {
-            path: 'systemanager',
-            name: 'systemanager',
-            component: '',
-            meta: {
-               ishide: false,
-               ishome: false
-            },
-            children: [
+            "path": "systemanager",
+            "name": "systemanager",
+            "children": [
                {
-                  path: 'usermanager',
-                  name: 'usermanager',
-                  component: 'sys/systemanager/UserManager',
-                  meta: {
-                     ishide: false,
-                     ishome: false
-                  },
-                  children: []
+                  "path": "usermanager",
+                  "name": "usermanager",
+                  "component": "sys/systemanager/UserManager"
                },
                {
-                  path: 'menumanager',
-                  name: 'menumanager',
-                  component: 'sys/systemanager/MenuManager',
-                  meta: {
-                     ishide: false,
-                     ishome: false
-                  },
-                  children: []
+                  "path": "menumanager",
+                  "name": "menumanager",
+                  "component": "sys/systemanager/MenuManager"
                }
             ]
          },
          {
-            path: 'fun',
-            name: 'fun',
-            component: '',
-            meta: {
-               ishide: false,
-               ishome: false
-            },
-            children: [
+            "path": "fun",
+            "name": "fun",
+            "children": [
                {
-                  path: 'shotscreen',
-                  name: 'shotscreen',
-                  component: 'sys/fun/ShotScreen',
-                  meta: {
-                     ishide: false,
-                     ishome: false
-                  },
-                  children: []
+                  "path": "shotscreen",
+                  "name": "shotscreen",
+                  "component": "sys/fun/ShotScreen"
                },
                {
-                  path: 'commontable',
-                  name: 'commontable',
-                  component: 'sys/fun/CommonTable',
-                  meta: {
-                     ishide: false,
-                     ishome: false
-                  },
-                  children: []
+                  "path": "commontable",
+                  "name": "commontable",
+                  "component": "sys/fun/CommonTable"
                }
             ]
          }
       ]
    }
-];
+]
 ```
 
 :::
@@ -148,10 +100,14 @@
 
 #### 实现示例
 
-```ts {1,4}
+::: code-group-fold line-numbers
+
+```ts [demo.ts]
+//[!code highlight]
 // 1. 使用 import.meta.glob 导入所有组件
 const components = import.meta.glob('../../views/**/*.vue');
 
+//[!code highlight]
 // 2. 递归处理路由，将组件字符串替换为导入函数
 function recurseAddRoutes(routes: RoutesType[]) {
    return routes.map((route) => {
@@ -169,6 +125,8 @@ function recurseAddRoutes(routes: RoutesType[]) {
    });
 }
 ```
+
+:::
 
 ## vite dev tools 和 增强import.meta提示
 
@@ -293,7 +251,7 @@ const env = loadEnv(mode, process.cwd(), '') as ViteEnv;
 
 反向代理就是代理服务器地址，充当中间商，隐藏真实的服务器地址，特别适合防范ddos攻击等。
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [vite.config.ts]
 import { defineConfig } from 'vite';

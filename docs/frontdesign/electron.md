@@ -12,7 +12,7 @@ outline: deep
 
 ### ipc主线程类型提示安全
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [window.d.ts]
 //渲染线程类型拓展用
@@ -370,7 +370,7 @@ export const IpcTypeManager = {
 
 这里前提也是需要上诉**ipc主线程类型提示安全**前面四个代码，接上。
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [ipcFactoryPreloadTypeUtil.ts]
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -565,7 +565,7 @@ contextBridge.exposeInMainWorld('electronApi', {
 
 :::
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [type.d.ts]
 /**

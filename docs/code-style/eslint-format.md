@@ -20,7 +20,7 @@ pnpm add -D eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-
 
 ## 配置eslint和prettier
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [eslint.config.mjs]
 import tsParser from '@typescript-eslint/parser';
@@ -193,7 +193,7 @@ server这里是示例名，类似项目src可以自定义
 pnpm add @stylistic/stylelint-plugin postcss-scss stylelint-config-recommended-vue stylelint-config-standard-scss stylelint-prettier stylelint-scss vue -D @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser @vitejs/plugin-vue @vue/tsconfig eslint eslint-config-prettier eslint-plugin-prettier postcss-html prettier sass stylelint stylelint-config-recommended-scss stylelint-config-standard stylelint-order typescript vite vue-tsc
 ```
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [stylelint.config.mjs]
 /** @type {import("stylelint").Config} */
@@ -380,7 +380,7 @@ coverage
 pnpm add cspell -D
 ```
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```json [cspell.json]
 {

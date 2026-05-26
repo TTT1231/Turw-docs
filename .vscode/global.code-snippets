@@ -37,7 +37,7 @@
          ":::code-group-fold"
       ],
       "body": [
-         "::: code-group-fold",
+         "::: code-group-fold line-numbers",
          "$1",
          ":::"
       ],

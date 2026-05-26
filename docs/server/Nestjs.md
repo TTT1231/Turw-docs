@@ -27,7 +27,7 @@
 
 看下面的代码，Nestjs响应式设计与下面类似。
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [of.ts]
 //RxJX of
@@ -159,8 +159,7 @@ MetadataScanner现在只保留了**getAllMethodNames**，用来获取类原型�
 
 <CodeViewer
 public-path="/Turw-docs/codeview-container/nest-cache-monitor"
-default-file="main.ts"
-theme="dark"/>
+default-file="main.ts"/>
 
 ## 动态模块
 
@@ -186,25 +185,19 @@ theme="dark"/>
 
 <CodeViewer
 public-path="/Turw-docs/codeview-container/nest-dynamic-module"
-default-file="main.ts"
-theme="dark"/>
+default-file="main.ts"/>
 
 ## passport和webSocket
 
 <CodeViewer
 public-path="/Turw-docs/codeview-container/nestjs-password-websocket"
 default-file="main.ts"
-theme="dark"
 height="600px"
 />
 
-## redis多节点部署
-
-> 详情Github仓库：[Github](https://github.com/TTT1231/redis-single-deploy)
-
 ## ws适配器使用
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [main.ts]
 import { WsAdapter } from '@nestjs/platform-ws';
@@ -368,7 +361,7 @@ export function extractConfigFromKeys<T>(
 
 ### cookies
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [V.express.ts]
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';

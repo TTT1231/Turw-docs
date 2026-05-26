@@ -17,7 +17,7 @@ outline: deep
 主要实现用户可以对大文件请求进行终止和根据文件内容hash去判断在服务端有没有分片  
 对之前上传的分片继续上传，提高上传速率和容错率。
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [slice-breakpoint.upload.ts]
 //===========================前端================================
@@ -84,9 +84,9 @@ export default defineEventHandler(async (event) => {
 为保证一致性，前后端应使用相同的分片/文件哈希算法；大文件优先传 ArrayBuffer 给 Worker
 :::
 
-::: details 断点上传实现(前端)
+::: code-group-fold line-numbers
 
-```ts
+```ts [demo.ts]
 //单个文件上传
 const simulateFileUpload = async (file: UploadFile): Promise<void> => {
    const signal = file.abortInstance?.signal ?? new AbortController().signal;
@@ -425,10 +425,12 @@ self.onmessage = function (e) {
 - 使用 JS 动态计算高度并设置内联 transition（注意触发重排）
 - 或使用 CSS transform scaleY（origin-top）实现无回流的平滑动画
 
-::: details 插值过渡（要借助js去计算比较麻烦）
+::: code-group-fold line-numbers
 
-```vue
+```vue [demo.vue]
 <script lang="ts" setup>
+//[!code highlight]
+//插值过渡（要借助js去计算比较麻烦）
 import { onMounted, useTemplateRef } from 'vue';
 
 const father = useTemplateRef('father');
@@ -479,7 +481,7 @@ onMounted(() => {
 
 这里效果是从上到下（默认中间散开）所以需要origin-top`transform-origin: top;`设置动画起点
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```html [usage.html]
 <!-- tailwind css 写法 -->
@@ -514,8 +516,9 @@ onMounted(() => {
 ## 二次组件封装
 
 注意封装完后，需要将事件通过ref去暴露。
+::: code-group-fold line-numbers
 
-```vue
+```vue [demo.vue]
 <script setup lang="ts">
 import { Button } from 'ant-design-vue';
 import { getCurrentInstance, h, type ComponentPublicInstance } from 'vue';
@@ -549,6 +552,8 @@ defineExpose({} as ButtonInstance);
 </template>
 ```
 
+:::
+
 ## Axios封装
 
 ### 参数序列化
@@ -570,7 +575,7 @@ defineExpose({} as ButtonInstance);
 
 ### 实现
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [request-client.ts]
 import type { AxiosInstance, AxiosResponse } from 'axios';
@@ -1060,7 +1065,9 @@ export function isBoolean(value: unknown): value is boolean {
 
 **参数序列化**
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo.ts]
 const client = new RequestClient({
    baseURL: '/api',
    responseReturn: 'body',
@@ -1105,9 +1112,11 @@ client
    });
 ```
 
+:::
+
 **请求响应**
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts{24} [test.ts]
 const client = new RequestClient({
@@ -1243,7 +1252,7 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 
 因此这里优化方向主要就是**开发esbuild构建优化**和**生产rollup构建优化**
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [vite.config.ts]
 // =======================  rollup 构建分包优化 - 依赖预构建===================
@@ -1362,7 +1371,7 @@ export default defineConfig({
 `size`可以针对不同的图片，可以根据不同设备尺寸和分辨率去设置图片源，来展示图片。例如：
 
 <!-- prettier-ignore-start -->
-```vue
+```vue 
 <template>
    <!-- (size现代方案)根据视口宽度自动选择图片尺寸 -->
    <!-- Tip:大于600px的匹配第二条规则 -->

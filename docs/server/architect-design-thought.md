@@ -87,7 +87,7 @@ private A a;
 
 而它的工厂函数思想**将类对象的创建封装起来**使得使用者不关心其内部实现，只关心其向外部暴露的方法进行调用。
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [Decorator.ts]
 import 'reflect-metadata';

@@ -11,7 +11,7 @@ hero:
    actions:
       - theme: nest
         text: 快速开始
-        link: /frontdesign/common-problems
+        link: /frontdesign/faq
       - theme: alt
         text: claude
         link: /claude

@@ -95,7 +95,7 @@ js提供了完整的`C++`操作，例如类、指针、异常处理、内存管�
 
 ## 使用示例
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```cpp [test1.cpp]
 #include <emscripten.h>
@@ -311,7 +311,7 @@ declare module '@/assets/ClassObj.js' {
 
 **实际用法:**
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [test1.ts]
 import type { MainModule } from './types/test1';

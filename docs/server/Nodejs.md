@@ -102,7 +102,9 @@ Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callb
 
 **错误处理**
 
-```js
+::: code-group-fold line-numbers
+
+```js [demo.js]
 //语法错误处理
 const handleSyntaxError=(app:Express)=>{
     app.use((err: any, req: any, res: any, next: NextFunction) => {
@@ -165,6 +167,8 @@ const handleUnknownError=(app:Express)=>{
     })
 }
 ```
+
+:::
 
 **CORS**
 
@@ -306,13 +310,11 @@ export {};
 
 **实现**
 
-<details>
-<summary class=" bg-blue-400  text-white cursor-pointer select-none
- text-center active:scale-95">
-   routerScanner（路由扫描函数，在插件中引入即可快速完成路由定义）
-</summary>
+> routerScanner（路由扫描函数，在插件中引入即可快速完成路由定义）
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo-achieve]
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
@@ -701,17 +703,15 @@ export function registerRoutes(router: Router): void {
 }
 ```
 
-</details>
+:::
 
 **插件注册**
 
-<details>
-<summary class=" bg-blue-400  text-white cursor-pointer select-none
- text-center active:scale-95">
-   register-router.server.ts（完成动态引入路由）
-</summary>
+> register-router.server.ts（完成动态引入路由）
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo-plugin-register.ts]
 import path from 'path';
 import type { Router } from 'express';
 import { registerRoutes, scanApiDirectory, setGlobalRouter } from '../../utils/routeScanner';
@@ -752,7 +752,7 @@ const defineRouterPlugin = async (router: Router) => {
 export default defineRouterPlugin;
 ```
 
-</details>
+:::
 
 **打包**
 
@@ -761,13 +761,11 @@ export default defineRouterPlugin;
 其速度快、简洁，符合实际实践
 :::
 
-<details>
-<summary class=" bg-blue-400  text-white cursor-pointer select-none
- text-center active:scale-95">
-   esbuild（esbuild.config.ts）
-</summary>
+> esbuild（esbuild.config.ts）
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo-build.mjs]
 // esbuild.config.mjs
 import { build } from 'esbuild';
 import { rmSync, existsSync, cpSync } from 'fs';
@@ -838,7 +836,7 @@ if (existsSync('server/public/static')) {
 console.log('✅ Build completed successfully!');
 ```
 
-</details>
+:::
 
 ## 传输数据压缩加速
 
@@ -885,8 +883,9 @@ async function decompressFile(inputPath, outputPath, isGzip = true) {
 ```
 
 **小文件处理示例**
+::: code-group-fold line-numbers
 
-```ts
+```ts [demo-small-file-handle.ts]
 import type { Router } from 'express';
 import { createDeflate, createGzip } from 'node:zlib';
 import { createReadStream } from 'node:fs';
@@ -927,6 +926,8 @@ export const setupDefaultRoute = (router: Router) => {
    });
 };
 ```
+
+:::
 
 ## ESM or Commonjs?
 
@@ -1008,7 +1009,7 @@ export const setupDefaultRoute = (router: Router) => {
 
 在进行快速场景验证的时候，可以选用`esbuild`进行转译，但是正常项目不推荐，只适合很少场景，追求简单的话，选用`tsup`也是可以的。
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```bash:no-line-numbers [install.sh]
 pnpm i esbuild -D

@@ -26,7 +26,9 @@
 //=================================== 文本徽标 ===================================//
 //基础图标支持js,ts,.d.ts
 //!注意这些基础图标要放在前面，后面要自定义的话直接覆盖基础图标即可
-.vp-code-group .tabs label[data-title$=".js"]::before {
+.vp-code-group .tabs label[data-title$=".js"]::before,
+.vp-code-group .tabs label[data-title$=".mjs"]::before,
+.vp-code-group .tabs label[data-title$=".cjs"]::before {
    content: "JS";
    @include badgeBase();
    background: rgba(217, 119, 6, 0.1);
@@ -134,7 +136,9 @@ $iconConfigs: (
 }
 
 .dark {
-   .vp-code-group .tabs label[data-title$=".js"]::before {
+   .vp-code-group .tabs label[data-title$=".js"]::before,
+   .vp-code-group .tabs label[data-title$=".mjs"]::before,
+   .vp-code-group .tabs label[data-title$=".cjs"]::before {
       background: rgba(245, 158, 11, 0.16);
       color: #fbbf24;
       border-color: rgba(245, 158, 11, 0.28);

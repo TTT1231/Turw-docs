@@ -132,7 +132,7 @@ export default defineConfig({
          {
             text: '快速访问',
             items: [
-               { text: '前端FAQ', link: '/frontdesign/common-problems' },
+               { text: '前端FAQ', link: '/frontdesign/faq' },
                { text: 'NuxtFAQ', link: '/nuxt/config-solutions' },
                { text: 'Electron', link: '/frontdesign/electron' },
                { text: 'Node', link: '/server/Nodejs' },
@@ -207,7 +207,7 @@ export default defineConfig({
                },
                {
                   text: 'FAQ',
-                  link: '/frontdesign/common-problems'
+                  link: '/frontdesign/faq'
                }
             ]
          },
@@ -227,7 +227,6 @@ export default defineConfig({
             items: [
                { text: '格式化代码与检查', link: '/code-style/eslint-format' },
                { text: 'vscode编译器设置', link: '/code-style/vscode-setting' },
-               { text: 'TsSchema', link: '/code-style/ts-schema' },
                {
                   text: 'WSL2代理',
                   collapsed: true,

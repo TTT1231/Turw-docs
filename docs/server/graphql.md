@@ -120,7 +120,9 @@ pnpm i mercurius-cache
 | all    | boolean           | false  | 缓存所有 resolver（与 policy 二选一）  |
 | policy | object            | {}     | 指定哪些 Query/Mutation 需要缓存       |
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo.ts]
 // 读取 GraphQL Schema
 const typeDefs = readFileSync(join(__dirname, '../src/graphql/schema.graphql'), 'utf-8');
 
@@ -177,6 +179,7 @@ await app.register(MercuriusCache, {
 });
 ```
 
+:::
 ::: warning 注意
 类型不匹配会缓存错误 - 如果 resolver 返回与 schema 不匹配的类型，错误结果也会被缓存
 :::

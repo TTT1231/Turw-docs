@@ -108,35 +108,38 @@ function getFolderIcon(isExpanded: boolean): string {
 const editorColors = computed(() => {
    const dark = actualTheme.value === 'dark';
    return {
-      editorBg: dark ? '#1e1e2e' : '#ffffff',
-      editorText: dark ? '#cdd6f4' : '#1f1f1f',
-      gutterBg: dark ? '#181825' : '#f8f8f8',
-      gutterBorder: dark ? '#313244' : '#e8e8e8',
-      lineNum: dark ? '#45475a' : '#6f6f6f',
-      activeLineNum: dark ? '#cdd6f4' : '#1f1f1f',
-      activeLine: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.022)',
-      selection: dark ? 'rgba(99,102,241,0.30)' : 'rgba(173,214,255,0.60)',
-      selectionFocused: dark ? 'rgba(99,102,241,0.38)' : 'rgba(173,214,255,0.85)',
-      bracketBg: dark ? 'rgba(100,255,130,0.15)' : 'rgba(0,180,80,0.12)',
-      bracketBorder: dark ? 'rgba(100,255,130,0.45)' : 'rgba(0,140,60,0.40)',
-      foldBg: dark ? '#313244' : '#ebebeb',
-      foldBorder: dark ? '#45475a' : '#c8c8c8',
-      foldColor: dark ? '#7f849c' : '#6f6f6f',
-      foldHoverBg: dark ? '#45475a' : '#d4d4d4',
-      foldArrow: dark ? '#7f849c' : '#9e9e9e',
+      editorBg: dark ? '#1e1e2e' : 'var(--eng-c-code-bg)',
+      editorText: dark ? '#cdd6f4' : 'var(--eng-c-code-text)',
+      gutterBg: dark ? '#181825' : 'var(--eng-c-code-bg)',
+      gutterBorder: dark ? '#313244' : 'var(--eng-c-code-border)',
+      lineNum: dark ? '#45475a' : 'var(--eng-c-code-line-number)',
+      activeLineNum: dark ? '#cdd6f4' : 'var(--eng-c-code-text)',
+      activeLine: dark ? 'rgba(255,255,255,0.04)' : 'var(--eng-c-code-active-line)',
+      selection: dark ? 'rgba(99,102,241,0.30)' : 'rgba(37,99,235,0.16)',
+      selectionFocused: dark ? 'rgba(99,102,241,0.38)' : 'rgba(37,99,235,0.22)',
+      bracketBg: dark ? 'rgba(100,255,130,0.15)' : 'rgba(22,163,74,0.11)',
+      bracketBorder: dark ? 'rgba(100,255,130,0.45)' : 'rgba(22,163,74,0.32)',
+      foldBg: dark ? '#313244' : 'var(--eng-c-code-panel)',
+      foldBorder: dark ? '#45475a' : 'var(--eng-c-code-border)',
+      foldColor: dark ? '#7f849c' : 'var(--eng-c-code-muted)',
+      foldHoverBg: dark ? '#45475a' : 'var(--eng-c-code-tab-hover)',
+      foldArrow: dark ? '#7f849c' : 'var(--eng-c-code-line-number)',
       searchMatch: dark ? 'rgba(234,179,8,0.30)' : 'rgba(234,179,8,0.35)',
       searchMatchSel: dark ? 'rgba(234,179,8,0.55)' : 'rgba(234,179,8,0.65)',
-      scrollThumb: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.20)',
-      scrollThumbHover: dark ? 'rgba(255,255,255,0.24)' : 'rgba(0,0,0,0.38)',
-      headerBg: dark ? '#181825' : '#f3f3f3',
-      headerBorder: dark ? '#313244' : '#e8e8e8',
-      cardBorder: dark ? '#313244' : '#e0e0e0',
-      cardShadow: dark ? '0 4px 24px rgba(0,0,0,0.35)' : '0 2px 12px rgba(0,0,0,0.10)',
-      sidebarBg: dark ? '#11111b' : '#f8f8f8',
-      sidebarBorder: dark ? '#1e1e2e' : '#e0e0e0',
-      sidebarHoverBg: dark ? '#1e1e2e' : '#ebebeb',
-      sidebarActiveBg: dark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.12)',
-      sidebarActiveBorder: dark ? '#6366f1' : '#4f46e5'
+      scrollThumb: dark ? 'rgba(255,255,255,0.12)' : 'var(--eng-c-code-scrollbar-thumb)',
+      scrollThumbHover: dark ? 'rgba(255,255,255,0.24)' : 'var(--eng-c-code-scrollbar-thumb-hover)',
+      headerBg: dark ? '#181825' : 'var(--eng-c-code-panel)',
+      headerBorder: dark ? '#313244' : 'var(--eng-c-code-border)',
+      cardBorder: dark ? '#313244' : 'var(--eng-c-code-border)',
+      cardShadow: dark ? '0 4px 24px rgba(0,0,0,0.35)' : 'none',
+      sidebarBg: dark ? '#11111b' : 'var(--eng-c-code-panel)',
+      sidebarBorder: dark ? '#1e1e2e' : 'var(--eng-c-code-border)',
+      sidebarHoverBg: dark ? '#1e1e2e' : 'var(--eng-c-code-tab-hover)',
+      sidebarActiveBg: dark ? 'rgba(99,102,241,0.15)' : 'var(--eng-c-code-highlight)',
+      sidebarActiveBorder: dark ? '#6366f1' : 'var(--eng-c-code-tab-line)',
+      badgeBg: dark ? `${currentBadge.value.color}20` : 'rgba(37,99,235,0.1)',
+      badgeBorder: dark ? `${currentBadge.value.color}33` : 'rgba(37,99,235,0.2)',
+      badgeText: dark ? currentBadge.value.color : '#1d4ed8'
    };
 });
 
@@ -477,7 +480,11 @@ onUnmounted(() => {
                <div class="editor-header">
                   <span
                      class="file-badge"
-                     :style="{ background: `${currentBadge.color}20`, color: currentBadge.color }"
+                     :style="{
+                        background: editorColors.badgeBg,
+                        borderColor: editorColors.badgeBorder,
+                        color: editorColors.badgeText
+                     }"
                   >
                      {{ currentBadge.label }}
                   </span>
@@ -514,7 +521,7 @@ onUnmounted(() => {
    padding: 40px;
    color: v-bind('editorColors.lineNum');
    background: v-bind('editorColors.editorBg');
-   border-radius: 12px;
+   border-radius: 8px;
    border: 1px solid v-bind('editorColors.cardBorder');
 }
 
@@ -524,7 +531,7 @@ onUnmounted(() => {
 
 .editor-layout {
    display: flex;
-   border-radius: 12px;
+   border-radius: 8px;
    overflow: hidden;
    border: 1px solid v-bind('editorColors.cardBorder');
    box-shadow: v-bind('editorColors.cardShadow');
@@ -543,7 +550,7 @@ onUnmounted(() => {
 
 // ===== 侧边栏 =====
 .sidebar {
-   width: 200px;
+   width: 226px;
    flex-shrink: 0;
    background: v-bind('editorColors.sidebarBg');
    border-right: 1px solid v-bind('editorColors.sidebarBorder');
@@ -555,8 +562,11 @@ onUnmounted(() => {
 }
 
 .sidebar-header {
-   padding: 10px 12px;
-   font-size: 11px;
+   min-height: 42px;
+   padding: 0 14px;
+   display: flex;
+   align-items: center;
+   font-size: 12px;
    font-weight: 600;
    text-transform: uppercase;
    letter-spacing: 0.5px;
@@ -568,7 +578,7 @@ onUnmounted(() => {
    flex: 1;
    overflow-y: auto;
    overflow-x: hidden;
-   padding: 4px 0;
+   padding: 8px 0;
    /* 滚动条默认隐藏，hover 时显示 */
    scrollbar-width: thin;
    scrollbar-color: transparent transparent;
@@ -605,12 +615,14 @@ onUnmounted(() => {
    position: relative;
    display: flex;
    align-items: center;
-   gap: 6px;
-   padding: 5px 8px;
+   gap: 7px;
+   padding: 6px 10px;
    cursor: pointer;
-   transition: background 0.1s;
+   transition:
+      background-color 0.14s ease,
+      color 0.14s ease;
    white-space: nowrap;
-   min-height: 26px;
+   min-height: 30px;
 
    &:hover {
       background: v-bind('editorColors.sidebarHoverBg');
@@ -623,7 +635,7 @@ onUnmounted(() => {
          content: '';
          position: absolute;
          left: 0;
-         width: 2px;
+         width: 3px;
          height: 100%;
          background: v-bind('editorColors.sidebarActiveBorder');
          pointer-events: none;
@@ -672,7 +684,8 @@ onUnmounted(() => {
 
 .node-name {
    flex: 1;
-   font-size: 13px;
+   font-size: 14px;
+   font-weight: 500;
    color: v-bind('editorColors.editorText');
    overflow: hidden;
    text-overflow: ellipsis;
@@ -701,7 +714,8 @@ onUnmounted(() => {
 .editor-header {
    display: flex;
    align-items: center;
-   padding: 8px 10px 8px 14px;
+   min-height: 42px;
+   padding: 0 14px 0 18px;
    background: v-bind('editorColors.headerBg');
    border-bottom: 1px solid v-bind('editorColors.headerBorder');
    gap: 7px;
@@ -709,17 +723,22 @@ onUnmounted(() => {
 
 .file-badge {
    flex-shrink: 0;
-   padding: 2px 7px;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   padding: 2px 6px;
+   border: 1px solid transparent;
    border-radius: 4px;
-   font-size: 10px;
-   font-weight: 700;
+   font-size: 11px;
+   font-weight: 750;
    font-family: 'Consolas', 'Monaco', monospace;
-   letter-spacing: 0.06em;
+   letter-spacing: 0;
+   line-height: 1;
 }
 
 .file-name {
-   font-size: 13px;
-   font-weight: 500;
+   font-size: 14px;
+   font-weight: 700;
    font-family: 'Consolas', 'Monaco', monospace;
    color: v-bind('editorColors.editorText');
    overflow: hidden;
@@ -800,7 +819,7 @@ onUnmounted(() => {
    }
 
    :deep(.cm-content) {
-      padding: 6px 0 16px;
+      padding: 8px 0 14px;
       caret-color: transparent;
    }
 
@@ -816,7 +835,7 @@ onUnmounted(() => {
       min-width: 42px;
 
       .cm-gutterElement {
-         padding: 0 10px 0 6px;
+         padding: 0 9px 0 8px;
          font-size: 12px;
          line-height: inherit;
          color: v-bind('editorColors.lineNum');
@@ -830,10 +849,13 @@ onUnmounted(() => {
 
    :deep(.cm-activeLine) {
       background: v-bind('editorColors.activeLine');
+      box-shadow:
+         inset 0 1px 0 var(--eng-c-code-active-line-border),
+         inset 0 -1px 0 var(--eng-c-code-active-line-border);
    }
 
    :deep(.cm-foldGutter) {
-      width: 18px;
+      width: 34px;
 
       .cm-gutterElement {
          padding: 0;
@@ -850,9 +872,9 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 3px;
+      width: 24px;
+      height: 18px;
+      border-radius: 4px;
       color: transparent;
       transition:
          color 0.12s,
@@ -864,7 +886,8 @@ onUnmounted(() => {
    }
 
    :deep(.cm-gutterElement:hover .cm-fold-open) {
-      background: v-bind('editorColors.activeLine');
+      background: v-bind('editorColors.foldHoverBg');
+      color: v-bind('editorColors.activeLineNum');
    }
 
    :deep(.cm-fold-closed) {
@@ -872,7 +895,8 @@ onUnmounted(() => {
    }
 
    :deep(.cm-fold-closed:hover) {
-      background: v-bind('editorColors.activeLine');
+      background: v-bind('editorColors.foldHoverBg');
+      color: v-bind('editorColors.activeLineNum');
    }
 
    :deep(.cm-foldPlaceholder) {
@@ -913,7 +937,7 @@ onUnmounted(() => {
    }
 
    :deep(.cm-line) {
-      padding-left: 4px;
+      padding: 0 14px 0 6px;
    }
 
    :deep(.cm-cursor) {

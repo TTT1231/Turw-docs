@@ -8,7 +8,9 @@
 
 使用vite-plugin-inspect监控打包，开启代码压缩、css代码分割和关闭源码映射,以及删除console.log打印,和删除未使用变量、注释和混淆变量。
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo.ts]
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import Inspect from 'vite-plugin-inspect';
@@ -53,11 +55,15 @@ export default defineConfig({
 });
 ```
 
+:::
+
 ## 图片压缩
 
 `vite-plugin-imagemin`vite插件为例（还是使用vite）
 
-```ts
+::: code-group-fold line-numbers
+
+```ts [demo.ts]
 //options
 ViteImagemin({
    gifsicle: {
@@ -83,6 +89,8 @@ ViteImagemin({
    }
 });
 ```
+
+:::
 
 ## 缓存策略
 
@@ -112,7 +120,7 @@ ViteImagemin({
 两种方式可配对使用，服务器会根据 `If-Modified-Since` 或 `If-None-Match` 判断资源是否变化
 :::
 
-::: code-group
+::: code-group-fold line-numbers
 
 ```ts [negotiate.ts]
 import express from 'express';

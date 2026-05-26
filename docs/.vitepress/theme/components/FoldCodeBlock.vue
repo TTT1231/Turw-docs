@@ -76,7 +76,7 @@ const props = withDefaults(defineProps<Props>(), {
    code: '',
    encodedCode: '',
    title: '',
-   maxHeight: '580px',
+   maxHeight: '550px',
    minHeight: '0px',
    lineNumbers: false,
    folding: true,
