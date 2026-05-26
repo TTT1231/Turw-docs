@@ -1,293 +1,820 @@
 /**
- * Customize default theme styling by overriding CSS variables:
- * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ * Minimal engineering documentation theme
+ * 气质: 清爽、稳定、克制，适合长期查阅的技术文档和个人知识库。
  */
 
-// 高亮样式
 @use "../css/custom-container.scss";
-
-// code group 图标样式
 @use "../css/code-group-icon.scss";
-/**
- * Colors
- *
- * Each colors have exact same color scale system with 3 levels of solid
- * colors with different brightness, and 1 soft color.
- *
- * - `XXX-1`: The most solid color used mainly for colored text. It must
- *   satisfy the contrast ratio against when used on top of `XXX-soft`.
- *
- * - `XXX-2`: The color used mainly for hover state of the button.
- *
- * - `XXX-3`: The color for solid background, such as bg color of the button.
- *   It must satisfy the contrast ratio with pure white (#ffffff) text on
- *   top of it.
- *
- * - `XXX-soft`: The color used for subtle background such as custom container
- *   or badges. It must satisfy the contrast ratio when putting `XXX-1` colors
- *   on top of it.
- *
- *   The soft color must be semi transparent alpha channel. This is crucial
- *   because it allows adding multiple "soft" colors on top of each other
- *   to create a accent, such as when having inline code block inside
- *   custom containers.
- *
- * - `default`: The color used purely for subtle indication without any
- *   special meanings attached to it such as bg color for menu hover state.
- *
- * - `brand`: Used for primary brand colors, such as link text, button with
- *   brand theme, etc.
- *
- * - `tip`: Used to indicate useful information. The default theme uses the
- *   brand color for this by default.
- *
- * - `warning`: Used to indicate warning to the users. Used in custom
- *   container, badges, etc.
- *
- * - `danger`: Used to show error, or dangerous message to the users. Used
- *   in custom container, badges, etc.
- * -------------------------------------------------------------------------- */
 
 :root {
-   --vp-c-default-1: var(--vp-c-gray-1);
-   --vp-c-default-2: var(--vp-c-gray-2);
-   --vp-c-default-3: var(--vp-c-gray-3);
-   --vp-c-default-soft: var(--vp-c-gray-soft);
+   --eng-c-bg: #f8fafc;
+   --eng-c-bg-alt: #f1f5f9;
+   --eng-c-surface: #ffffff;
+   --eng-c-surface-soft: #f6f8fb;
+   --eng-c-sidebar: #f7f9fc;
+   --eng-c-text: #111827;
+   --eng-c-text-soft: #334155;
+   --eng-c-muted: #64748b;
+   --eng-c-border: #e2e8f0;
+   --eng-c-border-strong: #cbd5e1;
+   --eng-c-blue: #2563eb;
+   --eng-c-blue-strong: #1d4ed8;
+   --eng-c-blue-soft: rgba(37, 99, 235, 0.1);
+   --eng-c-green: #16a34a;
+   --eng-c-green-soft: rgba(22, 163, 74, 0.11);
+   --eng-c-amber: #d97706;
+   --eng-c-amber-soft: rgba(217, 119, 6, 0.11);
+   --eng-c-red: #dc2626;
+   --eng-c-red-soft: rgba(220, 38, 38, 0.1);
+   --eng-c-cyan: #0891b2;
+   --eng-c-cyan-soft: rgba(8, 145, 178, 0.1);
+   --eng-c-table-bg: #ffffff;
+   --eng-c-table-head: #f1f5f9;
+   --eng-c-table-stripe: #f8fafc;
+   --eng-c-table-hover: #eff6ff;
+   --eng-c-code-bg: #ffffff;
+   --eng-c-code-panel: #f3f6fb;
+   --eng-c-code-border: #d8e1ee;
+   --eng-c-code-text: #24292f;
+   --eng-c-code-muted: #64748b;
+   --eng-c-code-line-number: #94a3b8;
+   --eng-c-code-tab-hover: rgba(37, 99, 235, 0.06);
+   --eng-c-code-tab-active: #eaf2ff;
+   --eng-c-code-tab-line: #2563eb;
+   --eng-c-code-copy-bg: #f8fafc;
+   --eng-c-code-copy-hover-bg: #eef4ff;
+   --eng-c-code-copy-border: #cbd5e1;
+   --eng-c-code-scrollbar-thumb: #cbd5e1;
+   --eng-c-code-scrollbar-thumb-hover: #94a3b8;
+   --eng-c-code-highlight: rgba(37, 99, 235, 0.1);
+   --eng-c-code-warning: rgba(217, 119, 6, 0.13);
+   --eng-c-code-error: rgba(220, 38, 38, 0.11);
+   --eng-c-code-add: rgba(22, 163, 74, 0.1);
+   --eng-c-code-remove: rgba(220, 38, 38, 0.09);
+   --eng-c-scrollbar-track: transparent;
+   --eng-c-scrollbar-thumb: #cbd5e1;
+   --eng-c-scrollbar-thumb-hover: #94a3b8;
+   --eng-c-shadow: rgba(15, 23, 42, 0.06);
 
-   --vp-c-brand-1: var(--vp-c-indigo-1);
-   --vp-c-brand-2: var(--vp-c-indigo-2);
-   --vp-c-brand-3: var(--vp-c-indigo-3);
-   --vp-c-brand-soft: var(--vp-c-indigo-soft);
-
-   --vp-c-tip-1: var(--vp-c-brand-1);
-   --vp-c-tip-2: var(--vp-c-brand-2);
-   --vp-c-tip-3: var(--vp-c-brand-3);
-   --vp-c-tip-soft: var(--vp-c-brand-soft);
-
-   --vp-c-warning-1: var(--vp-c-yellow-1);
-   --vp-c-warning-2: var(--vp-c-yellow-2);
-   --vp-c-warning-3: var(--vp-c-yellow-3);
-   --vp-c-warning-soft: var(--vp-c-yellow-soft);
-
-   --vp-c-danger-1: var(--vp-c-red-1);
-   --vp-c-danger-2: var(--vp-c-red-2);
-   --vp-c-danger-3: var(--vp-c-red-3);
-   --vp-c-danger-soft: var(--vp-c-red-soft);
-}
-
-/**
- * Component: Button
- * -------------------------------------------------------------------------- */
-
-:root {
+   --vp-c-bg: var(--eng-c-bg);
+   --vp-c-bg-alt: var(--eng-c-bg-alt);
+   --vp-c-bg-soft: var(--eng-c-surface-soft);
+   --vp-c-text-1: var(--eng-c-text);
+   --vp-c-text-2: var(--eng-c-text-soft);
+   --vp-c-text-3: var(--eng-c-muted);
+   --vp-c-divider: var(--eng-c-border);
+   --vp-c-gutter: var(--eng-c-border);
+   --vp-c-border: var(--eng-c-border);
+   --vp-c-brand-1: var(--eng-c-blue);
+   --vp-c-brand-2: #3b82f6;
+   --vp-c-brand-3: var(--eng-c-blue-strong);
+   --vp-c-brand-soft: var(--eng-c-blue-soft);
+   --vp-c-tip-1: var(--eng-c-green);
+   --vp-c-tip-soft: var(--eng-c-green-soft);
+   --vp-c-warning-1: var(--eng-c-amber);
+   --vp-c-warning-soft: var(--eng-c-amber-soft);
+   --vp-c-danger-1: var(--eng-c-red);
+   --vp-c-danger-soft: var(--eng-c-red-soft);
+   --vp-font-family-base:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+   --vp-font-family-mono:
+      "Fira Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+   --vp-code-color: #1d4ed8;
+   --vp-code-bg: rgba(37, 99, 235, 0.08);
+   --vp-code-block-bg: var(--eng-c-code-bg);
+   --vp-code-block-divider-color: var(--eng-c-code-border);
+   --vp-code-line-highlight-color: rgba(59, 130, 246, 0.14);
+   --vp-code-copy-code-bg: var(--eng-c-code-copy-bg);
+   --vp-code-copy-code-hover-bg: var(--eng-c-code-copy-hover-bg);
    --vp-button-brand-border: transparent;
-   --vp-button-brand-text: var(--vp-c-white);
-   --vp-button-brand-bg: var(--vp-c-brand-3);
+   --vp-button-brand-text: #ffffff;
+   --vp-button-brand-bg: var(--eng-c-blue);
    --vp-button-brand-hover-border: transparent;
-   --vp-button-brand-hover-text: var(--vp-c-white);
-   --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+   --vp-button-brand-hover-text: #ffffff;
+   --vp-button-brand-hover-bg: var(--eng-c-blue-strong);
    --vp-button-brand-active-border: transparent;
-   --vp-button-brand-active-text: var(--vp-c-white);
-   --vp-button-brand-active-bg: var(--vp-c-brand-1);
-
-   /* nest btn - 现代渐变粉紫色 */
-   --vp-button-nest-border: transparent;
-   --vp-button-nest-text: var(--vp-c-white);
-   --vp-button-nest-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 优雅的紫色渐变 */
-   --vp-button-nest-hover-border: transparent;
-   --vp-button-nest-hover-text: var(--vp-c-white);
-   --vp-button-nest-hover-bg: linear-gradient(135deg, #5568d3 0%, #6a4199 100%); /* 悬停时稍深 */
-   --vp-button-nest-active-border: transparent;
-   --vp-button-nest-active-text: var(--vp-c-white);
-   --vp-button-nest-active-bg: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%); /* 点击时更深 */
+   --vp-button-brand-active-text: #ffffff;
+   --vp-button-brand-active-bg: #1e40af;
+   --vp-button-alt-border: var(--eng-c-border);
+   --vp-button-alt-text: var(--eng-c-text);
+   --vp-button-alt-bg: var(--eng-c-surface);
+   --vp-button-alt-hover-border: var(--eng-c-border-strong);
+   --vp-button-alt-hover-text: var(--eng-c-blue);
+   --vp-button-alt-hover-bg: #f8fafc;
+   --vp-button-alt-active-border: var(--eng-c-border-strong);
+   --vp-button-alt-active-bg: #f1f5f9;
+   --vp-home-hero-name-color: var(--eng-c-blue);
+   --vp-home-hero-name-background: none;
+   --vp-home-hero-image-background-image: none;
+   --vp-home-hero-image-filter: none;
 }
 
-/**
- * Component: Home
- * -------------------------------------------------------------------------- */
+.dark {
+   --eng-c-bg: #0b1120;
+   --eng-c-bg-alt: #0f172a;
+   --eng-c-surface: #111827;
+   --eng-c-surface-soft: #172033;
+   --eng-c-sidebar: #0f172a;
+   --eng-c-text: #e5e7eb;
+   --eng-c-text-soft: #cbd5e1;
+   --eng-c-muted: #94a3b8;
+   --eng-c-border: #24324a;
+   --eng-c-border-strong: #334155;
+   --eng-c-blue: #60a5fa;
+   --eng-c-blue-strong: #93c5fd;
+   --eng-c-blue-soft: rgba(96, 165, 250, 0.14);
+   --eng-c-green: #4ade80;
+   --eng-c-green-soft: rgba(74, 222, 128, 0.13);
+   --eng-c-amber: #fbbf24;
+   --eng-c-amber-soft: rgba(251, 191, 36, 0.13);
+   --eng-c-red: #f87171;
+   --eng-c-red-soft: rgba(248, 113, 113, 0.13);
+   --eng-c-cyan: #22d3ee;
+   --eng-c-cyan-soft: rgba(34, 211, 238, 0.13);
+   --eng-c-table-bg: #111827;
+   --eng-c-table-head: #172033;
+   --eng-c-table-stripe: rgba(148, 163, 184, 0.055);
+   --eng-c-table-hover: rgba(96, 165, 250, 0.13);
+   --eng-c-code-bg: #0a1020;
+   --eng-c-code-panel: #0f172a;
+   --eng-c-code-border: #27364f;
+   --eng-c-code-text: #e5e7eb;
+   --eng-c-code-muted: #94a3b8;
+   --eng-c-code-line-number: #64748b;
+   --eng-c-code-tab-hover: rgba(255, 255, 255, 0.045);
+   --eng-c-code-tab-active: rgba(37, 99, 235, 0.14);
+   --eng-c-code-tab-line: #3b82f6;
+   --eng-c-code-copy-bg: rgba(255, 255, 255, 0.06);
+   --eng-c-code-copy-hover-bg: rgba(255, 255, 255, 0.12);
+   --eng-c-code-copy-border: rgba(148, 163, 184, 0.32);
+   --eng-c-code-scrollbar-thumb: #64748b;
+   --eng-c-code-scrollbar-thumb-hover: #94a3b8;
+   --eng-c-code-highlight: rgba(37, 99, 235, 0.18);
+   --eng-c-code-warning: rgba(217, 119, 6, 0.22);
+   --eng-c-code-error: rgba(220, 38, 38, 0.24);
+   --eng-c-code-add: rgba(22, 163, 74, 0.2);
+   --eng-c-code-remove: rgba(220, 38, 38, 0.18);
+   --eng-c-scrollbar-track: transparent;
+   --eng-c-scrollbar-thumb: #334155;
+   --eng-c-scrollbar-thumb-hover: #475569;
+   --eng-c-shadow: rgba(0, 0, 0, 0.22);
 
-:root {
-   --vp-home-hero-name-color: transparent;
-   --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);
-
-   --vp-home-hero-image-background-image: linear-gradient(-45deg, #bd34fe 50%, #47caff 50%);
-   --vp-home-hero-image-filter: blur(44px);
+   --vp-c-bg: var(--eng-c-bg);
+   --vp-c-bg-alt: var(--eng-c-bg-alt);
+   --vp-c-bg-soft: var(--eng-c-surface-soft);
+   --vp-c-text-1: var(--eng-c-text);
+   --vp-c-text-2: var(--eng-c-text-soft);
+   --vp-c-text-3: var(--eng-c-muted);
+   --vp-c-divider: var(--eng-c-border);
+   --vp-c-gutter: var(--eng-c-border);
+   --vp-c-border: var(--eng-c-border);
+   --vp-c-brand-1: var(--eng-c-blue);
+   --vp-c-brand-2: #93c5fd;
+   --vp-c-brand-3: #3b82f6;
+   --vp-c-brand-soft: var(--eng-c-blue-soft);
+   --vp-c-tip-1: var(--eng-c-green);
+   --vp-c-tip-soft: var(--eng-c-green-soft);
+   --vp-c-warning-1: var(--eng-c-amber);
+   --vp-c-warning-soft: var(--eng-c-amber-soft);
+   --vp-c-danger-1: var(--eng-c-red);
+   --vp-c-danger-soft: var(--eng-c-red-soft);
+   --vp-code-color: #93c5fd;
+   --vp-code-bg: rgba(96, 165, 250, 0.13);
+   --vp-code-copy-code-bg: var(--eng-c-code-copy-bg);
+   --vp-code-copy-code-hover-bg: var(--eng-c-code-copy-hover-bg);
+   --vp-button-alt-text: var(--eng-c-text);
+   --vp-button-alt-bg: var(--eng-c-surface);
+   --vp-button-alt-hover-border: var(--eng-c-border-strong);
+   --vp-button-alt-hover-text: var(--eng-c-blue);
+   --vp-button-alt-hover-bg: #172033;
+   --vp-button-alt-active-bg: #1e293b;
 }
 
-@media (min-width: 640px) {
-   :root {
-      --vp-home-hero-image-filter: blur(56px);
-   }
+html {
+   background: var(--eng-c-bg);
+   letter-spacing: 0;
+}
+
+body {
+   background: var(--eng-c-bg);
+   color: var(--eng-c-text);
+   font-feature-settings:
+      "kern" 1,
+      "liga" 1;
+}
+
+::selection {
+   background: rgba(37, 99, 235, 0.18);
+}
+
+* {
+   scrollbar-width: thin;
+   scrollbar-color: var(--eng-c-scrollbar-thumb) var(--eng-c-scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+   width: 10px;
+   height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+   background: var(--eng-c-scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+   border: 3px solid transparent;
+   border-radius: 999px;
+   background-color: var(--eng-c-scrollbar-thumb);
+   background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+   background-color: var(--eng-c-scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-corner {
+   background: transparent;
+}
+
+*::-webkit-scrollbar-button {
+   display: none;
+   width: 0;
+   height: 0;
+}
+
+.VPNav {
+   border-bottom: 1px solid var(--eng-c-border);
+   background: rgba(248, 250, 252, 0.94);
+   -webkit-backdrop-filter: saturate(120%) blur(8px);
+   backdrop-filter: saturate(120%) blur(8px);
+}
+
+.dark .VPNav {
+   background: rgba(11, 17, 32, 0.94);
+}
+
+.VPNavBar,
+.VPNavBar.has-sidebar .content,
+.VPNavBar.has-sidebar .curtain {
+   background: transparent !important;
+}
+
+.VPNavBarTitle .title {
+   color: var(--eng-c-text);
+   font-size: 17px;
+   font-weight: 700;
+   letter-spacing: 0;
+}
+
+.VPNavBarMenuLink,
+.VPNavBarMenuGroup .button {
+   color: var(--eng-c-text-soft);
+   font-weight: 600;
+}
+
+.VPNavBarMenuLink:hover,
+.VPNavBarMenuGroup .button:hover {
+   color: var(--eng-c-blue);
+}
+
+.VPSidebar {
+   background: var(--eng-c-sidebar) !important;
+   border-right: 1px solid var(--eng-c-border);
+   scrollbar-gutter: stable;
 }
 
 @media (min-width: 960px) {
-   :root {
-      --vp-home-hero-image-filter: blur(68px);
+   .VPSidebar {
+      top: var(--vp-nav-height) !important;
+      height: calc(100vh - var(--vp-nav-height)) !important;
+      padding-top: 0 !important;
    }
 }
 
-/**
- * Component: Custom Block
- * -------------------------------------------------------------------------- */
-
-:root {
-   --vp-custom-block-tip-border: transparent;
-   --vp-custom-block-tip-text: var(--vp-c-text-1);
-   --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
-   --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
+.VPSidebar::-webkit-scrollbar {
+   width: 10px;
 }
 
-/**
- * Component: Algolia
- * -------------------------------------------------------------------------- */
-
-.DocSearch {
-   --docsearch-primary-color: var(--vp-c-brand-1) !important;
+.VPSidebar::-webkit-scrollbar-thumb {
+   border-width: 3px;
 }
 
-/* 侧边栏文字不可选中 */
 .VPSidebar .VPSidebarItem .text,
 .VPSidebar .VPSidebarGroup .title {
    -webkit-user-select: none;
-   -moz-user-select: none;
-   -ms-user-select: none;
    user-select: none;
 }
 
-/* Enhanced button effects for all themes */
+.VPSidebarItem .item {
+   border-radius: 6px;
+   transition:
+      background-color 0.14s ease,
+      color 0.14s ease;
+}
+
+.VPSidebarItem .item:active {
+   background: rgba(37, 99, 235, 0.12);
+}
+
+.VPSidebarItem.level-0 > .item > .link > .text,
+.VPSidebarItem.level-0 > .item > .text {
+   color: var(--eng-c-text);
+   font-weight: 700;
+}
+
+.VPSidebarItem .link:hover .text {
+   color: var(--eng-c-blue);
+}
+
+.VPSidebarItem .link:hover {
+   background: rgba(37, 99, 235, 0.06);
+}
+
+.VPSidebarItem.is-active > .item {
+   background: var(--eng-c-blue-soft);
+}
+
+.VPSidebarItem.is-active > .item .text {
+   color: var(--eng-c-blue);
+}
+
+.VPDoc,
+.VPHome {
+   background: var(--eng-c-bg);
+}
+
+.VPDoc .container {
+   padding-top: 36px;
+}
+
+.VPDoc .content-container {
+   max-width: 820px;
+}
+
+.VPDocAsideOutline .content {
+   border-left-color: var(--eng-c-border);
+}
+
+.outline-link:hover,
+.outline-link.active {
+   color: var(--eng-c-blue);
+}
+
+.VPHero .name,
+.VPHero .text {
+   font-family: var(--vp-font-family-base);
+   letter-spacing: 0;
+}
+
+.VPHero .name {
+   max-width: 760px;
+   font-size: clamp(38px, 6vw, 64px);
+   line-height: 1.08;
+}
+
+.VPHero .text {
+   color: var(--eng-c-text);
+   font-weight: 750;
+}
+
+.VPHero .tagline {
+   color: var(--eng-c-text-soft);
+   font-size: 17px;
+   line-height: 1.75;
+}
+
+.VPButton {
+   border-radius: 6px !important;
+   box-shadow: none !important;
+   transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease;
+}
+
 .VPButton.brand,
-.VPButton.alt,
 .VPButton.nest {
-   transition: all 0.3s ease;
+   border-color: transparent;
+   color: #ffffff;
+   background: var(--eng-c-blue);
 }
 
 .VPButton.brand:hover,
-.VPButton.alt:hover,
 .VPButton.nest:hover {
-   transform: translateY(-2px);
+   color: #ffffff;
+   background: var(--eng-c-blue-strong);
 }
 
-.VPButton.brand:active,
-.VPButton.alt:active,
-.VPButton.nest:active {
-   transform: translateY(0);
+.VPFeature,
+.VPFeature .box {
+   border: 1px solid var(--eng-c-border);
+   border-radius: 8px !important;
+   background: var(--eng-c-surface);
+   box-shadow: 0 1px 2px var(--eng-c-shadow);
 }
 
-/* Brand button enhanced hover */
-.VPButton.brand:hover {
-   box-shadow: 0 4px 12px rgba(var(--vp-c-brand-3), 0.4);
+.VPFeature .title {
+   color: var(--eng-c-text);
+   font-size: 17px;
+   font-weight: 750;
+   letter-spacing: 0;
 }
 
-/* Alt button enhanced hover */
-.VPButton.alt:hover {
-   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.VPFeature .details {
+   color: var(--eng-c-text-soft);
+   line-height: 1.75;
 }
 
-/* Custom nest theme button */
-.VPButton.nest {
-   border-color: var(--vp-button-nest-border);
-   color: var(--vp-button-nest-text);
-   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-
-   &:hover {
-      border-color: var(--vp-button-nest-hover-border);
-      color: var(--vp-button-nest-hover-text);
-      background: linear-gradient(135deg, #5568d3 0%, #6a4199 100%);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-   }
-
-   &:active {
-      border-color: var(--vp-button-nest-active-border);
-      color: var(--vp-button-nest-active-text);
-      background: linear-gradient(135deg, #4c5fc7 0%, #5e3a8c 100%);
-   }
+.vp-doc {
+   color: var(--eng-c-text);
+   font-size: 16px;
+   line-height: 1.78;
 }
 
-/**
- * ==================== 全局表格样式（非自定义容器内） ====================
- * GitHub 风格表格，支持明暗双主题
- */
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3 {
+   color: var(--eng-c-text);
+   font-family: var(--vp-font-family-base);
+   font-weight: 750;
+   letter-spacing: 0;
+}
 
-// 明亮模式
-.vp-doc table:not(.custom-block table):not([class*="language-"]) {
-   border-collapse: collapse;
-   width: auto;
+.vp-doc h1 {
+   margin-bottom: 22px;
+   padding-bottom: 16px;
+   border-bottom: 1px solid var(--eng-c-border);
+   font-size: clamp(32px, 4.6vw, 46px);
+   line-height: 1.18;
+}
+
+.vp-doc h2 {
+   margin-top: 46px;
+   padding-top: 20px;
+   border-top: 1px solid var(--eng-c-border);
+   font-size: 27px;
+   line-height: 1.28;
+}
+
+.vp-doc h3 {
+   margin-top: 32px;
+   font-size: 21px;
+}
+
+.vp-doc p,
+.vp-doc li {
+   color: var(--eng-c-text);
+}
+
+.vp-doc p {
    margin: 16px 0;
-
-   th {
-      background-color: #f6f8fa;
-      color: #24292f;
-      font-weight: 600;
-      text-align: left;
-      padding: 8px 12px;
-      border: 1px solid #d0d7de;
-   }
-
-   td {
-      padding: 8px 12px;
-      color: #24292f;
-      border: 1px solid #d0d7de;
-      font-size: 14px;
-      line-height: 1.6;
-   }
-
-   tr {
-      transition: background-color 0.2s ease;
-
-      &:hover td {
-         background-color: #f6f8fa;
-      }
-   }
 }
 
-// 暗黑模式
-.dark .vp-doc table:not(.custom-block table):not([class*="language-"]) {
-   background-color: transparent;
-
-   th {
-      background-color: #161b22;
-      color: #c9d1d9;
-      border-color: #30363d;
-   }
-
-   td {
-      background-color: transparent;
-      color: #c9d1d9;
-      border-color: #30363d;
-   }
-
-   tr:hover td {
-      background-color: #161b22;
-   }
+.vp-doc a {
+   color: var(--eng-c-blue);
+   font-weight: 600;
+   text-decoration-color: rgba(37, 99, 235, 0.32);
+   text-decoration-thickness: 1px;
+   text-underline-offset: 3px;
+   transition:
+      color 0.16s ease,
+      text-decoration-color 0.16s ease;
 }
 
-/**
- * ==================== 自定义容器内代码块视觉增强 ====================
- * 确保代码块与容器背景有清晰的视觉层次
- */
-
-// 明亮模式 - 代码块视觉增强
-.vp-doc .custom-block {
-   // 代码块添加微妙阴影，增加层次感
-   div[class*="language-"] {
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-   }
-
-   // 行内代码增加边框，更清晰
-   :not(pre) > code {
-      border: 1px solid rgba(0, 0, 0, 0.06);
-   }
+.vp-doc a:hover {
+   color: var(--eng-c-blue-strong);
+   text-decoration-color: currentcolor;
 }
 
-// 暗黑模式 - 代码块视觉增强
-.dark .vp-doc .custom-block {
-   // 代码块添加暗黑模式阴影
-   div[class*="language-"] {
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+.vp-doc strong {
+   color: var(--eng-c-text);
+   font-weight: 750;
+}
+
+.vp-doc mark {
+   border-radius: 4px;
+   padding: 1px 4px;
+   color: var(--eng-c-text);
+   background: rgba(37, 99, 235, 0.1);
+}
+
+.vp-doc blockquote {
+   border-left: 3px solid var(--eng-c-border-strong);
+   border-radius: 0 6px 6px 0;
+   background: var(--eng-c-surface-soft);
+   color: var(--eng-c-text-soft);
+}
+
+.vp-doc hr {
+   border-top-color: var(--eng-c-border);
+}
+
+.vp-doc :not(pre) > code {
+   border: 1px solid rgba(37, 99, 235, 0.16);
+   border-radius: 5px;
+   padding: 2px 6px;
+   color: var(--vp-code-color);
+   background: var(--vp-code-bg);
+   font-size: 0.88em;
+   font-weight: 600;
+}
+
+.vp-doc table:not(.custom-block table) {
+   display: table;
+   overflow-x: auto;
+   width: 100%;
+   min-width: 100%;
+   margin: 22px 0;
+   border: 1px solid var(--eng-c-border);
+   border-radius: 8px;
+   border-spacing: 0;
+   border-collapse: separate;
+   background: var(--eng-c-table-bg);
+   box-shadow: none;
+}
+
+.vp-doc table:not(.custom-block table) thead,
+.vp-doc table:not(.custom-block table) tbody,
+.vp-doc table:not(.custom-block table) tr {
+   width: 100%;
+}
+
+.vp-doc table:not(.custom-block table) th,
+.vp-doc table:not(.custom-block table) td {
+   border: 0 !important;
+   border-bottom: 1px solid var(--eng-c-border) !important;
+   border-left: 1px solid var(--eng-c-border) !important;
+   padding: 10px 13px;
+   line-height: 1.66;
+   background: transparent !important;
+}
+
+.vp-doc table:not(.custom-block table) th:first-child,
+.vp-doc table:not(.custom-block table) td:first-child {
+   border-left: 0 !important;
+}
+
+.vp-doc table:not(.custom-block table) tbody tr:last-child td {
+   border-bottom: 0 !important;
+}
+
+.vp-doc table:not(.custom-block table) th {
+   color: var(--eng-c-text);
+   background: var(--eng-c-table-head) !important;
+   font-weight: 700;
+}
+
+.vp-doc table:not(.custom-block table) td {
+   color: var(--eng-c-text);
+}
+
+.vp-doc table:not(.custom-block table) tbody tr:nth-child(2n) td {
+   background: var(--eng-c-table-stripe) !important;
+}
+
+.vp-doc table:not(.custom-block table) tbody tr:hover td {
+   background: var(--eng-c-table-hover) !important;
+}
+
+.vp-doc div[class*="language-"],
+.vp-block {
+   border: 1px solid var(--eng-c-code-border);
+   border-radius: 8px;
+   background: var(--eng-c-code-bg) !important;
+   box-shadow: none;
+}
+
+.vp-doc div[class*="language-"] {
+   margin: 20px 0;
+   overflow: hidden;
+}
+
+.vp-doc div[class*="language-"] pre {
+   scrollbar-width: thin;
+   scrollbar-color: var(--eng-c-code-scrollbar-thumb) transparent;
+   background: transparent !important;
+}
+
+.vp-doc div[class*="language-"] pre::-webkit-scrollbar {
+   height: 10px;
+}
+
+.vp-doc div[class*="language-"] pre::-webkit-scrollbar-thumb {
+   border: 3px solid var(--eng-c-code-bg);
+   border-radius: 999px;
+   background-color: var(--eng-c-code-scrollbar-thumb);
+   background-clip: content-box;
+}
+
+.vp-doc div[class*="language-"] pre::-webkit-scrollbar-thumb:hover {
+   background-color: var(--eng-c-code-scrollbar-thumb-hover);
+}
+
+.vp-code-group div[class*="language-"] pre::-webkit-scrollbar-thumb {
+   border-color: var(--eng-c-code-bg);
+}
+
+.vp-doc div[class*="language-"] code {
+   color: var(--eng-c-code-text);
+   line-height: 1.72;
+   background: transparent !important;
+}
+
+.vp-doc div[class*="language-"] code span {
+   color: var(--shiki-light, var(--eng-c-code-text)) !important;
+}
+
+.dark .vp-doc div[class*="language-"] code span {
+   color: var(--shiki-dark, var(--eng-c-code-text)) !important;
+}
+
+.dark .vp-doc div[class*="language-"] code span[style*="--shiki-light:#6A737D"] {
+   color: #94a3b8 !important;
+}
+
+.vp-doc div[class*="language-"] .line-numbers-wrapper {
+   color: var(--eng-c-code-line-number);
+   border-right-color: var(--eng-c-code-border);
+}
+
+.vp-doc div[class*="language-"] span.lang {
+   color: var(--eng-c-code-muted);
+   font-weight: 700;
+}
+
+.vp-doc div[class*="language-"] button.copy {
+   width: 38px;
+   height: 38px;
+   border: 1px solid var(--eng-c-code-copy-border);
+   border-radius: 6px;
+   background-color: var(--eng-c-code-copy-bg);
+}
+
+.vp-doc div[class*="language-"] button.copy:hover {
+   background-color: var(--eng-c-code-copy-hover-bg);
+}
+
+.vp-code-group {
+   margin: 22px 0;
+   border: 1px solid var(--eng-c-code-border);
+   border-radius: 8px;
+   overflow: hidden;
+   background: var(--eng-c-code-bg);
+   box-shadow: none;
+}
+
+.vp-code-group .tabs {
+   margin: 0;
+   border-bottom: 1px solid var(--eng-c-code-border);
+   background: var(--eng-c-code-panel);
+   box-shadow: none !important;
+}
+
+.vp-code-group .tabs label {
+   position: relative;
+   min-height: 42px;
+   border-bottom: 0 !important;
+   color: var(--eng-c-code-muted);
+   font-weight: 700;
+   transition:
+      color 0.16s ease,
+      background-color 0.16s ease,
+      border-color 0.16s ease;
+}
+
+.vp-code-group .tabs label::after {
+   content: "";
+   position: absolute;
+   right: 0;
+   bottom: -1px;
+   left: 0;
+   display: block;
+   height: 2px;
+   background: transparent;
+}
+
+.vp-code-group .tabs label:hover {
+   color: var(--eng-c-code-text);
+   background: var(--eng-c-code-tab-hover);
+}
+
+.vp-code-group .tabs input:checked + label {
+   color: var(--eng-c-code-text);
+   background: var(--eng-c-code-tab-active);
+}
+
+.vp-code-group .tabs input:checked + label::after {
+   background: var(--eng-c-code-tab-line);
+}
+
+.vp-code-group div[class*="language-"] {
+   margin: 0;
+   border: 0;
+   border-radius: 0;
+   box-shadow: none;
+}
+
+.vp-doc [class*="language-"] .line {
+   transition:
+      background-color 0.16s ease,
+      opacity 0.16s ease;
+}
+
+.vp-doc [class*="language-"] .line.highlighted {
+   background: var(--eng-c-code-highlight) !important;
+}
+
+.vp-doc [class*="language-"] .line.highlighted.warning {
+   background: var(--eng-c-code-warning) !important;
+}
+
+.vp-doc [class*="language-"] .line.highlighted.error {
+   background: var(--eng-c-code-error) !important;
+}
+
+.vp-doc [class*="language-"] .line.diff.add {
+   background: var(--eng-c-code-add) !important;
+}
+
+.vp-doc [class*="language-"] .line.diff.remove {
+   background: var(--eng-c-code-remove) !important;
+}
+
+.vp-doc [class*="language-"] .line.has-focus {
+   background: var(--eng-c-code-highlight) !important;
+   box-shadow: inset 3px 0 0 var(--eng-c-code-tab-line);
+}
+
+.vp-doc [class*="language-"].has-focused-lines .line:not(.has-focus),
+.vp-doc [class*="language-"] .line:not(.has-focus).has-focus-before,
+.vp-doc [class*="language-"] .line:not(.has-focus).has-focus-after {
+   opacity: 0.72;
+}
+
+.vp-doc [class*="language-"] .line:hover {
+   background: var(--eng-c-code-tab-hover);
+   opacity: 1;
+}
+
+.DocSearch-Button {
+   border: 1px solid var(--eng-c-border) !important;
+   border-radius: 8px !important;
+   background: var(--eng-c-surface) !important;
+}
+
+.dark .DocSearch-Button {
+   background: var(--eng-c-surface) !important;
+}
+
+.VPMenu {
+   border: 1px solid var(--eng-c-border);
+   border-radius: 8px;
+   background: var(--eng-c-surface);
+}
+
+.VPMenu .items {
+   padding: 6px;
+}
+
+.VPMenuLink {
+   border-radius: 6px;
+}
+
+.VPNavScreen {
+   z-index: 29;
+   height: calc(100vh - var(--vp-nav-height)) !important;
+   background: var(--eng-c-bg) !important;
+}
+
+.VPNavScreen .container {
+   background: var(--eng-c-bg);
+}
+
+@media (max-width: 768px) {
+   .VPDoc .container {
+      padding-top: 28px;
    }
 
-   // 行内代码增加边框
-   :not(pre) > code {
-      border: 1px solid rgba(255, 255, 255, 0.08);
+   .vp-doc {
+      font-size: 15.5px;
+      line-height: 1.76;
+   }
+
+   .vp-doc h1 {
+      font-size: 32px;
+   }
+
+   .vp-doc h2 {
+      font-size: 24px;
+   }
+
+   .vp-doc table:not(.custom-block table) th,
+   .vp-doc table:not(.custom-block table) td {
+      padding: 9px 11px;
+   }
+
+   .vp-code-group .tabs label {
+      min-height: 40px;
    }
 }

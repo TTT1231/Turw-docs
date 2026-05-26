@@ -1,23 +1,88 @@
 // 代码组图标
-@mixin applyIcon($bg-image-url, $bg-color: #ffffff, $size: 20px) {
+@mixin applyIcon($bg-image-url, $bg-color: transparent, $size: 18px) {
    content: "";
-   background-image: url($bg-image-url);
-   background-size: contain;
-   background-repeat: no-repeat;
-   background-position: center;
-   background-color: $bg-color;
    display: inline-block;
    width: $size;
    height: $size;
    margin-right: 4px;
+   background-color: $bg-color;
+   background-image: url($bg-image-url);
+   background-position: center;
+   background-size: contain;
+   background-repeat: no-repeat;
 }
 
-/**
- * Custom Block Styles (VitePress & GitHub Alerts)
- * 包含所有自定义容器样式: :::tip, :::warning, :::info, :::danger, :::details
- * 以及 GitHub Alert 样式: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
- * @description 明亮模式下的样式
- */
+@mixin custom-block-table(
+   $table-bg,
+   $table-border,
+   $table-header-bg,
+   $table-header-text,
+   $table-hover-bg,
+   $table-text,
+   $table-stripe-bg
+) {
+   table {
+      display: table;
+      overflow-x: auto;
+      width: 100%;
+      min-width: 100%;
+      margin: 14px 0 4px;
+      border: 1px solid $table-border !important;
+      border-radius: 7px;
+      border-spacing: 0;
+      border-collapse: separate;
+      background: $table-bg !important;
+      box-shadow: none;
+
+      thead,
+      tbody,
+      tr {
+         width: 100%;
+      }
+
+      th,
+      td {
+         border: 0 !important;
+         border-bottom: 1px solid $table-border !important;
+         border-left: 1px solid $table-border !important;
+         padding: 9px 12px;
+         line-height: 1.66;
+         background: transparent !important;
+      }
+
+      th:first-child,
+      td:first-child {
+         border-left: 0 !important;
+      }
+
+      tbody tr:last-child td {
+         border-bottom: 0 !important;
+      }
+
+      tr {
+         background: transparent !important;
+         transition: background-color 0.16s ease;
+      }
+
+      th {
+         color: $table-header-text !important;
+         background: $table-header-bg !important;
+         font-weight: 700;
+      }
+
+      td {
+         color: $table-text !important;
+      }
+
+      tbody tr:nth-child(2n) td {
+         background: $table-stripe-bg !important;
+      }
+
+      tbody tr:hover td {
+         background: $table-hover-bg !important;
+      }
+   }
+}
 
 @mixin custom-block-base(
    $bg-color,
@@ -27,7 +92,6 @@
    $text-color,
    $code-bg,
    $code-color,
-   $code-shadow-color,
    $code-block-bg,
    $code-block-border,
    $link-color,
@@ -39,119 +103,115 @@
    $table-border: $border-color,
    $table-header-bg: rgba($border-left-color, 0.08),
    $table-header-text: $title-color,
-   $table-hover-bg: rgba($border-left-color, 0.05),
-   $table-text: $text-color
+   $table-hover-bg: rgba($border-left-color, 0.09),
+   $table-text: $text-color,
+   $table-stripe-bg: rgba($border-left-color, 0.035)
 ) {
-   background-color: $bg-color;
+   position: relative;
+   margin: 20px 0;
+   padding: 15px 17px;
    border: 1px solid $border-color;
-   border-left: 4px solid $border-left-color;
+   border-left: 3px solid $border-left-color;
    border-radius: 8px;
-   padding: 16px;
-   margin: 16px 0;
+   background: $bg-color;
+   box-shadow: none;
+
+   .custom-block-title,
+   summary {
+      color: $title-color;
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: 0;
+   }
 
    .custom-block-title {
-      color: $title-color;
-      font-weight: 600;
-      font-size: 14px;
+      margin-bottom: 8px;
+      line-height: 1.45;
+   }
+
+   summary {
+      cursor: pointer;
+      outline: none;
    }
 
    p,
    li {
       color: $text-color;
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: 14.5px;
+      line-height: 1.7;
    }
 
-   // 表格样式
-   table {
-      background-color: $table-bg;
-      border: none;
-      border-collapse: collapse;
-      width: auto;
-      margin: 12px 0;
-
-      th {
-         background-color: $table-header-bg;
-         color: $table-header-text;
-         font-weight: 600;
-         text-align: left;
-         padding: 8px 12px;
-      }
-
-      td {
-         padding: 8px 12px;
-         color: $table-text;
-         font-size: 14px;
-         line-height: 1.6;
-      }
-
-      tr {
-         transition: background-color 0.2s ease;
-
-         &:hover {
-            background-color: $table-hover-bg;
-         }
-      }
-
-      // 表格内的行内代码
-      code {
-         background-color: $code-bg !important;
-         color: $code-color !important;
-      }
-
-      // 表格内的链接
-      a {
-         color: $link-color;
-      }
+   p {
+      margin: 10px 0;
    }
 
-   // 行内代码（不在 pre 中的）
+   p:last-child,
+   ul:last-child,
+   ol:last-child {
+      margin-bottom: 0;
+   }
+
+   @include custom-block-table(
+      $table-bg,
+      $table-border,
+      $table-header-bg,
+      $table-header-text,
+      $table-hover-bg,
+      $table-text,
+      $table-stripe-bg
+   );
+
    :not(pre) > code {
-      background-color: $code-bg !important;
+      border: 1px solid rgba($border-left-color, 0.18);
+      border-radius: 5px;
       padding: 2px 6px;
-      border-radius: 4px;
-      font-family:
-         "Fira Code", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Courier New", monospace;
-      font-size: 12px;
       color: $code-color !important;
-      box-shadow: 0 1px 2px 0 $code-shadow-color;
-      transition: background 0.2s;
+      background: $code-bg !important;
+      font-size: 0.88em;
+      font-weight: 650;
    }
 
-   // 代码块容器
    div[class*="language-"] {
-      background-color: $code-block-bg !important;
+      margin: 14px 0;
       border: 1px solid $code-block-border !important;
-      border-radius: 6px;
-      margin: 12px 0;
+      border-radius: 8px;
+      background: $code-block-bg !important;
+      box-shadow: none;
 
-      pre {
-         background-color: transparent !important;
-      }
-
+      pre,
       code {
-         background-color: transparent !important;
+         background: transparent !important;
       }
    }
 
-   // 链接
+   .vp-code-group {
+      margin: 14px 0;
+      border-color: $code-block-border;
+      box-shadow: none;
+
+      div[class*="language-"] {
+         margin: 0;
+         border: 0 !important;
+         border-radius: 0;
+      }
+   }
+
    a {
       color: $link-color;
-      text-decoration: underline;
-      transition: opacity 0.2s ease;
+      font-weight: 650;
+      text-decoration-color: rgba($border-left-color, 0.32);
 
       &:hover {
-         opacity: 0.8;
+         color: $link-color;
+         text-decoration-color: currentcolor;
       }
    }
 
-   // 加粗 - 使用深色文字保持可读性
    strong {
-      color: #24292f;
-      font-weight: 700;
+      color: $text-color;
+      font-weight: 750;
    }
 
-   // 斜体
    em {
       color: $em-color;
       font-style: italic;
@@ -160,52 +220,23 @@
    em strong,
    strong em {
       color: $em-color;
-      font-weight: 700;
+      font-weight: 750;
       font-style: italic;
    }
 
-   // 引用
    blockquote {
+      margin: 12px 0;
       border-left: 3px solid $blockquote-border;
+      border-radius: 0 6px 6px 0;
+      background: rgba($border-left-color, 0.055);
       color: $blockquote-color;
    }
 
-   // 分割线
    hr {
       border-top: 1px solid $hr-color;
    }
 }
 
-/**
- * Custom Block Styles (VitePress & GitHub Alerts)
- * 包含所有自定义容器样式: :::tip, :::warning, :::info, :::danger, :::details
- * 以及 GitHub Alert 样式: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
- * @description 暗黑模式下的样式
- */
-
-/**
-* @param $bg-color-dark 背景色
-* @param $border-color-dark 边框颜色
-* @param $border-left-color-dark 左侧边框颜色
-* @param $title-color-dark 标题颜色
-* @param $text-color-dark 文字颜色
-* @param $code-bg-dark 行内代码背景色
-* @param $code-color-dark 行内代码文字颜色
-* @param $code-shadow-color-dark 行内代码阴影颜色
-* @param $code-block-bg-dark 代码块背景色
-* @param $code-block-border-dark 代码块边框颜色
-* @param $link-color-dark 链接颜色
-* @param $em-color-dark 斜体文字颜色
-* @param $blockquote-border-dark 引用边框颜色
-* @param $blockquote-color-dark 引用文字颜色
-* @param $hr-color-dark 分割线颜色
-* @param $table-bg-dark 表格背景色
-* @param $table-border-dark 表格边框颜色
-* @param $table-header-bg-dark 表格头部背景色
-* @param $table-header-text-dark 表格头部文字颜色
-* @param $table-hover-bg-dark 表格行悬停背景色
-* @param $table-text-dark 表格文字颜色
-*/
 @mixin custom-block-base-dark(
    $bg-color-dark,
    $border-color-dark,
@@ -214,7 +245,6 @@
    $text-color-dark,
    $code-bg-dark,
    $code-color-dark,
-   $code-shadow-color-dark,
    $code-block-bg-dark,
    $code-block-border-dark,
    $link-color-dark,
@@ -222,129 +252,77 @@
    $blockquote-border-dark,
    $blockquote-color-dark,
    $hr-color-dark,
-   $table-bg-dark: transparent,
+   $table-bg-dark: rgba(255, 255, 255, 0.02),
    $table-border-dark: $border-color-dark,
-   $table-header-bg-dark: rgba($border-left-color-dark, 0.15),
+   $table-header-bg-dark: rgba($border-left-color-dark, 0.13),
    $table-header-text-dark: $title-color-dark,
-   $table-hover-bg-dark: rgba($border-left-color-dark, 0.1),
-   $table-text-dark: $text-color-dark
+   $table-hover-bg-dark: rgba($border-left-color-dark, 0.14),
+   $table-text-dark: $text-color-dark,
+   $table-stripe-bg-dark: rgba($border-left-color-dark, 0.05)
 ) {
-   background-color: $bg-color-dark !important;
+   background: $bg-color-dark !important;
    border-color: $border-color-dark !important;
    border-left-color: $border-left-color-dark !important;
+   box-shadow: none;
 
-   .custom-block-title {
+   .custom-block-title,
+   summary {
       color: $title-color-dark !important;
    }
 
    p,
-   li {
+   li,
+   strong {
       color: $text-color-dark !important;
    }
 
-   // 表格样式
-   table {
-      background-color: $table-bg-dark;
-      border: none;
-      border-collapse: collapse;
-      width: auto;
-      margin: 12px 0;
+   @include custom-block-table(
+      $table-bg-dark,
+      $table-border-dark,
+      $table-header-bg-dark,
+      $table-header-text-dark,
+      $table-hover-bg-dark,
+      $table-text-dark,
+      $table-stripe-bg-dark
+   );
 
-      th {
-         background-color: $table-header-bg-dark;
-         color: $table-header-text-dark;
-         font-weight: 600;
-         text-align: left;
-         padding: 8px 12px;
-      }
-
-      td {
-         padding: 8px 12px;
-         color: $table-text-dark;
-         font-size: 14px;
-         line-height: 1.6;
-      }
-
-      tr {
-         transition: background-color 0.2s ease;
-
-         &:hover {
-            background-color: $table-hover-bg-dark;
-         }
-      }
-
-      // 表格内的行内代码
-      code {
-         background-color: $code-bg-dark !important;
-         color: $code-color-dark !important;
-      }
-
-      // 表格内的链接
-      a {
-         color: $link-color-dark;
-      }
-   }
-
-   // 行内代码（不在 pre 中的）
    :not(pre) > code {
-      background-color: $code-bg-dark !important;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family:
-         "Fira Code", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Courier New", monospace;
-      font-size: 12px;
+      border-color: rgba($border-left-color-dark, 0.24);
       color: $code-color-dark !important;
-      box-shadow: 0 1px 2px 0 $code-shadow-color-dark;
-      transition: background 0.2s;
+      background: $code-bg-dark !important;
    }
 
-   // 代码块容器
    div[class*="language-"] {
-      background-color: $code-block-bg-dark !important;
       border-color: $code-block-border-dark !important;
-      border-radius: 6px;
-      margin: 12px 0;
-
-      pre {
-         background-color: transparent !important;
-      }
-
-      code {
-         background-color: transparent !important;
-      }
+      background: $code-block-bg-dark !important;
    }
 
-   // 链接
+   .vp-code-group {
+      border-color: $code-block-border-dark !important;
+   }
+
    a {
       color: $link-color-dark !important;
-      text-decoration: underline;
-      transition: opacity 0.2s ease;
+      text-decoration-color: rgba($border-left-color-dark, 0.42);
 
       &:hover {
-         opacity: 0.8;
+         color: $link-color-dark !important;
+         text-decoration-color: currentcolor;
       }
    }
 
-   // 斜体
-   em {
-      color: $em-color-dark !important;
-      font-style: italic;
-   }
-
+   em,
    em strong,
    strong em {
       color: $em-color-dark !important;
-      font-weight: 700;
-      font-style: italic;
    }
 
-   // 引用
    blockquote {
       border-left-color: $blockquote-border-dark !important;
+      background: rgba($border-left-color-dark, 0.07) !important;
       color: $blockquote-color-dark !important;
    }
 
-   // 分割线
    hr {
       border-top-color: $hr-color-dark !important;
    }

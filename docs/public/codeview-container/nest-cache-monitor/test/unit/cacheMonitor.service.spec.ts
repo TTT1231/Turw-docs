@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RequestMethod } from '@nestjs/common';
-import { CacheMonitorService } from '../../cacheMonitor.service';
-import { CacheTokensService } from '../../cacheTokens.service';
-import { CacheService } from '../../cache.service';
+import { CacheMonitorService } from '../../src/cache/cacheMonitor.service';
+import { CacheTokensService } from '../../src/cache/cacheTokens.service';
+import { CacheService } from '../../src/cache/cache.service';
 
 describe('CacheMonitorService', () => {
   let service: CacheMonitorService;

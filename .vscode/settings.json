@@ -57,7 +57,8 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "package.json": "pnpm-lock.yaml, .gitignore,  .gitattributes, .gitconfig, cspell.json, README.md,postcss.config.js,AGENTS.md",
+    "package.json": "bun.lock, .gitignore,  .gitattributes, .gitconfig, cspell.json, README.md,postcss.config.js",
     ".prettierrc.json": ".prettierignore, .editorconfig ",
+    "CLAUDE.md": "AGENTS.md"
   }
 }

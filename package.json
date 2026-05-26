@@ -26,6 +26,5 @@
       "@codemirror/view": "^6.41.0",
       "ant-design-vue": "^4.2.6",
       "vue": "^3.5.32"
-   },
-   "packageManager": "pnpm@10.26.0"
+   }
 }

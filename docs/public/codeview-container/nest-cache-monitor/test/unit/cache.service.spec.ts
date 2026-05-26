@@ -1,5 +1,5 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { CacheService } from '../../cache.service';
+import { CacheService } from '../../src/cache/cache.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 type MockCacheManager = {
@@ -27,7 +27,6 @@ describe('CacheService测试', () => {
     cacheManager = module.get(CACHE_MANAGER);
   });
   afterEach(() => {
-    // 每次测试后清除 mock 的调用记录
     jest.clearAllMocks();
   });
   it('should be defined', () => {

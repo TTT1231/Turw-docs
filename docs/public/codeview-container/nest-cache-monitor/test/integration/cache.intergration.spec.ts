@@ -1,5 +1,5 @@
 import { type TestingModule, Test } from '@nestjs/testing';
-import { CacheService } from '../../cache.service';
+import { CacheService } from '../../src/cache/cache.service';
 import { CacheModule } from '@nestjs/cache-manager';
 
 describe('cacheService集成测试', () => {
