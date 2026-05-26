@@ -71,6 +71,8 @@ const actualTheme = computed<ThemeMode>(() => {
 
 // ===== Refs =====
 const editorContainer = ref<HTMLElement | null>(null);
+const viewerRoot = ref<HTMLElement | null>(null);
+const layoutRef = ref<HTMLElement | null>(null);
 const editorView = shallowRef<EditorView | null>(null);
 const fileTree = ref<FileNode[]>([]);
 const isLoading = ref(true);
@@ -78,6 +80,17 @@ const error = ref<string | null>(null);
 const currentFile = ref<FileNode | null>(null);
 const currentContent = ref('');
 const expandedFolders = ref<Set<string>>(new Set());
+const isSidebarCollapsed = ref(false);
+const sidebarWidth = ref(226);
+const viewerHeight = ref('');
+let stopActiveDrag: (() => void) | null = null;
+
+const SIDEBAR_MIN_WIDTH = 168;
+const SIDEBAR_MAX_WIDTH = 360;
+
+type ActiveViewerWindow = Window & {
+   __cmCodeViewerActiveRoot?: HTMLElement;
+};
 
 // ===== 文件类型颜色映射 =====
 const EXT_TO_LANG: Record<
@@ -185,6 +198,121 @@ const flatNodes = computed(() => {
    traverse(fileTree.value);
    return result;
 });
+
+const layoutStyle = computed(() => ({
+   minHeight: props.minHeight,
+   maxHeight: props.maxHeight,
+   height: viewerHeight.value || props.minHeight
+}));
+
+const sidebarStyle = computed(() => ({
+   width: `${sidebarWidth.value}px`
+}));
+
+function clamp(value: number, min: number, max: number): number {
+   return Math.min(Math.max(value, min), max);
+}
+
+function cssSizeToNumber(value: string | undefined, fallback: number): number {
+   if (!value) return fallback;
+   const parsed = Number.parseFloat(value);
+   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function stopDrag() {
+   stopActiveDrag?.();
+   stopActiveDrag = null;
+   document.body.classList.remove('cm-code-viewer-resizing');
+   document.body.style.cursor = '';
+}
+
+function startSidebarResize(event: PointerEvent) {
+   event.preventDefault();
+   stopDrag();
+
+   const startX = event.clientX;
+   const startWidth = sidebarWidth.value;
+   const maxWidth = Math.min(SIDEBAR_MAX_WIDTH, Math.floor(window.innerWidth * 0.55));
+
+   const onMove = (moveEvent: PointerEvent) => {
+      sidebarWidth.value = clamp(startWidth + moveEvent.clientX - startX, SIDEBAR_MIN_WIDTH, maxWidth);
+   };
+
+   const onUp = () => stopDrag();
+
+   document.body.classList.add('cm-code-viewer-resizing');
+   document.body.style.cursor = 'col-resize';
+   window.addEventListener('pointermove', onMove);
+   window.addEventListener('pointerup', onUp, { once: true });
+   window.addEventListener('pointercancel', onUp, { once: true });
+
+   stopActiveDrag = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+   };
+}
+
+function startHeightResize(event: PointerEvent) {
+   event.preventDefault();
+   stopDrag();
+
+   const rect = layoutRef.value?.getBoundingClientRect();
+   if (!rect) return;
+
+   const startY = event.clientY;
+   const startHeight = rect.height;
+   const minHeight = cssSizeToNumber(props.minHeight, 320);
+   const maxHeight = cssSizeToNumber(props.maxHeight, Math.max(680, minHeight));
+
+   const onMove = (moveEvent: PointerEvent) => {
+      const nextHeight = clamp(startHeight + moveEvent.clientY - startY, minHeight, maxHeight);
+      viewerHeight.value = `${Math.round(nextHeight)}px`;
+   };
+
+   const onUp = () => stopDrag();
+
+   document.body.classList.add('cm-code-viewer-resizing');
+   document.body.style.cursor = 'row-resize';
+   window.addEventListener('pointermove', onMove);
+   window.addEventListener('pointerup', onUp, { once: true });
+   window.addEventListener('pointercancel', onUp, { once: true });
+
+   stopActiveDrag = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+   };
+}
+
+function toggleSidebar() {
+   isSidebarCollapsed.value = !isSidebarCollapsed.value;
+}
+
+function setActiveViewer() {
+   if (viewerRoot.value) {
+      (window as ActiveViewerWindow).__cmCodeViewerActiveRoot = viewerRoot.value;
+   }
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+   if (!(target instanceof HTMLElement)) return false;
+
+   return (
+      target.isContentEditable ||
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+   );
+}
+
+function handleShortcut(event: KeyboardEvent) {
+   const isToggleShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b';
+   if (!isToggleShortcut || isTypingTarget(event.target)) return;
+
+   if ((window as ActiveViewerWindow).__cmCodeViewerActiveRoot !== viewerRoot.value) return;
+
+   event.preventDefault();
+   toggleSidebar();
+}
 
 // ===== 折叠 Gutter SVG 箭头 =====
 function createFoldMarkerSVG(open: boolean): SVGSVGElement {
@@ -403,9 +531,17 @@ watch(currentContent, (content) => {
 watch(() => props.publicPath, initialize);
 watch(actualTheme, updateEditor);
 
-onMounted(initialize);
+onMounted(() => {
+   initialize();
+   window.addEventListener('keydown', handleShortcut);
+});
 
 onUnmounted(() => {
+   stopDrag();
+   window.removeEventListener('keydown', handleShortcut);
+   if ((window as ActiveViewerWindow).__cmCodeViewerActiveRoot === viewerRoot.value) {
+      delete (window as ActiveViewerWindow).__cmCodeViewerActiveRoot;
+   }
    if (editorView.value) {
       editorView.value.destroy();
       editorView.value = null;
@@ -414,7 +550,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-   <div class="cm-code-viewer" :class="`theme-${actualTheme}`">
+   <div
+      ref="viewerRoot"
+      class="cm-code-viewer"
+      :class="`theme-${actualTheme}`"
+      tabindex="0"
+      @focusin="setActiveViewer"
+      @pointerenter="setActiveViewer"
+   >
       <div v-if="isLoading" class="loading-state">
          <span>加载中...</span>
       </div>
@@ -425,13 +568,32 @@ onUnmounted(() => {
 
       <div
          v-else
+         ref="layoutRef"
          class="editor-layout"
-         :style="{ minHeight: props.minHeight, maxHeight: props.maxHeight }"
+         :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+         :style="layoutStyle"
       >
          <!-- 侧边栏 -->
-         <aside class="sidebar">
+         <aside v-show="!isSidebarCollapsed" class="sidebar" :style="sidebarStyle">
             <div class="sidebar-header">
                <span>资源管理器</span>
+               <button
+                  class="viewer-icon-button"
+                  type="button"
+                  aria-label="隐藏文件树"
+                  title="隐藏文件树"
+                  @click="toggleSidebar"
+               >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                     <path
+                        d="M6.5 4L3 8l3.5 4M3.5 8H13"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                     />
+                  </svg>
+               </button>
             </div>
             <div class="sidebar-content">
                <div
@@ -472,12 +634,38 @@ onUnmounted(() => {
                </div>
             </div>
          </aside>
+         <div
+            v-if="!isSidebarCollapsed"
+            class="sidebar-resizer"
+            role="separator"
+            aria-label="调整文件树宽度"
+            title="拖拽调整文件树宽度"
+            @pointerdown="startSidebarResize"
+         />
 
          <!-- 编辑器区域 -->
          <main class="editor-main">
             <div class="editor-card">
                <!-- 标题栏 -->
                <div class="editor-header">
+                  <button
+                     v-if="isSidebarCollapsed"
+                     class="viewer-icon-button reveal-sidebar-button"
+                     type="button"
+                     aria-label="显示文件树"
+                     title="显示文件树"
+                     @click="toggleSidebar"
+                  >
+                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path
+                           d="M9.5 4L13 8l-3.5 4M3 8h9.5"
+                           stroke="currentColor"
+                           stroke-width="1.6"
+                           stroke-linecap="round"
+                           stroke-linejoin="round"
+                        />
+                     </svg>
+                  </button>
                   <span
                      class="file-badge"
                      :style="{
@@ -500,6 +688,13 @@ onUnmounted(() => {
                </div>
             </div>
          </main>
+         <div
+            class="height-resizer"
+            role="separator"
+            aria-label="调整代码查看器高度"
+            title="拖拽调整代码查看器高度"
+            @pointerdown="startHeightResize"
+         />
       </div>
    </div>
 </template>
@@ -511,6 +706,10 @@ onUnmounted(() => {
    transition:
       background-color 0.3s ease,
       color 0.3s ease;
+
+   &:focus {
+      outline: none;
+   }
 }
 
 .loading-state,
@@ -530,6 +729,7 @@ onUnmounted(() => {
 }
 
 .editor-layout {
+   position: relative;
    display: flex;
    border-radius: 8px;
    overflow: hidden;
@@ -541,6 +741,10 @@ onUnmounted(() => {
    max-height: v-bind('props.maxHeight');
 }
 
+:global(body.cm-code-viewer-resizing) {
+   user-select: none;
+}
+
 /* 响应式调整：小屏幕降低最大高度 */
 @media (max-height: 800px) {
    .editor-layout {
@@ -550,7 +754,6 @@ onUnmounted(() => {
 
 // ===== 侧边栏 =====
 .sidebar {
-   width: 226px;
    flex-shrink: 0;
    background: v-bind('editorColors.sidebarBg');
    border-right: 1px solid v-bind('editorColors.sidebarBorder');
@@ -566,12 +769,72 @@ onUnmounted(() => {
    padding: 0 14px;
    display: flex;
    align-items: center;
+   justify-content: space-between;
+   gap: 10px;
    font-size: 12px;
    font-weight: 600;
    text-transform: uppercase;
    letter-spacing: 0.5px;
    color: v-bind('editorColors.lineNum');
    border-bottom: 1px solid v-bind('editorColors.sidebarBorder');
+}
+
+.viewer-icon-button {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 28px;
+   height: 28px;
+   padding: 0;
+   border: 1px solid transparent;
+   border-radius: 6px;
+   color: v-bind('editorColors.lineNum');
+   background: transparent;
+   cursor: pointer;
+   transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+
+   svg {
+      flex-shrink: 0;
+   }
+
+   &:hover {
+      color: v-bind('editorColors.activeLineNum');
+      border-color: v-bind('editorColors.gutterBorder');
+      background: v-bind('editorColors.sidebarHoverBg');
+   }
+}
+
+.sidebar-resizer {
+   position: relative;
+   z-index: 3;
+   width: 8px;
+   flex: 0 0 8px;
+   cursor: col-resize;
+   background: v-bind('editorColors.editorBg');
+   touch-action: none;
+
+   &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 3px;
+      width: 1px;
+      background: v-bind('editorColors.gutterBorder');
+      transition:
+         width 0.15s ease,
+         background-color 0.15s ease;
+   }
+
+   &:hover::before,
+   &:active::before {
+      left: 2px;
+      width: 3px;
+      background: v-bind('editorColors.sidebarActiveBorder');
+   }
 }
 
 .sidebar-content {
@@ -721,6 +984,14 @@ onUnmounted(() => {
    gap: 7px;
 }
 
+.sidebar-collapsed .editor-header {
+   padding-left: 12px;
+}
+
+.reveal-sidebar-button {
+   margin-right: 2px;
+}
+
 .file-badge {
    flex-shrink: 0;
    display: inline-flex;
@@ -761,6 +1032,35 @@ onUnmounted(() => {
    display: flex;
    flex-direction: column;
    overflow: hidden;
+}
+
+.height-resizer {
+   position: absolute;
+   right: 0;
+   bottom: 0;
+   left: 0;
+   z-index: 4;
+   height: 8px;
+   cursor: row-resize;
+   touch-action: none;
+
+   &::before {
+      content: '';
+      position: absolute;
+      right: 50%;
+      bottom: 2px;
+      width: 56px;
+      height: 3px;
+      border-radius: 999px;
+      background: transparent;
+      transform: translateX(50%);
+      transition: background-color 0.15s ease;
+   }
+
+   &:hover::before,
+   &:active::before {
+      background: v-bind('editorColors.scrollThumbHover');
+   }
 }
 
 .editor-container {
