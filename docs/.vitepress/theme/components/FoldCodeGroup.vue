@@ -17,7 +17,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-   maxHeight: '520px',
+   maxHeight: '580px',
    minHeight: '0px',
    lineNumbers: false,
    folding: true

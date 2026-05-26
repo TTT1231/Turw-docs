@@ -10,8 +10,16 @@ import {
    type VNode
 } from 'vue';
 import { useData } from 'vitepress';
-import { EditorView, drawSelection, keymap, lineNumbers } from '@codemirror/view';
-import { EditorState, type Extension } from '@codemirror/state';
+import {
+   Decoration,
+   EditorView,
+   drawSelection,
+   keymap,
+   lineNumbers,
+   ViewPlugin,
+   type DecorationSet
+} from '@codemirror/view';
+import { EditorState, StateEffect, StateField, type Extension } from '@codemirror/state';
 import {
    bracketMatching,
    defaultHighlightStyle,
@@ -39,6 +47,18 @@ type SupportedLang =
    | 'md'
    | 'markdown';
 
+type MagicLineClass =
+   | 'cm-code-line-add'
+   | 'cm-code-line-remove'
+   | 'cm-code-line-warning'
+   | 'cm-code-line-error'
+   | 'cm-code-line-highlight';
+
+interface ParsedCode {
+   code: string;
+   lineClasses: Map<number, MagicLineClass>;
+}
+
 interface Props {
    lang?: SupportedLang | string;
    code?: string;
@@ -56,7 +76,7 @@ const props = withDefaults(defineProps<Props>(), {
    code: '',
    encodedCode: '',
    title: '',
-   maxHeight: '520px',
+   maxHeight: '580px',
    minHeight: '0px',
    lineNumbers: false,
    folding: true,
@@ -89,6 +109,85 @@ const SUPPORTED_LANGS = new Set<SupportedLang>([
    'markdown'
 ]);
 
+const setActiveLine = StateEffect.define<number>();
+
+const activeLineNumberField = StateField.define<number>({
+   create() {
+      return 1;
+   },
+   update(lineNumber, transaction) {
+      let nextLineNumber = lineNumber;
+
+      for (const effect of transaction.effects) {
+         if (effect.is(setActiveLine)) {
+            nextLineNumber = effect.value;
+         }
+      }
+
+      return clampLineNumber(transaction.state, nextLineNumber);
+   }
+});
+
+const activeLineField = StateField.define<DecorationSet>({
+   create(state) {
+      return getActiveLineDecorations(state, 1);
+   },
+   update(decorations, transaction) {
+      decorations = decorations.map(transaction.changes);
+
+      for (const effect of transaction.effects) {
+         if (effect.is(setActiveLine)) {
+            return getActiveLineDecorations(transaction.state, effect.value);
+         }
+      }
+
+      return decorations;
+   },
+   provide: (field) => EditorView.decorations.from(field)
+});
+
+const activeLineGutterPlugin = ViewPlugin.fromClass(
+   class {
+      constructor(view: EditorView) {
+         this.sync(view);
+      }
+
+      update(update: { view: EditorView; docChanged: boolean; viewportChanged: boolean }) {
+         this.sync(update.view);
+      }
+
+      private sync(view: EditorView) {
+         window.requestAnimationFrame(() => {
+            const activeLineNumber = view.state.field(activeLineNumberField);
+
+            view.dom
+               .querySelectorAll('.cm-lineNumbers .cm-gutterElement.cm-activeLineNumber')
+               .forEach((element) => element.classList.remove('cm-activeLineNumber'));
+
+            view.dom.querySelectorAll('.cm-lineNumbers .cm-gutterElement').forEach((element) => {
+               if (element.textContent?.trim() === String(activeLineNumber)) {
+                  element.classList.add('cm-activeLineNumber');
+               }
+            });
+         });
+      }
+   }
+);
+
+const activeLineClickHandler = EditorView.domEventHandlers({
+   mousedown(event, view) {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('.cm-content, .cm-line, .cm-gutters')) return false;
+
+      const position = view.posAtCoords({ x: event.clientX, y: event.clientY });
+      if (position === null) return false;
+
+      const line = view.state.doc.lineAt(position);
+      view.dispatch({ effects: setActiveLine.of(line.number) });
+      return false;
+   }
+});
+
 const normalizedLang = computed<SupportedLang>(() => {
    const lang = (props.lang || 'ts').toLowerCase().trim();
    return SUPPORTED_LANGS.has(lang as SupportedLang) ? (lang as SupportedLang) : 'ts';
@@ -96,7 +195,7 @@ const normalizedLang = computed<SupportedLang>(() => {
 
 const displayTitle = computed(() => props.title || normalizedLang.value.toUpperCase());
 
-const sourceCode = computed(() => {
+const rawSourceCode = computed(() => {
    if (props.encodedCode) {
       return normalizeCode(decodeCode(props.encodedCode));
    }
@@ -106,6 +205,9 @@ const sourceCode = computed(() => {
 
    return normalizeCode(slotToCode(slots.default?.() ?? []));
 });
+
+const parsedCode = computed(() => parseMagicCode(rawSourceCode.value));
+const sourceCode = computed(() => parsedCode.value.code);
 
 function decodeCode(code: string): string {
    try {
@@ -131,6 +233,65 @@ function normalizeCode(code: string): string {
    const commonIndent = indents.length ? Math.min(...indents) : 0;
 
    return lines.map((line) => line.slice(commonIndent)).join('\n');
+}
+
+function parseMagicCode(code: string): ParsedCode {
+   const lines = code.split('\n');
+   const outputLines: string[] = [];
+   const lineClasses = new Map<number, MagicLineClass>();
+   let pendingClass: MagicLineClass | null = null;
+
+   for (const line of lines) {
+      const markerClass = getMagicLineClass(line);
+      const cleanLine = stripMagicMarker(line).trimEnd();
+      const isMarkerOnlyLine = markerClass && !cleanLine.trim();
+
+      if (isMarkerOnlyLine) {
+         pendingClass = markerClass;
+         continue;
+      }
+
+      outputLines.push(cleanLine);
+
+      const outputLineNumber = outputLines.length;
+      const lineClass = markerClass || pendingClass;
+      if (lineClass) {
+         lineClasses.set(outputLineNumber, lineClass);
+      }
+
+      pendingClass = null;
+   }
+
+   return {
+      code: outputLines.join('\n'),
+      lineClasses
+   };
+}
+
+function getMagicLineClass(line: string): MagicLineClass | null {
+   const match = line.match(/\[!code\s+([^\]]+)\]/);
+   const type = match?.[1]?.trim();
+
+   switch (type) {
+      case '++':
+         return 'cm-code-line-add';
+      case '--':
+         return 'cm-code-line-remove';
+      case 'warning':
+         return 'cm-code-line-warning';
+      case 'error':
+         return 'cm-code-line-error';
+      case 'highlight':
+         return 'cm-code-line-highlight';
+      default:
+         return null;
+   }
+}
+
+function stripMagicMarker(line: string): string {
+   return line
+      .replace(/\s*(?:\/\/|#|<!--)?\s*\[!code\s+[^\]]+\]\s*(?:-->)?/g, '')
+      .replace(/\s+$/g, '');
 }
 
 function slotToCode(nodes: VNode[]): string {
@@ -222,6 +383,30 @@ function getLanguageExtension(): Extension {
    }
 }
 
+function clampLineNumber(state: EditorState, lineNumber: number): number {
+   return Math.min(Math.max(lineNumber, 1), state.doc.lines || 1);
+}
+
+function getActiveLineDecorations(state: EditorState, lineNumber: number): DecorationSet {
+   if (!state.doc.lines) return Decoration.none;
+
+   const safeLineNumber = clampLineNumber(state, lineNumber);
+   const line = state.doc.line(safeLineNumber);
+
+   return Decoration.set([Decoration.line({ class: 'cm-click-activeLine' }).range(line.from)]);
+}
+
+function getMagicLineDecorations(state: EditorState, lineClasses: Map<number, MagicLineClass>) {
+   const decorations = Array.from(lineClasses.entries())
+      .filter(([lineNumber]) => lineNumber >= 1 && lineNumber <= state.doc.lines)
+      .map(([lineNumber, className]) => {
+         const line = state.doc.line(lineNumber);
+         return Decoration.line({ class: className }).range(line.from);
+      });
+
+   return Decoration.set(decorations, true);
+}
+
 function createFoldMarkerSVG(open: boolean): SVGSVGElement {
    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
    svg.setAttribute('width', '12');
@@ -256,6 +441,13 @@ function buildExtensions(): Extension[] {
       bracketMatching(),
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       getLanguageExtension(),
+      activeLineNumberField,
+      activeLineField,
+      EditorView.decorations.compute([], (state) =>
+         getMagicLineDecorations(state, parsedCode.value.lineClasses)
+      ),
+      activeLineGutterPlugin,
+      activeLineClickHandler,
       bracketFoldFallback,
       keymap.of(foldKeymap),
       EditorView.theme({
@@ -544,6 +736,8 @@ onUnmounted(() => {
       --eng-c-code-scrollbar-thumb-hover,
       rgba(100, 116, 139, 0.7)
    );
+   --fold-code-active-line: var(--eng-c-code-active-line, rgba(0, 0, 0, 0.035));
+   --fold-code-active-line-border: var(--eng-c-code-active-line-border, rgba(0, 0, 0, 0.075));
 
    margin: 16px 0;
    overflow: hidden;
@@ -651,6 +845,33 @@ onUnmounted(() => {
       padding: 0 14px 0 6px;
    }
 
+   :deep(.cm-click-activeLine) {
+      background: var(--fold-code-active-line);
+      box-shadow:
+         inset 0 1px 0 var(--fold-code-active-line-border),
+         inset 0 -1px 0 var(--fold-code-active-line-border);
+   }
+
+   :deep(.cm-code-line-highlight) {
+      background: var(--eng-c-code-highlight);
+   }
+
+   :deep(.cm-code-line-warning) {
+      background: var(--eng-c-code-warning);
+   }
+
+   :deep(.cm-code-line-error) {
+      background: var(--eng-c-code-error);
+   }
+
+   :deep(.cm-code-line-add) {
+      background: var(--eng-c-code-add);
+   }
+
+   :deep(.cm-code-line-remove) {
+      background: var(--eng-c-code-remove);
+   }
+
    :deep(.cm-gutters) {
       border-right: 1px solid var(--fold-code-border);
       background: var(--fold-code-bg);
@@ -663,6 +884,11 @@ onUnmounted(() => {
       padding: 0 9px 0 8px;
       color: var(--eng-c-code-line-number);
       font-size: 12px;
+   }
+
+   :deep(.cm-lineNumbers .cm-gutterElement.cm-activeLineNumber) {
+      color: var(--fold-code-text);
+      font-weight: 700;
    }
 
    :deep(.cm-foldGutter) {

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>CLAUDE.md 项目概览</title>
+      <link rel="stylesheet" href="CLAUDE-PREVIEW.css" />
+   </head>
+   <body>
+      <div class="container">
+         <h1>Turw-docs 项目概览</h1>
+         <p class="subtitle">基于 VitePress 的个人博客和文档站点 — 学习材料与技术文档</p>
+         <p class="badge-row">
+            <span class="badge">Vue 3</span>
+            <span class="badge">SCSS</span>
+            <span class="badge">VitePress</span>
+            <span class="badge">CodeMirror 6</span>
+            <span class="badge">Tailwind CSS v4</span>
+         </p>
+
+         <!-- 开发命令 -->
+         <div class="section">
+            <div class="section-title"><span>⌨</span> 开发命令</div>
+            <table>
+               <tr>
+                  <th class="col-cmd">命令</th>
+                  <th>说明</th>
+               </tr>
+               <tr>
+                  <td><code>bun run dev</code></td>
+                  <td>启动开发服务器</td>
+               </tr>
+               <tr>
+                  <td><code>bun run docs:build</code></td>
+                  <td>构建生产站点</td>
+               </tr>
+               <tr>
+                  <td><code>bun run docs:preview</code></td>
+                  <td>本地预览构建结果</td>
+               </tr>
+               <tr>
+                  <td><code>bun run format</code></td>
+                  <td>Prettier 格式化</td>
+               </tr>
+               <tr>
+                  <td><code>bun run check:cspell</code></td>
+                  <td>拼写检查</td>
+               </tr>
+               <tr>
+                  <td><code>bun run generate-manifest</code></td>
+                  <td>生成 CodeViewer 文件清单</td>
+               </tr>
+            </table>
+         </div>
+
+         <!-- 项目结构 -->
+         <div class="section">
+            <div class="section-title"><span>📂</span> 项目结构</div>
+            <div class="tree">
+               <span class="dir">docs/</span><br />
+               ├── <span class="dir">.vitepress/</span><br />
+               │ ├── <span class="file">config.mts</span>
+               <span class="comment">← VitePress 配置 + 自定义 markdown 插件</span><br />
+               │ ├── <span class="dir">theme/</span>
+               <span class="comment">← 自定义主题 & Vue 组件</span><br />
+               │ │ ├── <span class="file">index.ts</span> <span class="comment">← 组件注册入口</span
+               ><br />
+               │ │ ├── <span class="dir">components/</span>
+               <span class="comment">← 8 个自定义组件</span><br />
+               │ │ └── <span class="file">style.scss</span><br />
+               │ └── <span class="dir">css/</span>
+               <span class="comment">← 容器样式 / 图标 / mixins / Tailwind</span><br />
+               ├── <span class="dir">frontdesign/</span> <span class="comment">← 前端文档</span
+               ><br />
+               ├── <span class="dir">nuxt/</span> <span class="comment">← Nuxt.js 文档</span><br />
+               ├── <span class="dir">server/</span> <span class="comment">← 服务端文档</span><br />
+               ├── <span class="dir">code-style/</span>
+               <span class="comment">← 代码风格 & VSCode 配置</span><br />
+               ├── <span class="dir">sql/</span> <span class="comment">← SQL 文档</span><br />
+               ├── <span class="dir">wsl/</span> <span class="comment">← WSL 相关文档</span><br />
+               └── <span class="file">index.md</span> <span class="comment">← 首页</span>
+            </div>
+         </div>
+
+         <!-- 自定义组件 -->
+         <div class="section">
+            <div class="section-title"><span>🧩</span> 自定义 Vue 组件</div>
+            <div class="comp-grid">
+               <div class="comp-card">
+                  <div class="comp-name">FlexProperty</div>
+                  <div class="comp-desc">CSS flex 布局属性展示</div>
+               </div>
+               <div class="comp-card">
+                  <div class="comp-name">GridProperty</div>
+                  <div class="comp-desc">CSS grid 布局属性展示</div>
+               </div>
+               <div class="comp-card">
+                  <div class="comp-name">ImgPreview</div>
+                  <div class="comp-desc">图片预览</div>
+               </div>
+               <div class="comp-card">
+                  <div class="comp-name">NuxterrorHandling</div>
+                  <div class="comp-desc">Nuxt.js 错误处理展示</div>
+               </div>
+               <div class="comp-card">
+                  <div class="comp-name">CopyBtn</div>
+                  <div class="comp-desc">全局复制按钮</div>
+               </div>
+               <div class="comp-card">
+                  <div class="comp-name">CodeMirrorCodeViewer</div>
+                  <div class="comp-desc">CodeMirror 6 代码查看器</div>
+               </div>
+               <div class="comp-card">
+                  <div class="comp-name">FoldCodeBlock</div>
+                  <div class="comp-desc">可折叠代码块 + 复制按钮</div>
+               </div>
+               <div class="comp-card">
+                  <div class="comp-name">FoldCodeGroup</div>
+                  <div class="comp-desc">标签切换代码组 + 复制</div>
+               </div>
+            </div>
+         </div>
+
+         <!-- 重要说明 -->
+         <div class="section">
+            <div class="section-title"><span>⚠</span> 重要说明</div>
+            <div class="note">
+               <span class="note-icon">▸</span>
+               <span class="note-text"
+                  ><strong>基础路径:</strong> 站点配置为 <code>/Turw-docs/</code></span
+               >
+            </div>
+            <div class="note">
+               <span class="note-icon">▸</span>
+               <span class="note-text"
+                  ><strong>代码图标:</strong> <code>public/assets/code-icon/</code> 中的 SVG
+                  动态导入</span
+               >
+            </div>
+            <div class="note">
+               <span class="note-icon">▸</span>
+               <span class="note-text"><strong>包管理器:</strong> 使用 Bun（已从 pnpm 迁移）</span>
+            </div>
+            <div class="note">
+               <span class="note-icon">▸</span>
+               <span class="note-text"
+                  ><strong>PostCSS:</strong> 使用 <code>@tailwindcss/postcss</code>，无需额外
+                  autoprefixer</span
+               >
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

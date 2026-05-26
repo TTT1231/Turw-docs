@@ -59,6 +59,7 @@
   "explorer.fileNesting.patterns": {
     "package.json": "bun.lock, .gitignore,  .gitattributes, .gitconfig, cspell.json, README.md,postcss.config.js",
     ".prettierrc.json": ".prettierignore, .editorconfig ",
-    "CLAUDE.md": "AGENTS.md"
+    "CLAUDE.md": "AGENTS.md",
+    "CLAUDE-PREVIEW.html": "CLAUDE-PREVIEW.css"
   }
 }

@@ -31,6 +31,28 @@
       ],
       "description": "代码组"
    },
+   "code-group-fold": {
+      "scope": "markdown",
+      "prefix": [
+         ":::code-group-fold"
+      ],
+      "body": [
+         "::: code-group-fold",
+         "$1",
+         ":::"
+      ],
+      "description": "代码组折叠"
+   },
+   "code-highlight": {
+      "scope": "typescript,json,javascript",
+      "prefix": [
+         "!codehighlight"
+      ],
+      "body": [
+         "[!code highlight]"
+      ],
+      "description": "代码块高亮"
+   },
    "code++": {
       "scope": "typescript,json,javascript",
       "prefix": [
