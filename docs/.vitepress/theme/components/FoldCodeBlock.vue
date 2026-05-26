@@ -20,13 +20,24 @@ import {
    foldService,
    syntaxHighlighting
 } from '@codemirror/language';
+import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
 import { vue } from '@codemirror/lang-vue';
 import { oneDark } from '@codemirror/theme-one-dark';
 
-type SupportedLang = 'ts' | 'tsx' | 'js' | 'jsx' | 'json' | 'jsonc' | 'vue' | 'md' | 'markdown';
+type SupportedLang =
+   | 'ts'
+   | 'tsx'
+   | 'js'
+   | 'jsx'
+   | 'json'
+   | 'jsonc'
+   | 'vue'
+   | 'html'
+   | 'md'
+   | 'markdown';
 
 interface Props {
    lang?: SupportedLang | string;
@@ -73,6 +84,7 @@ const SUPPORTED_LANGS = new Set<SupportedLang>([
    'json',
    'jsonc',
    'vue',
+   'html',
    'md',
    'markdown'
 ]);
@@ -203,6 +215,8 @@ function getLanguageExtension(): Extension {
          return markdown();
       case 'vue':
          return vue();
+      case 'html':
+         return html();
       default:
          return javascript({ typescript: true });
    }

@@ -1,3 +1,4 @@
+import type MarkdownIt from 'markdown-it';
 import { defineConfig } from 'vitepress';
 
 interface FoldCodeEntry {
@@ -49,7 +50,7 @@ function parseFoldCodeEntries(content: string, fallbackLang: string): FoldCodeEn
    return entries;
 }
 
-function foldCodeBlockPlugin(md: any) {
+function foldCodeBlockPlugin(md: MarkdownIt) {
    const renderFoldCodeGroup = (entries: FoldCodeEntry[], options: string) => {
       const encodedBlocks = encodeURIComponent(JSON.stringify(entries));
       const lineNumbers = /\bline-numbers\b/.test(options) ? ' line-numbers' : '';
@@ -57,6 +58,7 @@ function foldCodeBlockPlugin(md: any) {
       return `<FoldCodeGroup encoded-blocks="${escapeHtml(encodedBlocks)}"${lineNumbers} />\n`;
    };
 
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- markdown-it block ruler state
    const rule = (state: any, startLine: number, endLine: number, silent: boolean) => {
       const start = state.bMarks[startLine] + state.tShift[startLine];
       const max = state.eMarks[startLine];

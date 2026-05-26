@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
 import FoldCodeBlock from './FoldCodeBlock.vue';
 
 interface CodeEntry {
@@ -75,10 +75,24 @@ function hashString(value: string): string {
 }
 
 async function copyActiveCode() {
-   if (!activeEntry.value?.code) return;
+   const code = activeEntry.value?.code;
+   if (!code) return;
 
    try {
-      await navigator.clipboard.writeText(activeEntry.value.code);
+      if (navigator.clipboard?.writeText) {
+         await navigator.clipboard.writeText(code);
+      } else {
+         const textarea = document.createElement('textarea');
+         textarea.value = code;
+         textarea.setAttribute('readonly', '');
+         textarea.style.position = 'fixed';
+         textarea.style.opacity = '0';
+         document.body.appendChild(textarea);
+         textarea.select();
+         document.execCommand('copy');
+         document.body.removeChild(textarea);
+      }
+
       copied.value = true;
       if (copyTimer) window.clearTimeout(copyTimer);
       copyTimer = window.setTimeout(() => {
@@ -88,6 +102,10 @@ async function copyActiveCode() {
       console.error('[FoldCodeGroup] Copy failed:', error);
    }
 }
+
+onUnmounted(() => {
+   if (copyTimer) window.clearTimeout(copyTimer);
+});
 </script>
 
 <template>

@@ -8,12 +8,12 @@
 
 ## 开发命令
 
-- `pnpm dev` - 启动 VitePress 开发服务器
-- `pnpm docs:build` - 构建生产环境的静态站点
-- `pnpm docs:preview` - 本地预览生产构建
-- `pnpm format` - 使用 Prettier 格式化 `docs/` 中的文件
-- `pnpm check:cspell` - 运行项目拼写检查
-- `pnpm generate-manifest` - 生成 SVG 图标清单文件
+- `bun run dev` - 启动 VitePress 开发服务器
+- `bun run docs:build` - 构建生产环境的静态站点
+- `bun run docs:preview` - 本地预览生产构建
+- `bun run format` - 使用 Prettier 格式化 `docs/` 中的文件
+- `bun run check:cspell` - 运行项目拼写检查
+- `bun run generate-manifest` - 生成 SVG 图标清单文件
 
 ## 架构
 
@@ -28,7 +28,7 @@ docs/
 │   │   ├── components/      # 自定义 Vue 组件
 │   │   └── style.scss       # 主题样式
 │   ├── css/
-│   │   ├── custom-container.scss  # code-group 自定义图标样式
+│   │   ├── custom-container.scss  # 自定义容器块样式 (tip/warning/danger/info 等)
 │   │   ├── code-group-icon.scss   # 代码块语言图标样式
 │   │   ├── mixins.scss      # mixins 混入文件
 │   │   └── tailwind.css     # Tailwind CSS v4 入口 (仅 @import "tailwindcss")
@@ -61,6 +61,8 @@ docs/
 - `NuxterrorHandling.vue` - Nuxt.js 错误处理展示组件
 - `CopyBtn.vue` - 全局复制按钮组件
 - `CodeMirrorCodeViewer.vue` - CodeMirror 6 代码查看器组件
+- `FoldCodeBlock.vue` - 基于 CodeMirror 6 的可折叠代码块，带复制按钮
+- `FoldCodeGroup.vue` - 带标签的可折叠代码组，带标签切换和共享复制
 
 ## 代码风格
 
@@ -77,13 +79,13 @@ docs/
 
 ### 提交前检查
 
-- 运行 `pnpm format` 确保代码格式正确
-- 运行 `pnpm check:cspell` 检查拼写
+- 运行 `bun run format` 确保代码格式正确
+- 运行 `bun run check:cspell` 检查拼写
 - 确保 commit message 清晰描述变更内容
 
 ## 重要说明
 
 - **基础路径**: 站点在 VitePress 配置中配置的基础路径为 `/Turw-docs/`
-- **代码图标**: `public/assets/code-icon/` 中的 SVG 图标是动态导入的 - 关于未使用文件的警告已在 vite 配置中过滤
-- **包管理器**: 使用 `pnpm@10.26.0`
+- **代码图标**: `public/assets/code-icon/` 中的 SVG 图标是动态导入的
+- **包管理器**: 使用 `bun`
 - **PostCSS**: 使用 `@tailwindcss/postcss`，无需单独的 `autoprefixer`（Tailwind v4 已内置）
