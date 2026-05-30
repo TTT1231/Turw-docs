@@ -7,13 +7,15 @@ outline: deep
 > [!IMPORTANT] 最重要一点
 > 给`Claude`验证工作方式，以便能够让它根据验证流程进行改进，最终产出质量翻倍，因此需要把精力放在验证机制做扎实，这样投资回报率最高。
 
-## plugins/skill/agents
+## plugins/skill/agents/workflow/scripts
 
-- plugins 一些系列`skill`和`sub agents`集合
-- skill 用于扩展`LLM`在特定任务上的能力，例如ui/ux skill
-- agents 任务专家，专门处理特定任务，用于任务并行（不关心上下文具体细节情况），例如代码审查agent、安全审查agent两者不关心各自具体上下文因此可以并行处理
-
-三者都可以自动触发和手动触发。
+- plugins 用于编排一系列 `skill`、`agent`
+- skill 用于拓展专业技能
+- agent team 协作 agent 流程可沉淀和规则
+- sub agent 用于快速解决任务，沉淀不了规则和流程
+  三者都可以自动触发和手动触发。
+- workflow 用来编排**流程**避免agent遗漏某些流程的执行（harness）
+- scripts 用来解决agent依靠硬prompt遗忘和不遵守问题
 
 ::: tip 插件和skill参考
 
@@ -22,24 +24,6 @@ outline: deep
 [officialMember-skill](https://github.com/ComposioHQ/awesome-claude-skills)
 
 :::
-
-**常用插件**
-
-这里是展示常用插件，用于提示和帮助快速编码。
-
-[完整官方插件](https://github.com/anthropics/claude-plugins-official)
-
-|        名称         |                          描述                          |
-| :-----------------: | :----------------------------------------------------: |
-|    `feature-dev`    | 完整功能开发工作流，包含代码探索、架构设计、质量审查等 |
-|  `frontend-design`  |            创建高质量前端界面，生成创意代码            |
-|    `code-review`    |        自动PR代码审查，一致性、清晰度和可维护性        |
-|  `code-simplifier`  |          简化和重构代码，不会修改代码原始逻辑          |
-| `pr-review-toolkit` |    PR审查工具包，专注注释、测试、错误处理和代码质量    |
-|  `commit-commands`  |                     Git工作流命令                      |
-|       `figma`       |   Figma集成，设计稿转代码。<mark>需要Api key</mark>    |
-|    `playwright`     |                    浏览器自动化测试                    |
-|    `ralph-loop`     |               用于AI反复迭代，而不会中断               |
 
 ## LSP
 
