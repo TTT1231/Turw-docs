@@ -10,11 +10,11 @@ hero:
       src: /assets/homeright.svg
    actions:
       - theme: nest
-        text: 快速开始
-        link: /frontdesign/faq
+        text: harness
+        link: /harness
       - theme: alt
-        text: claude
-        link: /claude
+        text: 前端
+        link: /frontdesign/faq
 
 features:
    - icon: 📚

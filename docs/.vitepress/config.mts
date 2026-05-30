@@ -263,9 +263,9 @@ export default defineConfig({
             ]
          },
          {
-            text: 'claude',
+            text: 'harness',
             collapsed: true,
-            link: '/claude'
+            link: '/harness'
          }
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
