@@ -7,24 +7,6 @@ outline: deep
 > [!IMPORTANT] 最重要一点
 > 给`Claude`验证工作方式，以便能够让它根据验证流程进行改进，最终产出质量翻倍，因此需要把精力放在验证机制做扎实，这样投资回报率最高。
 
-## plugins/skill/agents/workflow/scripts
-
-- plugins 用于编排一系列 `skill`、`agent`
-- skill 用于拓展专业技能
-- agent team 协作 agent 流程可沉淀和规则
-- sub agent 用于快速解决任务，沉淀不了规则和流程
-  三者都可以自动触发和手动触发。
-- workflow 用来编排**流程**避免agent遗漏某些流程的执行（harness）
-- scripts 用来解决agent依靠硬prompt遗忘和不遵守问题
-
-::: tip 插件和skill参考
-
-[official-plugin](https://github.com/anthropics/claude-plugins-official/tree/main)
-
-[officialMember-skill](https://github.com/ComposioHQ/awesome-claude-skills)
-
-:::
-
 ## LSP
 
 `LSP`一种开放协议，定义IDE与LLM之间的通信标准。`-lsp`添加的时候提供了整个项目的地图和语言级语义分析，为`LLM`提供项目索引、符号查询、依赖追踪等，使得能够精确跳转定义、查找引用等。
@@ -246,57 +228,6 @@ prompt:
 因此应该根据问题复杂度选择合适方案，大多数任务单Agent+skills就比多Agents协作更高效。也就是实用主义优先。
 
 如果是阶段任务例如A、B、C可以任务并行而且任务边界清楚就可以用到多Agents，每一个agents负责对应任务互不干扰。
-:::
-
-## worktree
-
-`Git Worktree` 允许在同一个仓库中检出多个分支到不同目录，而后管理这个`worktree`目录即可，在这个目录中跟`Git`一样使用即可，最后在合并到主分支即可。
-
-claude结合`worktree`可以实现并行任务并发，从而单个任务失败或者成功在不合并到主分支之前，对主分支不会造成任何影响。
-
-**基础命令**
-
-| 命令                                        | 描述                       |
-| ------------------------------------------- | -------------------------- |
-| `git worktree add .trees/[feature-name]`    | 创建新的 worktree          |
-| `git worktree list`                         | 列出所有 worktree          |
-| `git worktree move <old> <new>`             | 移动 worktree 到新位置     |
-| `git worktree remove .trees/[feature-name]` | 删除 worktree 及其引用     |
-| `git worktree prune`                        | 清理已删除的 worktree 引用 |
-
-**完整工作流示例**
-
-假设需要同时开发两个独立功能：用户认证和支付集成
-
-```sh
-# 步骤1: 创建两个 worktree
-git worktree add .trees/feature-auth -b feature/auth
-git worktree add .trees/feature-payment -b feature/payment
-
-# 步骤2: 查看已创建的 worktree
-git worktree list
-
-# 步骤3: 分别在两个终端中打开 Claude，针对不同目录工作。在各自worktree中正常使用Git等命令。
-
-# 步骤4: 功能完成后，合并回主分支。然后清理已完成的worktree
-```
-
-**工作流最佳实践**
-
-::: tip 提示
-
-1. **统一目录命名**: 使用 `.trees/` 前缀组织所有 worktree，方便管理
-2. **及时清理**: 任务完成后及时删除 worktree，避免累积过多目录
-3. **独立终端**: 每个 worktree 使用独立的 Claude 终端，避免上下文混乱
-4. **原子性**: 每个 worktree 专注单一功能，保持任务边界清晰
-   :::
-
-::: warning 注意
-手动删除分支文件之后，分支引用还是会存在，这是还需要去git中删除这个分支引用。
-
-`git worktree remove .trees/[feature-name]`。
-
-最后别忘了分支还是存在的，还是需要手动去删除`git branch -d .trees/[feature-name]`
 :::
 
 ## 重新规划计划

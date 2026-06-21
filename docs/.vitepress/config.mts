@@ -266,6 +266,17 @@ export default defineConfig({
             text: 'harness',
             collapsed: true,
             link: '/harness'
+         },
+         {
+            text: 'claude使用',
+            collapsed: true,
+            items: [
+               { text: 'claude', link: '/claude-use' },
+               {
+                  text: 'claude env',
+                  link: 'claude-env-vars'
+               }
+            ]
          }
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],
