@@ -20,14 +20,7 @@ import {
    type DecorationSet
 } from '@codemirror/view';
 import { EditorState, StateEffect, StateField, type Extension } from '@codemirror/state';
-import {
-   bracketMatching,
-   defaultHighlightStyle,
-   foldGutter,
-   foldKeymap,
-   foldService,
-   syntaxHighlighting
-} from '@codemirror/language';
+import { bracketMatching, foldGutter, foldKeymap, foldService } from '@codemirror/language';
 import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
@@ -439,7 +432,7 @@ function buildExtensions(): Extension[] {
       EditorView.editable.of(false),
       drawSelection(),
       bracketMatching(),
-      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+      oneDark,
       getLanguageExtension(),
       activeLineNumberField,
       activeLineField,
@@ -467,10 +460,6 @@ function buildExtensions(): Extension[] {
 
    if (props.folding) {
       extensions.push(foldGutter({ markerDOM: makeFoldMarker }));
-   }
-
-   if (isDark.value) {
-      extensions.push(oneDark);
    }
 
    return extensions;
@@ -722,22 +711,25 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .fold-code-block {
-   --fold-code-bg: var(--eng-c-code-bg, var(--vp-code-block-bg));
-   --fold-code-panel: var(--eng-c-code-panel, var(--vp-code-block-bg));
-   --fold-code-border: var(--eng-c-code-border, var(--vp-code-block-divider-color));
-   --fold-code-text: var(--eng-c-code-text, var(--vp-c-text-1));
-   --fold-code-muted: var(--eng-c-code-muted, var(--vp-c-text-2));
-   --fold-code-hover: var(--eng-c-code-tab-hover, rgba(37, 99, 235, 0.06));
-   --fold-code-copy-bg: var(--eng-c-code-copy-bg, var(--vp-c-bg-soft));
-   --fold-code-copy-hover-bg: var(--eng-c-code-copy-hover-bg, var(--vp-c-bg-alt));
-   --fold-code-copy-border: var(--eng-c-code-copy-border, var(--vp-c-divider));
-   --fold-code-scrollbar-thumb: var(--eng-c-code-scrollbar-thumb, rgba(100, 116, 139, 0.45));
-   --fold-code-scrollbar-thumb-hover: var(
-      --eng-c-code-scrollbar-thumb-hover,
-      rgba(100, 116, 139, 0.7)
-   );
-   --fold-code-active-line: var(--eng-c-code-active-line, rgba(0, 0, 0, 0.035));
-   --fold-code-active-line-border: var(--eng-c-code-active-line-border, rgba(0, 0, 0, 0.075));
+   --fold-code-bg: #080b0d;
+   --fold-code-panel: #111819;
+   --fold-code-border: #263233;
+   --fold-code-text: #e7f5ef;
+   --fold-code-muted: #789187;
+   --fold-code-line-number: #789187;
+   --fold-code-hover: rgba(231, 245, 239, 0.055);
+   --fold-code-copy-bg: rgba(231, 245, 239, 0.07);
+   --fold-code-copy-hover-bg: rgba(231, 245, 239, 0.13);
+   --fold-code-copy-border: rgba(231, 245, 239, 0.22);
+   --fold-code-scrollbar-thumb: #35484a;
+   --fold-code-scrollbar-thumb-hover: #789187;
+   --fold-code-active-line: rgba(61, 214, 180, 0.08);
+   --fold-code-active-line-border: rgba(61, 214, 180, 0.1);
+   --fold-code-highlight: rgba(61, 214, 180, 0.16);
+   --fold-code-warning: rgba(217, 181, 111, 0.22);
+   --fold-code-error: rgba(255, 143, 122, 0.22);
+   --fold-code-add: rgba(102, 214, 169, 0.18);
+   --fold-code-remove: rgba(255, 143, 122, 0.18);
 
    margin: 16px 0;
    overflow: hidden;
@@ -853,36 +845,36 @@ onUnmounted(() => {
    }
 
    :deep(.cm-code-line-highlight) {
-      background: var(--eng-c-code-highlight);
+      background: var(--fold-code-highlight);
    }
 
    :deep(.cm-code-line-warning) {
-      background: var(--eng-c-code-warning);
+      background: var(--fold-code-warning);
    }
 
    :deep(.cm-code-line-error) {
-      background: var(--eng-c-code-error);
+      background: var(--fold-code-error);
    }
 
    :deep(.cm-code-line-add) {
-      background: var(--eng-c-code-add);
+      background: var(--fold-code-add);
    }
 
    :deep(.cm-code-line-remove) {
-      background: var(--eng-c-code-remove);
+      background: var(--fold-code-remove);
    }
 
    :deep(.cm-gutters) {
       border-right: 1px solid var(--fold-code-border);
       background: var(--fold-code-bg);
-      color: var(--eng-c-code-line-number);
+      color: var(--fold-code-line-number);
       user-select: none;
    }
 
    :deep(.cm-lineNumbers .cm-gutterElement) {
       min-width: 38px;
       padding: 0 9px 0 8px;
-      color: var(--eng-c-code-line-number);
+      color: var(--fold-code-line-number);
       font-size: 12px;
    }
 
@@ -911,7 +903,7 @@ onUnmounted(() => {
       width: 24px;
       height: 18px;
       border-radius: 4px;
-      color: var(--eng-c-code-line-number);
+      color: var(--fold-code-line-number);
       transition:
          color 0.15s,
          background 0.15s;
@@ -923,7 +915,7 @@ onUnmounted(() => {
 
    :deep(.cm-gutters:hover .cm-fold-open),
    :deep(.cm-fold-closed) {
-      color: var(--eng-c-code-line-number);
+      color: var(--fold-code-line-number);
    }
 
    :deep(.cm-gutterElement:hover .cm-fold-open),

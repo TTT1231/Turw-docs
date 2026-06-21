@@ -9,7 +9,7 @@ hero:
    image:
       src: /assets/homeright.svg
    actions:
-      - theme: nest
+      - theme: brand
         text: harness
         link: /harness
       - theme: alt

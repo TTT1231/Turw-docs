@@ -194,16 +194,32 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .fold-code-group {
-   --fold-code-copy-bg: var(--eng-c-code-copy-bg, var(--vp-c-bg-soft));
-   --fold-code-copy-hover-bg: var(--eng-c-code-copy-hover-bg, var(--vp-c-bg-alt));
-   --fold-code-copy-border: var(--eng-c-code-copy-border, var(--vp-c-divider));
+   --fold-code-bg: #080b0d;
+   --fold-code-panel: #111819;
+   --fold-code-border: #263233;
+   --fold-code-text: #e7f5ef;
+   --fold-code-muted: #789187;
+   --fold-code-hover: rgba(231, 245, 239, 0.055);
+   --fold-code-active: rgba(61, 214, 180, 0.14);
+   --fold-code-active-line: #3dd6b4;
+   --fold-code-copy-bg: rgba(231, 245, 239, 0.07);
+   --fold-code-copy-hover-bg: rgba(231, 245, 239, 0.13);
+   --fold-code-copy-border: rgba(231, 245, 239, 0.22);
+   --fold-code-scrollbar-thumb: #35484a;
+   --fold-code-scrollbar-thumb-hover: #789187;
 
    margin: 16px 0;
+   overflow: hidden;
+   border: 1px solid var(--fold-code-border);
+   border-radius: 8px;
+   background: var(--fold-code-bg);
 }
 
 .fold-code-tabs {
    display: flex;
    align-items: stretch;
+   border-bottom: 1px solid var(--fold-code-border);
+   background: var(--fold-code-panel);
 }
 
 .tab-list {
@@ -213,7 +229,7 @@ onUnmounted(() => {
    overflow-x: auto;
    overflow-y: hidden;
    scrollbar-width: thin;
-   scrollbar-color: var(--eng-c-code-scrollbar-thumb) transparent;
+   scrollbar-color: var(--fold-code-scrollbar-thumb) transparent;
 
    &::-webkit-scrollbar {
       height: 10px;
@@ -224,13 +240,13 @@ onUnmounted(() => {
    }
 
    &::-webkit-scrollbar-thumb {
-      border: 3px solid var(--eng-c-code-panel);
+      border: 3px solid var(--fold-code-panel);
       border-radius: 999px;
-      background-color: var(--eng-c-code-scrollbar-thumb);
+      background-color: var(--fold-code-scrollbar-thumb);
       background-clip: padding-box;
 
       &:hover {
-         background-color: var(--eng-c-code-scrollbar-thumb-hover);
+         background-color: var(--fold-code-scrollbar-thumb-hover);
       }
    }
 
@@ -247,13 +263,29 @@ onUnmounted(() => {
       flex: 0 0 auto;
       align-items: center;
       gap: 6px;
+      min-height: 42px;
       padding: 0 14px;
+      color: var(--fold-code-muted);
       cursor: pointer;
       white-space: nowrap;
+      transition:
+         color 0.16s ease,
+         background-color 0.16s ease;
 
       span {
          flex: 0 0 auto;
       }
+
+      &:hover {
+         color: var(--fold-code-text);
+         background: var(--fold-code-hover);
+      }
+   }
+
+   .tab-input:checked + label {
+      color: var(--fold-code-text);
+      background: var(--fold-code-active);
+      box-shadow: inset 0 -2px 0 var(--fold-code-active-line);
    }
 }
 
@@ -267,7 +299,7 @@ onUnmounted(() => {
    top: 2px;
    right: 8px;
    z-index: 1;
-   color: var(--eng-c-code-muted);
+   color: var(--fold-code-muted);
    font-size: 12px;
    font-weight: 700;
    line-height: 20px;
@@ -289,7 +321,7 @@ onUnmounted(() => {
    padding: 0;
    border: 1px solid var(--fold-code-copy-border);
    border-radius: 6px;
-   color: var(--eng-c-code-muted);
+   color: var(--fold-code-muted);
    background: var(--fold-code-copy-bg);
    cursor: pointer;
    opacity: 0;
@@ -304,7 +336,7 @@ onUnmounted(() => {
    }
 
    &:hover {
-      color: var(--eng-c-code-text);
+      color: var(--fold-code-text);
       background: var(--fold-code-copy-hover-bg);
    }
 }
