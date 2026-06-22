@@ -137,8 +137,8 @@ export default defineConfig({
                { text: 'Electron', link: '/frontdesign/electron' },
                { text: 'Node', link: '/server/Nodejs' },
                { text: 'Nest', link: '/server/Nestjs' },
-               { text: 'vscode配置', link: '/code-style/vscode-setting' },
-               { text: '代码格式化', link: '/code-style/eslint-format' }
+               { text: 'harness', link: '/harness' },
+               { text: 'claude', link: '/claude-use' }
             ]
          }
       ],

@@ -147,6 +147,20 @@ claude -w feat/refactor
 }
 ```
 
+### allowedDomains
+
+主要在沙箱模式下限制模型/工具只能访问你白名单里的域名：
+
+```json
+{
+   "sandbox": {
+      "network": {
+         "allowedDomains": ["*.npmjs.org", "registry.npmjs.org"]
+      }
+   }
+}
+```
+
 ## 功能
 
 ### footerLinksRegexes
@@ -250,3 +264,26 @@ Windows 下终端点击 / `Ctrl+左键` 无效时，设置环境变量 `$env:FOR
    "disableBundledSkills": true
 }
 ```
+
+### team-onboarding
+
+`team-onboarding`是一个把你过去一个月怎么用 claude 自动整理成一份文档，好让团队新人照着上手。
+
+工作逻辑：查看你的本地 claude 的使用记录，最近一个月跑了哪些session、用了哪些命令Mcp等，然后提炼成一份 ONBOARDING.md（工作类型分布 + 常用命令 + 常用Mcp），而后信任对着清单看就可以了。
+
+```
+/team-onboarding
+```
+
+### playground
+
+`playground`是一个交互可视化工具，主要用来做视觉设计、数据查询构建、学习探索、概念图、文档评审、代码评审、代码库架构。主要解决输入空间太大，文字描述不清楚，想直接查看效果进行落地。
+
+::: tip 提示
+`playground`隶属 claude `playground`插件，使用前需安装这个插件。
+
+```
+/playground 对这次change进行代码评审
+```
+
+:::

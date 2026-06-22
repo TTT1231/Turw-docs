@@ -13,9 +13,8 @@ hero:
         text: harness
         link: /harness
       - theme: alt
-        text: 前端
-        link: /frontdesign/faq
-
+        text: claude
+        link: /claude-use
 features:
    - icon: 📚
      title: 学习资源
