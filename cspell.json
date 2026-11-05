@@ -16,8 +16,6 @@
         "**/*.png",
         "**/*.ico"
     ],
-    // 词条仅收录内容中实际出现、且内置词典不认识的词（小写即可，匹配不区分大小写）
-    // 清理方法：清空 words 跑 `bun run check:words`，被标记的词才需要加回来
     "words": [
         "addii",
         "acmr",
@@ -49,6 +47,7 @@
         "ishide",
         "ishome",
         "keyup",
+        "lezer",
         "libc",
         "libcxx",
         "libuv",
@@ -58,6 +57,7 @@
         "mozjpeg",
         "nihao",
         "noinline",
+        "nums",
         "nuxterror",
         "nuxtjs",
         "optipng",

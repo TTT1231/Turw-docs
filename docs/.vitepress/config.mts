@@ -105,6 +105,17 @@ function foldCodeBlockPlugin(md: MarkdownIt) {
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
     vite: {
+        // CodeMirror extensions must share one copy of their state and language modules.
+        resolve: {
+            dedupe: [
+                '@codemirror/state',
+                '@codemirror/view',
+                '@codemirror/language',
+                '@lezer/common',
+                '@lezer/highlight',
+                '@lezer/lr'
+            ]
+        },
         css: {
             preprocessorOptions: {
                 scss: {
@@ -114,19 +125,42 @@ export default defineConfig({
         }
     },
     markdown: {
+        theme: { light: 'github-light', dark: 'github-dark' },
         lineNumbers: true, // 启用代码块行号
         config(md) {
             md.use(foldCodeBlockPlugin);
+            md.renderer.rules.table_open = () =>
+                '<div class="doc-table" role="region" aria-label="表格，可横向滚动" tabindex="0"><table>\n';
+            md.renderer.rules.table_close = () => '</table></div>\n';
         }
     },
+    appearance: true,
     lang: 'zh-CN',
     base: '/Turw-docs/', // Set to your desired base path
     title: '我的文档',
     description: '日常学习',
     lastUpdated: true,
-    head: [['link', { rel: 'icon', href: '/Turw-docs/assets/favicon.ico' }]],
+    head: [
+        ['link', { rel: 'icon', href: '/Turw-docs/assets/favicon.ico' }],
+        [
+            'script',
+            { id: 'default-light-appearance' },
+            // Set the first-visit preference before VitePress checks the system theme.
+            `try {
+                const key = 'vitepress-theme-appearance';
+                if (!localStorage.getItem(key)) localStorage.setItem(key, 'light');
+            } catch {}`
+        ]
+    ],
     themeConfig: {
         logo: '/assets/logo.svg',
+        outline: { label: '本页目录', level: [2, 3] },
+        docFooter: { prev: '上一篇', next: '下一篇' },
+        sidebarMenuLabel: '文档导航',
+        returnToTopLabel: '返回顶部',
+        darkModeSwitchLabel: '外观',
+        lightModeSwitchTitle: '切换到浅色模式',
+        darkModeSwitchTitle: '切换到深色模式',
         nav: [
             { text: '主页', link: '/' },
             {

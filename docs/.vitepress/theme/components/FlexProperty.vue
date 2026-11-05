@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import CopyBtn from './CopyBtn.vue';
-import { Select as ASelect, SelectOption as ASelectOption } from 'ant-design-vue';
+import { ref, computed, useId } from 'vue';
+import LayoutDemoCode from './LayoutDemoCode.vue';
+const demoId = useId();
 // 响应式数据
 const justifyContent = ref<
     'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly'
@@ -19,34 +19,31 @@ const containerStyle = computed(() => ({
     alignItems: alignItems.value,
     flexDirection: flexDirection.value,
     flexWrap: flexWrap.value,
-    minHeight: flexDirection.value.includes('column') ? '300px' : '150px',
-    width: '100%',
-    border: '2px solid #e5e7eb',
-    padding: '16px',
-    backgroundColor: '#f9fafb',
-    borderRadius: '8px',
-    gap: '8px'
+    height: flexDirection.value.includes('column') ? '360px' : '168px'
 }));
+
+const flexValues = {
+    'flex-initial': '0 1 auto',
+    'flex-1': '1 1 0%',
+    'flex-auto': '1 1 auto',
+    'flex-none': 'none'
+};
+const itemStyle = computed(() => ({ flex: flexValues[flex.value] }));
 
 // 计算属性：CSS代码
 const cssCode = computed(() => {
-    const flexMap = {
-        'flex-initial': '0 1 auto',
-        'flex-1': '1 1 0%',
-        'flex-auto': '1 1 auto',
-        'flex-none': 'none'
-    };
-
     return `.container {
   display: flex;
   justify-content: ${justifyContent.value};
   align-items: ${alignItems.value};
   flex-direction: ${flexDirection.value};
   flex-wrap: ${flexWrap.value};
+  height: ${containerStyle.value.height};
+  gap: 12px;
 }
 
 .flex-item {
-  flex: ${flexMap[flex.value]};
+  flex: ${flexValues[flex.value]};
 }`;
 });
 
@@ -87,373 +84,97 @@ const tailwindCode = computed(() => {
         justifyMap[justifyContent.value],
         alignMap[alignItems.value],
         directionMap[flexDirection.value],
-        wrapMap[flexWrap.value]
+        wrapMap[flexWrap.value],
+        `h-[${containerStyle.value.height}]`,
+        'gap-3'
     ].join(' ');
 
     return `<div class="${containerClasses}">
   <div class="${flex.value}">Item 1</div>
   <div class="${flex.value}">Item 2</div>
   <div class="${flex.value}">Item 3</div>
+  <div class="${flex.value}">Item 4</div>
 </div>`;
 });
 
-// 高亮显示Css代码
-const highlightCss = (code: string) => {
-    return code
-        .replace(/(\.[a-zA-Z-]+)/g, '<span class="css-selector">$1</span>')
-        .replace(/\{/g, '<span class="css-brace">{</span>')
-        .replace(/\}/g, '<span class="css-brace">}</span>')
-        .replace(
-            /(display|justify-content|align-items|flex-direction|flex-wrap):/g,
-            '<span class="css-property">$1</span><span class="css-colon">:</span>'
-        )
-        .replace(/;/g, '<span class="css-semicolon">;</span>')
-        .replace(
-            /(flex|flex-start|flex-end|center|space-between|space-around|space-evenly|stretch|row|row-reverse|column|column-reverse|nowrap|wrap|wrap-reverse)(?=;|\s)/g,
-            '<span class="css-value">$1</span>'
-        );
-};
-
-// 高亮显示Tailwind CSS代码
-const highlightTailwind = (code: string) => {
-    // 首先转义HTML实体
-    let result = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-    // 然后进行高亮处理
-    result = result
-        // 处理class属性值中的Tailwind类名
-        .replace(/class="([^"]*)"/g, (match, classes) => {
-            const highlightedClasses = classes.replace(
-                /(flex|justify-start|justify-end|justify-center|justify-between|justify-around|justify-evenly|items-stretch|items-start|items-end|items-center|items-baseline|flex-row|flex-row-reverse|flex-col|flex-col-reverse|flex-nowrap|flex-wrap|flex-wrap-reverse)/g,
-                '<span class="tailwind-class">$1</span>'
-            );
-            return `<span class="html-attr">class</span><span class="html-equals">=</span>"<span class="tailwind-classes">${highlightedClasses}</span>"`;
-        })
-        // 处理HTML标签
-        .replace(/&lt;div/g, '<span class="html-tag">&lt;div</span>')
-        .replace(/&lt;\/div&gt;/g, '<span class="html-tag">&lt;/div&gt;</span>')
-        .replace(/&gt;/g, '<span class="html-tag">&gt;</span>');
-
-    return result;
-};
+function resetProperties() {
+    justifyContent.value = 'flex-start';
+    alignItems.value = 'stretch';
+    flexDirection.value = 'row';
+    flexWrap.value = 'nowrap';
+    flex.value = 'flex-initial';
+}
 </script>
 
 <template>
-    <div class="flex-property-demo">
-        <!-- 属性选择器 -->
+    <section class="layout-demo flex-property-demo" aria-label="Flex 布局演示">
         <div class="property-selectors">
             <div class="selector-group">
-                <label>justify-content:</label>
-                <a-select v-model:value="justifyContent" style="width: 100%">
-                    <a-select-option value="flex-start">flex-start (左对齐)-默认</a-select-option>
-                    <a-select-option value="flex-end">flex-end (右对齐)</a-select-option>
-                    <a-select-option value="center">center (居中)</a-select-option>
-                    <a-select-option value="space-between"
-                        >space-between (两端对齐)</a-select-option
-                    >
-                    <a-select-option value="space-around">space-around (环绕对齐)</a-select-option>
-                    <a-select-option value="space-evenly">space-evenly (平均分布)</a-select-option>
-                </a-select>
+                <label :for="`${demoId}-justify`">justify-content</label>
+                <select :id="`${demoId}-justify`" v-model="justifyContent">
+                    <option value="flex-start">flex-start（左对齐）</option>
+                    <option value="flex-end">flex-end（右对齐）</option>
+                    <option value="center">center（居中）</option>
+                    <option value="space-between">space-between（两端对齐）</option>
+                    <option value="space-around">space-around（环绕对齐）</option>
+                    <option value="space-evenly">space-evenly（平均分布）</option>
+                </select>
             </div>
-
             <div class="selector-group">
-                <label>align-items:</label>
-                <a-select v-model:value="alignItems" style="width: 100%">
-                    <a-select-option value="stretch">stretch (拉伸)-默认</a-select-option>
-                    <a-select-option value="flex-start">flex-start (顶部对齐)</a-select-option>
-                    <a-select-option value="flex-end">flex-end (底部对齐)</a-select-option>
-                    <a-select-option value="center">center (垂直居中)</a-select-option>
-                    <a-select-option value="baseline">baseline (基线对齐)</a-select-option>
-                </a-select>
+                <label :for="`${demoId}-align`">align-items</label>
+                <select :id="`${demoId}-align`" v-model="alignItems">
+                    <option value="stretch">stretch（拉伸）</option>
+                    <option value="flex-start">flex-start（起始对齐）</option>
+                    <option value="flex-end">flex-end（末端对齐）</option>
+                    <option value="center">center（居中）</option>
+                    <option value="baseline">baseline（基线对齐）</option>
+                </select>
             </div>
-
             <div class="selector-group">
-                <label>flex-direction:</label>
-                <a-select v-model:value="flexDirection" style="width: 100%">
-                    <a-select-option value="row">row (水平)-默认</a-select-option>
-                    <a-select-option value="row-reverse">row-reverse (水平反向)</a-select-option>
-                    <a-select-option value="column">column (垂直)</a-select-option>
-                    <a-select-option value="column-reverse"
-                        >column-reverse (垂直反向)</a-select-option
-                    >
-                </a-select>
+                <label :for="`${demoId}-direction`">flex-direction</label>
+                <select :id="`${demoId}-direction`" v-model="flexDirection">
+                    <option value="row">row（水平）</option>
+                    <option value="row-reverse">row-reverse（水平反向）</option>
+                    <option value="column">column（垂直）</option>
+                    <option value="column-reverse">column-reverse（垂直反向）</option>
+                </select>
             </div>
-
             <div class="selector-group">
-                <label>flex-wrap:</label>
-                <a-select v-model:value="flexWrap" style="width: 100%">
-                    <a-select-option value="nowrap">nowrap (不换行)-默认</a-select-option>
-                    <a-select-option value="wrap">wrap (换行)</a-select-option>
-                    <a-select-option value="wrap-reverse">wrap-reverse (反向换行)</a-select-option>
-                </a-select>
+                <label :for="`${demoId}-wrap`">flex-wrap</label>
+                <select :id="`${demoId}-wrap`" v-model="flexWrap">
+                    <option value="nowrap">nowrap（不换行）</option>
+                    <option value="wrap">wrap（换行）</option>
+                    <option value="wrap-reverse">wrap-reverse（反向换行）</option>
+                </select>
             </div>
-
             <div class="selector-group">
-                <label>flex-grow/shrink/basis:</label>
-                <a-select v-model:value="flex" style="width: 100%">
-                    <a-select-option value="flex-initial"
-                        >flex-initial (0 1 auto) - 默认</a-select-option
-                    >
-                    <a-select-option value="flex-1">flex-1 (1 1 0) - 平均分配</a-select-option>
-                    <a-select-option value="flex-auto"
-                        >flex-auto (1 1 auto) - 基于内容</a-select-option
-                    >
-                    <a-select-option value="flex-none"
-                        >flex-none (0 0 auto) - 固定大小</a-select-option
-                    >
-                </a-select>
+                <label :for="`${demoId}-flex`">flex（子项伸缩）</label>
+                <select :id="`${demoId}-flex`" v-model="flex">
+                    <option value="flex-initial">0 1 auto（默认）</option>
+                    <option value="flex-1">1 1 0%（平均分配）</option>
+                    <option value="flex-auto">1 1 auto（基于内容）</option>
+                    <option value="flex-none">none（固定大小）</option>
+                </select>
             </div>
         </div>
-        <!-- 效果展示 -->
         <div class="demo-preview">
-            <h4>效果展示</h4>
-            <div class="flex-container" :style="containerStyle">
-                <div class="flex-item item-1" :class="flex">Item 1</div>
-                <div class="flex-item item-2" :class="flex">Item 2</div>
-                <div class="flex-item item-3" :class="flex">Item 3</div>
-                <div class="flex-item item-4" :class="flex" v-if="flexDirection.includes('row')">
-                    Item 4
+            <div class="preview-header">
+                <h4>效果预览 <span class="preview-count">4 个项目</span></h4>
+                <button class="demo-reset" type="button" @click="resetProperties">重置</button>
+            </div>
+            <div class="preview-scroll">
+                <div class="layout-preview flex-container" :style="containerStyle">
+                    <div v-for="i in 4" :key="i" class="demo-item" :style="itemStyle">
+                        Item {{ i }}
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- 代码显示区域 -->
-        <div class="code-display">
-            <div class="code-section">
-                <div class="code-header">
-                    <h4>
-                        <span class="code-icon">🎨</span>
-                        CSS 代码
-                    </h4>
-                    <copy-btn :copy-value="cssCode" />
-                </div>
-                <pre><code class="css-code" v-html="highlightCss(cssCode)"></code></pre>
-            </div>
-
-            <div class="code-section">
-                <div class="code-header">
-                    <h4>
-                        <span class="code-icon">⚡</span>
-                        Tailwind CSS
-                    </h4>
-                    <copy-btn :copy-value="tailwindCode" />
-                </div>
-                <pre><code class="tailwind-code" v-html="highlightTailwind(tailwindCode)"></code></pre>
-            </div>
-        </div>
-    </div>
+        <LayoutDemoCode
+            :entries="[
+                { label: 'CSS', language: 'css', code: cssCode },
+                { label: 'Tailwind CSS', language: 'html', code: tailwindCode }
+            ]"
+        />
+    </section>
 </template>
-
-<style scoped lang="scss">
-.flex-property-demo {
-    margin: 24px 0;
-    padding: 20px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #fefefe;
-}
-
-.property-selectors {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.selector-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    & > label {
-        font-weight: 600;
-        color: #374151;
-        font-size: 14px;
-    }
-}
-
-.demo-preview {
-    margin-bottom: 32px;
-    padding: 20px;
-    background: #f8fafc;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    h4 {
-        margin: 0 0 12px 0;
-        color: #1f2937;
-        font-size: 16px;
-        font-weight: 600;
-    }
-}
-
-.code-display {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-@media (max-width: 768px) {
-    .code-display {
-        grid-template-columns: 1fr;
-    }
-}
-
-.code-section {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
-    &:first-child {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    &:last-child {
-        background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-    }
-    h4 {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    pre {
-        margin: 0;
-        padding: 16px;
-        overflow-x: auto;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-    }
-    code {
-        font-family:
-            'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
-        font-size: 13px;
-        line-height: 1.6;
-        color: #24292f;
-    }
-}
-
-.code-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    position: relative;
-}
-
-.code-icon {
-    font-size: 16px;
-}
-
-/* CSS 语法高亮 */
-.code-section {
-    :deep(.css-selector) {
-        color: #d73a49;
-        font-weight: 600;
-    }
-
-    :deep(.css-property) {
-        color: #005cc5;
-        font-weight: 500;
-    }
-    :deep(.css-value) {
-        color: #032f62;
-        background: rgba(3, 47, 98, 0.1);
-        padding: 1px 3px;
-        border-radius: 3px;
-    }
-    :deep(.css-brace) {
-        color: #e36209;
-        font-weight: bold;
-    }
-    :deep(.css-colon) {
-        color: #24292f;
-    }
-    :deep(.css-semicolon) {
-        color: #6a737d;
-    }
-}
-
-/* Tailwind 语法高亮 */
-.tailwind-code {
-    :deep(.html-tag) {
-        color: #22863a;
-        font-weight: 600;
-    }
-    :deep(.html-attr) {
-        color: #6f42c1;
-    }
-    :deep(.html-equals) {
-        color: #24292f;
-    }
-    :deep(.tailwind-classes) {
-        color: #032f62;
-        background: rgba(3, 47, 98, 0.1);
-        padding: 2px 4px;
-        border-radius: 3px;
-    }
-    :deep(.tailwind-class) {
-        color: #e36209;
-        font-weight: 500;
-        background: rgba(227, 98, 9, 0.1);
-        padding: 1px 2px;
-        border-radius: 2px;
-        margin: 0 1px;
-    }
-    :deep(.html-comment) {
-        color: #6a737d;
-        font-style: italic;
-    }
-}
-
-.flex-container {
-    transition: all 0.3s ease;
-}
-
-.flex-item {
-    padding: 16px 20px;
-    border-radius: 6px;
-    font-weight: 500;
-    text-align: center;
-    color: white;
-    min-width: 80px;
-    transition: all 0.3s ease;
-    &:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-}
-
-.item-1 {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.item-2 {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.item-3 {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.item-4 {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-/* Flex 属性样式 */
-.flex-initial {
-    flex: 0 1 auto;
-}
-
-.flex-1 {
-    flex: 1 1 0%;
-}
-
-.flex-auto {
-    flex: 1 1 auto;
-}
-
-.flex-none {
-    flex: none;
-}
-</style>

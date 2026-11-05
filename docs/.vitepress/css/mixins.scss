@@ -2,9 +2,11 @@
 @mixin applyIcon($bg-image-url, $bg-color: transparent, $size: 18px) {
     content: "";
     display: inline-block;
+    flex-shrink: 0;
     width: $size;
     height: $size;
-    margin-right: 4px;
+    padding: 0;
+    border: 0;
     background-color: $bg-color;
     background-image: url($bg-image-url);
     background-position: center;

@@ -1,131 +1,82 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Select as ASelect, SelectOption as ASelectOption } from 'ant-design-vue';
+import { computed, ref, useId } from 'vue';
+import LayoutDemoCode from './LayoutDemoCode.vue';
 
-type GridColumnClass =
-    | 'grid-cols-none'
-    | 'grid-cols-[1fr_2fr_1fr]'
-    | 'gird-cols-[repeat(auto-fit,minmax(200px,1fr))]'
-    | 'grid-cols-[repeat(auto-fill,minmax(200px,1fr))]'
-    | 'grid-cols-[repeat(3,minmax(min-content,1fr))]'
-    | 'grid-cols-[repeat(auto-fit,minmax(200px,auto))]'
-    | 'grid-cols-3';
-type GridRowClass =
-    | 'grid-rows-none'
-    | 'grid-rows-[1fr_2fr_1fr]'
-    | 'gird-rows-[repeat(auto-fit,minmax(200px,1fr))]'
-    | 'grid-rows-[repeat(auto-fill,minmax(200px,1fr))]'
-    | 'grid-rows-[]repeat(3,minmax(min-content,1fr))]'
-    | 'grid-rows-[repeat(auto-fit,minmax(200px,auto))]'
-    | 'grid-rows-3';
-
-const dynamicStyleColumns = ref<GridColumnClass>('grid-cols-3');
-const dynamicStyleRows = ref<GridRowClass>('grid-rows-none');
-
-const dynamicStyle = computed(() => {
-    return dynamicStyleColumns.value + ' ' + dynamicStyleRows.value;
-});
-</script>
-<template>
-    <div class="mb-6 mr-0 p-5 border border-solid border-[#e5e7eb] bg-[#fefefe] rounded-xl">
-        <!-- 多选选择 -->
-        <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
-            <!-- 列属性 -->
-            <div class="flex flex-col gap-1.5">
-                <label class="font-bold">grid-templates-column:</label>
-                <a-select v-model:value="dynamicStyleColumns" style="width: 100%">
-                    <a-select-option value="grid-cols-none">grid-cols-none(默认)</a-select-option>
-                    <a-select-option value="grid-cols-[1fr_2fr_1fr]">1fr 2fr 1fr</a-select-option>
-                    <a-select-option value="grid-cols-[repeat(auto-fit,minmax(200px,1fr))]"
-                        >repeat(auto-fit,minmax(200px,1fr))</a-select-option
-                    >
-                    <a-select-option value="grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
-                        >repeat(auto-fill minmax(200px,1fr))</a-select-option
-                    >
-                    <a-select-option value="grid-cols-[repeat(3,minmax(min-content,1fr))]"
-                        >repeat(3,minmax(min-content,1fr))</a-select-option
-                    >
-                    <a-select-option value="grid-cols-3">grid-cols-3</a-select-option>
-                </a-select>
-            </div>
-            <!-- 行属性 -->
-            <div class="flex flex-col gap-1.5">
-                <label class="font-bold">grid-templates-row:</label>
-                <a-select v-model:value="dynamicStyleRows" style="width: 100%">
-                    <a-select-option value="grid-rows-none">grid-rows-none(默认)</a-select-option>
-                    <a-select-option value="grid-rows-[1fr_2fr_1fr]">1fr 2fr 1fr</a-select-option>
-                    <a-select-option value="grid-rows-[repeat(auto-fit,minmax(200px,1fr))]"
-                        >repeat(auto-fit,minmax(200px,1fr))</a-select-option
-                    >
-                    <a-select-option value="grid-rows-[repeat(auto-fill,minmax(200px,1fr))]"
-                        >repeat(auto-fill minmax(200px,1fr))</a-select-option
-                    >
-                    <a-select-option value="grid-rows-[repeat(3,minmax(min-content,1fr))]"
-                        >repeat(3,minmax(min-content,1fr))</a-select-option
-                    >
-                    <a-select-option value="grid-rows-3">grid-rows-3</a-select-option>
-                </a-select>
-            </div>
-        </div>
-
-        <!-- 效果展示 -->
-        <div class="mb-8 p-5 bg-[#f8fafc] rounded-lg border border-solid border-[#e5e7eb]">
-            <h4>效果展示</h4>
-            <div class="transition-all duration-300 ease-in-out grid" :class="dynamicStyle">
-                <template v-for="i in 8" :key="i">
-                    <div
-                        class="p-4 rounded font-medium text-white text-center min-w-20 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-                        :class="`item-${i}`"
-                    >
-                        Item {{ i }}
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
-</template>
-
-<style scoped lang="scss">
-@use 'sass:list';
-
-$gradients: (
-    1: (
-        #ef4444,
-        #dc2626
-    ),
-    2: (
-        #3b82f6,
-        #2563eb
-    ),
-    3: (
-        #10b981,
-        #059669
-    ),
-    4: (
-        #f59e0b,
-        #d97706
-    ),
-    5: (
-        #a21caf,
-        #7c3aed
-    ),
-    6: (
-        #14b8a6,
-        #06b6d4
-    ),
-    7: (
-        #f43f5e,
-        #f97316
-    ),
-    8: (
-        #84cc16,
-        #22d3ee
-    )
+const demoId = useId();
+const columns = ref('repeat(3, minmax(0, 1fr))');
+const rows = ref('none');
+const columnOptions = [
+    'none',
+    '1fr 2fr 1fr',
+    'repeat(3, minmax(0, 1fr))',
+    'repeat(auto-fit, minmax(200px, 1fr))',
+    'repeat(auto-fill, minmax(200px, 1fr))',
+    'repeat(3, minmax(min-content, 1fr))',
+    'repeat(auto-fit, minmax(200px, auto))'
+];
+// Auto-repeat only accepts fixed track sizes, so use explicit repeats for fr rows.
+const rowOptions = [
+    'none',
+    '1fr 2fr 1fr',
+    'repeat(3, minmax(0, 1fr))',
+    'repeat(auto-fit, minmax(80px, 1fr))',
+    'repeat(auto-fill, minmax(80px, 1fr))',
+    'repeat(3, minmax(min-content, 1fr))',
+    'repeat(auto-fit, minmax(80px, auto))'
+];
+const containerStyle = computed(() => ({
+    display: 'grid',
+    gridTemplateColumns: columns.value,
+    gridTemplateRows: rows.value,
+    height: '300px'
+}));
+const cssCode = computed(
+    () => `.container {
+  display: grid;
+  grid-template-columns: ${columns.value};
+  grid-template-rows: ${rows.value};
+  height: 300px;
+  gap: 12px;
+}`
 );
 
-@each $i, $colors in $gradients {
-    .item-#{$i} {
-        background: linear-gradient(135deg, list.nth($colors, 1), list.nth($colors, 2));
-    }
+function resetProperties() {
+    columns.value = 'repeat(3, minmax(0, 1fr))';
+    rows.value = 'none';
 }
-</style>
+</script>
+
+<template>
+    <section class="layout-demo grid-property-demo" aria-label="Grid 布局演示">
+        <div class="property-selectors">
+            <div class="selector-group">
+                <label :for="`${demoId}-columns`">grid-template-columns</label>
+                <select :id="`${demoId}-columns`" v-model="columns">
+                    <option v-for="value in columnOptions" :key="value" :value="value">
+                        {{ value }}
+                    </option>
+                </select>
+            </div>
+            <div class="selector-group">
+                <label :for="`${demoId}-rows`">grid-template-rows</label>
+                <select :id="`${demoId}-rows`" v-model="rows">
+                    <option v-for="value in rowOptions" :key="value" :value="value">
+                        {{ value }}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div class="demo-preview">
+            <div class="preview-header">
+                <h4>效果预览 <span class="preview-count">8 个项目</span></h4>
+                <button class="demo-reset" type="button" @click="resetProperties">重置</button>
+            </div>
+            <div class="preview-scroll">
+                <div class="layout-preview grid-container" :style="containerStyle">
+                    <div v-for="i in 8" :key="i" class="demo-item">Item {{ i }}</div>
+                </div>
+            </div>
+        </div>
+        <LayoutDemoCode :entries="[{ label: 'CSS', language: 'css', code: cssCode }]" />
+    </section>
+</template>

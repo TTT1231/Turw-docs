@@ -15,7 +15,7 @@ import { EditorState, type Extension } from '@codemirror/state';
 import { indentOnInput, bracketMatching, foldGutter } from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
 import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { codeTheme } from './CodeViewer/theme';
 import {
     loadManifest,
     convertManifestToFileNodes,
@@ -75,6 +75,8 @@ const currentFile = ref<FileNode | null>(null);
 const currentContent = ref('');
 const expandedFolders = ref<Set<string>>(new Set());
 const isSidebarCollapsed = ref(false);
+const isCompact = ref(false);
+let compactMedia: MediaQueryList | undefined;
 const sidebarWidth = ref(226);
 const viewerHeight = ref('');
 let stopActiveDrag: (() => void) | null = null;
@@ -114,39 +116,47 @@ function getFolderIcon(isExpanded: boolean): string {
 // ===== 主题色板 =====
 const editorColors = computed(() => {
     const dark = actualTheme.value === 'dark';
+    const bg = dark ? '#17191c' : '#ffffff';
+    const panel = dark ? '#202327' : '#f6f8fa';
+    const border = dark ? '#30363d' : '#e0e4e9';
+    const text = dark ? '#e6edf3' : '#24292f';
+    const muted = dark ? '#9ba4ae' : '#636c76';
+    const hover = dark ? '#292e35' : '#eef1f5';
+    const active = dark ? '#1a2c43' : '#eaf2ff';
+    const accent = dark ? '#79b8ff' : '#0969da';
     return {
-        editorBg: '#080b0d',
-        editorText: '#e7f5ef',
-        gutterBg: '#080b0d',
-        gutterBorder: '#263233',
-        lineNum: '#789187',
-        activeLineNum: '#e7f5ef',
-        activeLine: 'rgba(61, 214, 180, 0.08)',
-        selection: 'rgba(61, 214, 180, 0.24)',
-        selectionFocused: 'rgba(61, 214, 180, 0.32)',
-        bracketBg: 'rgba(102, 214, 169, 0.18)',
-        bracketBorder: 'rgba(102, 214, 169, 0.42)',
-        foldBg: '#111819',
-        foldBorder: '#263233',
-        foldColor: '#789187',
-        foldHoverBg: 'rgba(231, 245, 239, 0.055)',
-        foldArrow: '#789187',
-        searchMatch: 'rgba(217, 181, 111, 0.34)',
-        searchMatchSel: 'rgba(217, 181, 111, 0.58)',
-        scrollThumb: '#35484a',
-        scrollThumbHover: '#789187',
-        headerBg: '#111819',
-        headerBorder: '#263233',
-        cardBorder: '#263233',
-        cardShadow: dark ? '0 4px 24px var(--eng-c-shadow)' : 'none',
-        sidebarBg: '#111819',
-        sidebarBorder: '#263233',
-        sidebarHoverBg: 'rgba(231, 245, 239, 0.055)',
-        sidebarActiveBg: 'rgba(61, 214, 180, 0.14)',
-        sidebarActiveBorder: '#3dd6b4',
-        badgeBg: `color-mix(in srgb, ${currentBadge.value.color} 18%, transparent)`,
-        badgeBorder: `color-mix(in srgb, ${currentBadge.value.color} 36%, transparent)`,
-        badgeText: currentBadge.value.color
+        editorBg: bg,
+        editorText: text,
+        gutterBg: bg,
+        gutterBorder: border,
+        lineNum: muted,
+        activeLineNum: text,
+        activeLine: panel,
+        selection: dark ? '#264466' : '#dbeafe',
+        selectionFocused: dark ? '#315578' : '#bfdbfe',
+        bracketBg: active,
+        bracketBorder: accent,
+        foldBg: panel,
+        foldBorder: border,
+        foldColor: muted,
+        foldHoverBg: hover,
+        foldArrow: muted,
+        searchMatch: dark ? '#5c4813' : '#fff8c5',
+        searchMatchSel: dark ? '#765c18' : '#fae17d',
+        scrollThumb: dark ? '#484f58' : '#c6cdd5',
+        scrollThumbHover: dark ? '#6e7681' : '#8c959f',
+        headerBg: panel,
+        headerBorder: border,
+        cardBorder: border,
+        cardShadow: 'none',
+        sidebarBg: panel,
+        sidebarBorder: border,
+        sidebarHoverBg: hover,
+        sidebarActiveBg: active,
+        sidebarActiveBorder: accent,
+        badgeBg: active,
+        badgeBorder: border,
+        badgeText: accent
     };
 });
 
@@ -362,7 +372,7 @@ function buildExtensions(): Extension[] {
         rectangularSelection(),
         crosshairCursor(),
         bracketMatching(),
-        oneDark,
+        codeTheme(actualTheme.value === 'dark'),
         getLanguageExtension(currentLang.value),
         lineNumbers(),
         highlightActiveLine(),
@@ -442,6 +452,8 @@ async function selectFile(node: FileNode) {
         toggleFolder(node.path);
         return;
     }
+
+    if (isCompact.value) isSidebarCollapsed.value = true;
 
     // 如果是同一个文件，不做任何操作
     if (currentFile.value?.path === node.path) {
@@ -526,13 +538,22 @@ watch(currentContent, (content) => {
 watch(() => props.publicPath, initialize);
 watch(actualTheme, updateEditor);
 
+function updateCompactLayout() {
+    isCompact.value = compactMedia?.matches ?? false;
+    isSidebarCollapsed.value = isCompact.value;
+}
+
 onMounted(() => {
+    compactMedia = window.matchMedia('(max-width: 640px)');
+    updateCompactLayout();
+    compactMedia.addEventListener('change', updateCompactLayout);
     initialize();
     window.addEventListener('keydown', handleShortcut);
 });
 
 onUnmounted(() => {
     stopDrag();
+    compactMedia?.removeEventListener('change', updateCompactLayout);
     window.removeEventListener('keydown', handleShortcut);
     if ((window as ActiveViewerWindow).__cmCodeViewerActiveRoot === viewerRoot.value) {
         delete (window as ActiveViewerWindow).__cmCodeViewerActiveRoot;
@@ -565,7 +586,7 @@ onUnmounted(() => {
             v-else
             ref="layoutRef"
             class="editor-layout"
-            :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+            :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'is-compact': isCompact }"
             :style="layoutStyle"
         >
             <!-- 侧边栏 -->
@@ -719,8 +740,9 @@ onUnmounted(() => {
         background-color 0.3s ease,
         color 0.3s ease;
 
-    &:focus {
-        outline: none;
+    &:focus-visible {
+        outline: 2px solid var(--eng-c-blue);
+        outline-offset: 3px;
     }
 }
 
@@ -751,6 +773,18 @@ onUnmounted(() => {
     height: var(--editor-height, v-bind('props.minHeight'));
     min-height: v-bind('props.minHeight');
     max-height: v-bind('props.maxHeight');
+}
+
+.editor-layout.is-compact:not(.sidebar-collapsed) {
+    .sidebar {
+        width: 100% !important;
+        border-right: 0;
+    }
+
+    .editor-main,
+    .sidebar-resizer {
+        display: none;
+    }
 }
 
 :global(body.cm-code-viewer-resizing) {

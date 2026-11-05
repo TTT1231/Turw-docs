@@ -6,6 +6,7 @@
 /* 徽标基础样式 mixin */
 @mixin badgeBase() {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     padding: 2px 5px;
@@ -53,7 +54,7 @@
 }
 
 //公共图标路径变量
-$commonIconPath: "/Turw-docs/assets/images/code-icon";
+$commonIconPath: "/assets/images/code-icon";
 
 //获取图标目标路径函数
 @function getIconUrl($icon-name) {

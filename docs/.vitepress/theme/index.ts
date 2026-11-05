@@ -12,6 +12,14 @@ import FoldCodeGroup from './components/FoldCodeGroup.vue';
 import ImgPreview from './components/ImgPreview.vue';
 import NuxterrorHandling from './components/NuxterrorHandling.vue';
 
+// In development, VitePress adds head scripts after its theme state is initialized.
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+    try {
+        const key = 'vitepress-theme-appearance';
+        if (!localStorage.getItem(key)) localStorage.setItem(key, 'light');
+    } catch {}
+}
+
 export default {
     extends: DefaultTheme,
     Layout: () => {

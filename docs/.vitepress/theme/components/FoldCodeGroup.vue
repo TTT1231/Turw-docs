@@ -40,7 +40,6 @@ const entries = computed<CodeEntry[]>(() => {
 });
 
 const activeEntry = computed(() => entries.value[activeIndex.value] ?? entries.value[0]);
-const activeLang = computed(() => normalizeLang(activeEntry.value?.lang || ''));
 
 watch(entries, (list) => {
     if (activeIndex.value >= list.length) {
@@ -110,8 +109,8 @@ onUnmounted(() => {
 
 <template>
     <section class="fold-code-group vp-code-group">
-        <div class="tabs fold-code-tabs" role="tablist">
-            <div class="tab-list">
+        <div class="tabs fold-code-tabs">
+            <div class="tab-list" role="tablist" aria-label="代码文件">
                 <template v-for="(entry, index) in entries" :key="`${entry.lang}-${index}`">
                     <input
                         :id="`${groupName}-${index}`"
@@ -131,22 +130,6 @@ onUnmounted(() => {
                     </label>
                 </template>
             </div>
-        </div>
-
-        <div class="fold-code-body">
-            <FoldCodeBlock
-                v-if="activeEntry"
-                :key="`${activeEntry.lang}-${activeIndex}`"
-                class="group-editor"
-                :lang="activeEntry.lang"
-                :code="activeEntry.code"
-                :max-height="props.maxHeight"
-                :min-height="props.minHeight"
-                :line-numbers="props.lineNumbers"
-                :folding="props.folding"
-                hide-header
-            />
-            <span class="fold-code-lang">{{ activeLang }}</span>
             <button
                 class="copy-button"
                 type="button"
@@ -196,24 +179,39 @@ onUnmounted(() => {
                 </svg>
             </button>
         </div>
+
+        <div class="fold-code-body">
+            <FoldCodeBlock
+                v-if="activeEntry"
+                :key="`${activeEntry.lang}-${activeIndex}`"
+                class="group-editor"
+                :lang="activeEntry.lang"
+                :code="activeEntry.code"
+                :max-height="props.maxHeight"
+                :min-height="props.minHeight"
+                :line-numbers="props.lineNumbers"
+                :folding="props.folding"
+                hide-header
+            />
+        </div>
     </section>
 </template>
 
 <style lang="scss" scoped>
 .fold-code-group {
-    --fold-code-bg: #080b0d;
-    --fold-code-panel: #111819;
-    --fold-code-border: #263233;
-    --fold-code-text: #e7f5ef;
-    --fold-code-muted: #789187;
-    --fold-code-hover: rgba(231, 245, 239, 0.055);
-    --fold-code-active: rgba(61, 214, 180, 0.14);
-    --fold-code-active-line: #3dd6b4;
-    --fold-code-copy-bg: rgba(231, 245, 239, 0.07);
-    --fold-code-copy-hover-bg: rgba(231, 245, 239, 0.13);
-    --fold-code-copy-border: rgba(231, 245, 239, 0.22);
-    --fold-code-scrollbar-thumb: #35484a;
-    --fold-code-scrollbar-thumb-hover: #789187;
+    --fold-code-bg: var(--eng-c-code-bg);
+    --fold-code-panel: var(--eng-c-code-panel);
+    --fold-code-border: var(--eng-c-code-border);
+    --fold-code-text: var(--eng-c-code-text);
+    --fold-code-muted: var(--eng-c-code-muted);
+    --fold-code-hover: var(--eng-c-code-tab-hover);
+    --fold-code-active: var(--eng-c-code-tab-active);
+    --fold-code-active-line: var(--eng-c-code-tab-line);
+    --fold-code-copy-bg: var(--eng-c-code-copy-bg);
+    --fold-code-copy-hover-bg: var(--eng-c-code-copy-hover-bg);
+    --fold-code-copy-border: var(--eng-c-code-copy-border);
+    --fold-code-scrollbar-thumb: var(--eng-c-code-scrollbar-thumb);
+    --fold-code-scrollbar-thumb-hover: var(--eng-c-code-scrollbar-thumb-hover);
 
     margin: 16px 0;
     overflow: hidden;
@@ -224,7 +222,8 @@ onUnmounted(() => {
 
 .fold-code-tabs {
     display: flex;
-    align-items: stretch;
+    align-items: center;
+    padding: 0;
     border-bottom: 1px solid var(--fold-code-border);
     background: var(--fold-code-panel);
 }
@@ -271,7 +270,7 @@ onUnmounted(() => {
         align-items: center;
         gap: 6px;
         min-height: 42px;
-        padding: 0 14px;
+        padding: 0 16px;
         color: var(--fold-code-muted);
         cursor: pointer;
         white-space: nowrap;
@@ -301,41 +300,22 @@ onUnmounted(() => {
     min-height: 64px;
 }
 
-.fold-code-lang {
-    position: absolute;
-    top: 2px;
-    right: 8px;
-    z-index: 1;
-    color: var(--fold-code-muted);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20px;
-    opacity: 1;
-    pointer-events: none;
-    transition: opacity 0.15s;
-}
-
 .copy-button {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 2;
+    flex-shrink: 0;
+    margin: 0 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     border: 1px solid var(--fold-code-copy-border);
     border-radius: 6px;
     color: var(--fold-code-muted);
     background: var(--fold-code-copy-bg);
     cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
     transition:
         color 0.15s,
-        opacity 0.15s,
         background 0.15s;
 
     svg {
@@ -346,17 +326,6 @@ onUnmounted(() => {
         color: var(--fold-code-text);
         background: var(--fold-code-copy-hover-bg);
     }
-}
-
-.fold-code-body:hover .copy-button,
-.copy-button:focus-visible {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.fold-code-body:hover .fold-code-lang,
-.fold-code-body:focus-within .fold-code-lang {
-    opacity: 0;
 }
 
 .group-editor {
