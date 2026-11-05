@@ -132,11 +132,7 @@ export default defineConfig({
          {
             text: '快速访问',
             items: [
-               { text: 'Nuxt', link: '/program/frontend/nuxt' },
-               { text: 'Electron', link: '/program/frontend/electron' },
-               { text: 'Node', link: '/program/backend/Nodejs' },
-               { text: 'harness', link: '/harness' },
-               { text: 'claude', link: '/claude-use' }
+               { text: 'harness', link: '/harness' }
             ]
          }
       ],
