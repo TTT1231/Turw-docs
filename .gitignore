@@ -11,6 +11,7 @@ dist.zip
 .vitepress/deploy.log
 secret/
 docs/.vitepress/.build-temp
+docs/.vitepress/.temp/
 
 # Husky - keep the _ folder and custom hooks, ignore generated ones
 .husky/*
