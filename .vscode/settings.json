@@ -1,11 +1,17 @@
 {
-  //===== 折叠文件夹（美观优化） =====
-  "explorer.fileNesting.enabled": true,
-  "explorer.fileNesting.expand": false,
-  "explorer.fileNesting.patterns": {
-    "package.json": "bun.lock, .gitignore,  .gitattributes, .gitconfig, cspell.json, README.md,postcss.config.js",
-    ".prettierrc.json": ".prettierignore, .editorconfig ",
-    "CLAUDE.md": "AGENTS.md",
-    "CLAUDE-PREVIEW.html": "CLAUDE-PREVIEW.css"
-  }
+   //===== 保存时自动格式化（oxfmt） =====
+   "editor.formatOnSave": true,
+   "editor.defaultFormatter": "oxc.oxc-vscode",
+   //===== 折叠文件夹（美观优化） =====
+   "explorer.fileNesting.enabled": true,
+   "explorer.fileNesting.expand": false,
+   "explorer.fileNesting.patterns": {
+      "package.json": "bun.lock, .gitignore,  .gitattributes, .gitconfig, cspell.json, README.md,postcss.config.js,lefthook.yml",
+      ".oxfmtrc.json": ".editorconfig "
+   },
+   "files.exclude": {
+      "**/.git": true,
+      "node_modules": true,
+      ".claude":true
+   }
 }

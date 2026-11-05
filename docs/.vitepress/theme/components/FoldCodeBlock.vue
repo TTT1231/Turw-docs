@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import {
-   computed,
-   onMounted,
-   onUnmounted,
-   shallowRef,
-   ref,
-   useSlots,
-   watch,
-   type VNode
+    computed,
+    onMounted,
+    onUnmounted,
+    shallowRef,
+    ref,
+    useSlots,
+    watch,
+    type VNode
 } from 'vue';
 import { useData } from 'vitepress';
 import {
-   Decoration,
-   EditorView,
-   drawSelection,
-   keymap,
-   lineNumbers,
-   ViewPlugin,
-   type DecorationSet
+    Decoration,
+    EditorView,
+    drawSelection,
+    keymap,
+    lineNumbers,
+    ViewPlugin,
+    type DecorationSet
 } from '@codemirror/view';
 import { EditorState, StateEffect, StateField, type Extension } from '@codemirror/state';
 import { bracketMatching, foldGutter, foldKeymap, foldService } from '@codemirror/language';
@@ -29,51 +29,51 @@ import { vue } from '@codemirror/lang-vue';
 import { oneDark } from '@codemirror/theme-one-dark';
 
 type SupportedLang =
-   | 'ts'
-   | 'tsx'
-   | 'js'
-   | 'jsx'
-   | 'json'
-   | 'jsonc'
-   | 'vue'
-   | 'html'
-   | 'md'
-   | 'markdown';
+    | 'ts'
+    | 'tsx'
+    | 'js'
+    | 'jsx'
+    | 'json'
+    | 'jsonc'
+    | 'vue'
+    | 'html'
+    | 'md'
+    | 'markdown';
 
 type MagicLineClass =
-   | 'cm-code-line-add'
-   | 'cm-code-line-remove'
-   | 'cm-code-line-warning'
-   | 'cm-code-line-error'
-   | 'cm-code-line-highlight';
+    | 'cm-code-line-add'
+    | 'cm-code-line-remove'
+    | 'cm-code-line-warning'
+    | 'cm-code-line-error'
+    | 'cm-code-line-highlight';
 
 interface ParsedCode {
-   code: string;
-   lineClasses: Map<number, MagicLineClass>;
+    code: string;
+    lineClasses: Map<number, MagicLineClass>;
 }
 
 interface Props {
-   lang?: SupportedLang | string;
-   code?: string;
-   encodedCode?: string;
-   title?: string;
-   maxHeight?: string;
-   minHeight?: string;
-   lineNumbers?: boolean;
-   folding?: boolean;
-   hideHeader?: boolean;
+    lang?: SupportedLang | string;
+    code?: string;
+    encodedCode?: string;
+    title?: string;
+    maxHeight?: string;
+    minHeight?: string;
+    lineNumbers?: boolean;
+    folding?: boolean;
+    hideHeader?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-   lang: 'ts',
-   code: '',
-   encodedCode: '',
-   title: '',
-   maxHeight: '550px',
-   minHeight: '0px',
-   lineNumbers: false,
-   folding: true,
-   hideHeader: false
+    lang: 'ts',
+    code: '',
+    encodedCode: '',
+    title: '',
+    maxHeight: '550px',
+    minHeight: '0px',
+    lineNumbers: false,
+    folding: true,
+    hideHeader: false
 });
 
 const slots = useSlots();
@@ -84,858 +84,860 @@ const copied = ref(false);
 let copyTimer: number | undefined;
 
 const OPEN_TO_CLOSE = new Map([
-   ['{', '}'],
-   ['[', ']'],
-   ['(', ')']
+    ['{', '}'],
+    ['[', ']'],
+    ['(', ')']
 ]);
 
 const SUPPORTED_LANGS = new Set<SupportedLang>([
-   'ts',
-   'tsx',
-   'js',
-   'jsx',
-   'json',
-   'jsonc',
-   'vue',
-   'html',
-   'md',
-   'markdown'
+    'ts',
+    'tsx',
+    'js',
+    'jsx',
+    'json',
+    'jsonc',
+    'vue',
+    'html',
+    'md',
+    'markdown'
 ]);
 
 const setActiveLine = StateEffect.define<number>();
 
 const activeLineNumberField = StateField.define<number>({
-   create() {
-      return 1;
-   },
-   update(lineNumber, transaction) {
-      let nextLineNumber = lineNumber;
+    create() {
+        return 1;
+    },
+    update(lineNumber, transaction) {
+        let nextLineNumber = lineNumber;
 
-      for (const effect of transaction.effects) {
-         if (effect.is(setActiveLine)) {
-            nextLineNumber = effect.value;
-         }
-      }
+        for (const effect of transaction.effects) {
+            if (effect.is(setActiveLine)) {
+                nextLineNumber = effect.value;
+            }
+        }
 
-      return clampLineNumber(transaction.state, nextLineNumber);
-   }
+        return clampLineNumber(transaction.state, nextLineNumber);
+    }
 });
 
 const activeLineField = StateField.define<DecorationSet>({
-   create(state) {
-      return getActiveLineDecorations(state, 1);
-   },
-   update(decorations, transaction) {
-      decorations = decorations.map(transaction.changes);
+    create(state) {
+        return getActiveLineDecorations(state, 1);
+    },
+    update(decorations, transaction) {
+        decorations = decorations.map(transaction.changes);
 
-      for (const effect of transaction.effects) {
-         if (effect.is(setActiveLine)) {
-            return getActiveLineDecorations(transaction.state, effect.value);
-         }
-      }
+        for (const effect of transaction.effects) {
+            if (effect.is(setActiveLine)) {
+                return getActiveLineDecorations(transaction.state, effect.value);
+            }
+        }
 
-      return decorations;
-   },
-   provide: (field) => EditorView.decorations.from(field)
+        return decorations;
+    },
+    provide: (field) => EditorView.decorations.from(field)
 });
 
 const activeLineGutterPlugin = ViewPlugin.fromClass(
-   class {
-      constructor(view: EditorView) {
-         this.sync(view);
-      }
+    class {
+        constructor(view: EditorView) {
+            this.sync(view);
+        }
 
-      update(update: { view: EditorView; docChanged: boolean; viewportChanged: boolean }) {
-         this.sync(update.view);
-      }
+        update(update: { view: EditorView; docChanged: boolean; viewportChanged: boolean }) {
+            this.sync(update.view);
+        }
 
-      private sync(view: EditorView) {
-         window.requestAnimationFrame(() => {
-            const activeLineNumber = view.state.field(activeLineNumberField);
+        private sync(view: EditorView) {
+            window.requestAnimationFrame(() => {
+                const activeLineNumber = view.state.field(activeLineNumberField);
 
-            view.dom
-               .querySelectorAll('.cm-lineNumbers .cm-gutterElement.cm-activeLineNumber')
-               .forEach((element) => element.classList.remove('cm-activeLineNumber'));
+                view.dom
+                    .querySelectorAll('.cm-lineNumbers .cm-gutterElement.cm-activeLineNumber')
+                    .forEach((element) => element.classList.remove('cm-activeLineNumber'));
 
-            view.dom.querySelectorAll('.cm-lineNumbers .cm-gutterElement').forEach((element) => {
-               if (element.textContent?.trim() === String(activeLineNumber)) {
-                  element.classList.add('cm-activeLineNumber');
-               }
+                view.dom
+                    .querySelectorAll('.cm-lineNumbers .cm-gutterElement')
+                    .forEach((element) => {
+                        if (element.textContent?.trim() === String(activeLineNumber)) {
+                            element.classList.add('cm-activeLineNumber');
+                        }
+                    });
             });
-         });
-      }
-   }
+        }
+    }
 );
 
 const activeLineClickHandler = EditorView.domEventHandlers({
-   mousedown(event, view) {
-      const target = event.target as HTMLElement | null;
-      if (!target?.closest('.cm-content, .cm-line, .cm-gutters')) return false;
+    mousedown(event, view) {
+        const target = event.target as HTMLElement | null;
+        if (!target?.closest('.cm-content, .cm-line, .cm-gutters')) return false;
 
-      const position = view.posAtCoords({ x: event.clientX, y: event.clientY });
-      if (position === null) return false;
+        const position = view.posAtCoords({ x: event.clientX, y: event.clientY });
+        if (position === null) return false;
 
-      const line = view.state.doc.lineAt(position);
-      view.dispatch({ effects: setActiveLine.of(line.number) });
-      return false;
-   }
+        const line = view.state.doc.lineAt(position);
+        view.dispatch({ effects: setActiveLine.of(line.number) });
+        return false;
+    }
 });
 
 const normalizedLang = computed<SupportedLang>(() => {
-   const lang = (props.lang || 'ts').toLowerCase().trim();
-   return SUPPORTED_LANGS.has(lang as SupportedLang) ? (lang as SupportedLang) : 'ts';
+    const lang = (props.lang || 'ts').toLowerCase().trim();
+    return SUPPORTED_LANGS.has(lang as SupportedLang) ? (lang as SupportedLang) : 'ts';
 });
 
 const displayTitle = computed(() => props.title || normalizedLang.value.toUpperCase());
 
 const rawSourceCode = computed(() => {
-   if (props.encodedCode) {
-      return normalizeCode(decodeCode(props.encodedCode));
-   }
-   if (props.code) {
-      return normalizeCode(props.code);
-   }
+    if (props.encodedCode) {
+        return normalizeCode(decodeCode(props.encodedCode));
+    }
+    if (props.code) {
+        return normalizeCode(props.code);
+    }
 
-   return normalizeCode(slotToCode(slots.default?.() ?? []));
+    return normalizeCode(slotToCode(slots.default?.() ?? []));
 });
 
 const parsedCode = computed(() => parseMagicCode(rawSourceCode.value));
 const sourceCode = computed(() => parsedCode.value.code);
 
 function decodeCode(code: string): string {
-   try {
-      return decodeURIComponent(code);
-   } catch {
-      return code;
-   }
+    try {
+        return decodeURIComponent(code);
+    } catch {
+        return code;
+    }
 }
 
 function normalizeCode(code: string): string {
-   const lines = code.replace(/\r\n?/g, '\n').split('\n');
+    const lines = code.replace(/\r\n?/g, '\n').split('\n');
 
-   while (lines.length && !lines[0].trim()) {
-      lines.shift();
-   }
-   while (lines.length && !lines[lines.length - 1].trim()) {
-      lines.pop();
-   }
+    while (lines.length && !lines[0].trim()) {
+        lines.shift();
+    }
+    while (lines.length && !lines[lines.length - 1].trim()) {
+        lines.pop();
+    }
 
-   const indents = lines
-      .filter((line) => line.trim())
-      .map((line) => line.match(/^[\t ]*/)?.[0].length ?? 0);
-   const commonIndent = indents.length ? Math.min(...indents) : 0;
+    const indents = lines
+        .filter((line) => line.trim())
+        .map((line) => line.match(/^[\t ]*/)?.[0].length ?? 0);
+    const commonIndent = indents.length ? Math.min(...indents) : 0;
 
-   return lines.map((line) => line.slice(commonIndent)).join('\n');
+    return lines.map((line) => line.slice(commonIndent)).join('\n');
 }
 
 function parseMagicCode(code: string): ParsedCode {
-   const lines = code.split('\n');
-   const outputLines: string[] = [];
-   const lineClasses = new Map<number, MagicLineClass>();
-   let pendingClass: MagicLineClass | null = null;
+    const lines = code.split('\n');
+    const outputLines: string[] = [];
+    const lineClasses = new Map<number, MagicLineClass>();
+    let pendingClass: MagicLineClass | null = null;
 
-   for (const line of lines) {
-      const markerClass = getMagicLineClass(line);
-      const cleanLine = stripMagicMarker(line).trimEnd();
-      const isMarkerOnlyLine = markerClass && !cleanLine.trim();
+    for (const line of lines) {
+        const markerClass = getMagicLineClass(line);
+        const cleanLine = stripMagicMarker(line).trimEnd();
+        const isMarkerOnlyLine = markerClass && !cleanLine.trim();
 
-      if (isMarkerOnlyLine) {
-         pendingClass = markerClass;
-         continue;
-      }
+        if (isMarkerOnlyLine) {
+            pendingClass = markerClass;
+            continue;
+        }
 
-      outputLines.push(cleanLine);
+        outputLines.push(cleanLine);
 
-      const outputLineNumber = outputLines.length;
-      const lineClass = markerClass || pendingClass;
-      if (lineClass) {
-         lineClasses.set(outputLineNumber, lineClass);
-      }
+        const outputLineNumber = outputLines.length;
+        const lineClass = markerClass || pendingClass;
+        if (lineClass) {
+            lineClasses.set(outputLineNumber, lineClass);
+        }
 
-      pendingClass = null;
-   }
+        pendingClass = null;
+    }
 
-   return {
-      code: outputLines.join('\n'),
-      lineClasses
-   };
+    return {
+        code: outputLines.join('\n'),
+        lineClasses
+    };
 }
 
 function getMagicLineClass(line: string): MagicLineClass | null {
-   const match = line.match(/\[!code\s+([^\]]+)\]/);
-   const type = match?.[1]?.trim();
+    const match = line.match(/\[!code\s+([^\]]+)\]/);
+    const type = match?.[1]?.trim();
 
-   switch (type) {
-      case '++':
-         return 'cm-code-line-add';
-      case '--':
-         return 'cm-code-line-remove';
-      case 'warning':
-         return 'cm-code-line-warning';
-      case 'error':
-         return 'cm-code-line-error';
-      case 'highlight':
-         return 'cm-code-line-highlight';
-      default:
-         return null;
-   }
+    switch (type) {
+        case '++':
+            return 'cm-code-line-add';
+        case '--':
+            return 'cm-code-line-remove';
+        case 'warning':
+            return 'cm-code-line-warning';
+        case 'error':
+            return 'cm-code-line-error';
+        case 'highlight':
+            return 'cm-code-line-highlight';
+        default:
+            return null;
+    }
 }
 
 function stripMagicMarker(line: string): string {
-   return line
-      .replace(/\s*(?:\/\/|#|<!--)?\s*\[!code\s+[^\]]+\]\s*(?:-->)?/g, '')
-      .replace(/\s+$/g, '');
+    return line
+        .replace(/\s*(?:\/\/|#|<!--)?\s*\[!code\s+[^\]]+\]\s*(?:-->)?/g, '')
+        .replace(/\s+$/g, '');
 }
 
 function slotToCode(nodes: VNode[]): string {
-   return findCodeLikeText(nodes) ?? vnodeToText(nodes);
+    return findCodeLikeText(nodes) ?? vnodeToText(nodes);
 }
 
 function findCodeLikeText(value: unknown): string | null {
-   if (value === null || value === undefined || typeof value === 'boolean') return null;
-   if (typeof value === 'string' || typeof value === 'number') return null;
+    if (value === null || value === undefined || typeof value === 'boolean') return null;
+    if (typeof value === 'string' || typeof value === 'number') return null;
 
-   if (Array.isArray(value)) {
-      for (const child of value) {
-         const text = findCodeLikeText(child);
-         if (text !== null) return text;
-      }
-      return null;
-   }
+    if (Array.isArray(value)) {
+        for (const child of value) {
+            const text = findCodeLikeText(child);
+            if (text !== null) return text;
+        }
+        return null;
+    }
 
-   if (typeof value !== 'object') return null;
+    if (typeof value !== 'object') return null;
 
-   const node = value as VNode;
-   const tag = typeof node.type === 'string' ? node.type.toLowerCase() : '';
+    const node = value as VNode;
+    const tag = typeof node.type === 'string' ? node.type.toLowerCase() : '';
 
-   if (tag === 'textarea' || tag === 'pre' || tag === 'code') {
-      return vnodeToText(node.children);
-   }
+    if (tag === 'textarea' || tag === 'pre' || tag === 'code') {
+        return vnodeToText(node.children);
+    }
 
-   if (Array.isArray(node.children)) {
-      return findCodeLikeText(node.children);
-   }
+    if (Array.isArray(node.children)) {
+        return findCodeLikeText(node.children);
+    }
 
-   if (node.children && typeof node.children === 'object') {
-      const slotChildren = node.children as { default?: () => unknown };
-      if (typeof slotChildren.default === 'function') {
-         return findCodeLikeText(slotChildren.default());
-      }
-   }
+    if (node.children && typeof node.children === 'object') {
+        const slotChildren = node.children as { default?: () => unknown };
+        if (typeof slotChildren.default === 'function') {
+            return findCodeLikeText(slotChildren.default());
+        }
+    }
 
-   return null;
+    return null;
 }
 
 function vnodeToText(value: unknown): string {
-   if (value === null || value === undefined || typeof value === 'boolean') return '';
-   if (typeof value === 'string' || typeof value === 'number') return String(value);
-   if (Array.isArray(value)) return value.map(vnodeToText).join('');
+    if (value === null || value === undefined || typeof value === 'boolean') return '';
+    if (typeof value === 'string' || typeof value === 'number') return String(value);
+    if (Array.isArray(value)) return value.map(vnodeToText).join('');
 
-   if (typeof value === 'object') {
-      const node = value as { children?: unknown };
+    if (typeof value === 'object') {
+        const node = value as { children?: unknown };
 
-      if (typeof node.children === 'string' || typeof node.children === 'number') {
-         return String(node.children);
-      }
-      if (Array.isArray(node.children)) {
-         return node.children.map(vnodeToText).join('');
-      }
-      if (node.children && typeof node.children === 'object') {
-         const slotChildren = node.children as { default?: () => unknown };
-         if (typeof slotChildren.default === 'function') {
-            return vnodeToText(slotChildren.default());
-         }
-      }
-   }
+        if (typeof node.children === 'string' || typeof node.children === 'number') {
+            return String(node.children);
+        }
+        if (Array.isArray(node.children)) {
+            return node.children.map(vnodeToText).join('');
+        }
+        if (node.children && typeof node.children === 'object') {
+            const slotChildren = node.children as { default?: () => unknown };
+            if (typeof slotChildren.default === 'function') {
+                return vnodeToText(slotChildren.default());
+            }
+        }
+    }
 
-   return '';
+    return '';
 }
 
 function getLanguageExtension(): Extension {
-   switch (normalizedLang.value) {
-      case 'js':
-         return javascript({ jsx: false, typescript: false });
-      case 'jsx':
-         return javascript({ jsx: true, typescript: false });
-      case 'ts':
-         return javascript({ jsx: false, typescript: true });
-      case 'tsx':
-         return javascript({ jsx: true, typescript: true });
-      case 'json':
-      case 'jsonc':
-         return json();
-      case 'md':
-      case 'markdown':
-         return markdown();
-      case 'vue':
-         return vue();
-      case 'html':
-         return html();
-      default:
-         return javascript({ typescript: true });
-   }
+    switch (normalizedLang.value) {
+        case 'js':
+            return javascript({ jsx: false, typescript: false });
+        case 'jsx':
+            return javascript({ jsx: true, typescript: false });
+        case 'ts':
+            return javascript({ jsx: false, typescript: true });
+        case 'tsx':
+            return javascript({ jsx: true, typescript: true });
+        case 'json':
+        case 'jsonc':
+            return json();
+        case 'md':
+        case 'markdown':
+            return markdown();
+        case 'vue':
+            return vue();
+        case 'html':
+            return html();
+        default:
+            return javascript({ typescript: true });
+    }
 }
 
 function clampLineNumber(state: EditorState, lineNumber: number): number {
-   return Math.min(Math.max(lineNumber, 1), state.doc.lines || 1);
+    return Math.min(Math.max(lineNumber, 1), state.doc.lines || 1);
 }
 
 function getActiveLineDecorations(state: EditorState, lineNumber: number): DecorationSet {
-   if (!state.doc.lines) return Decoration.none;
+    if (!state.doc.lines) return Decoration.none;
 
-   const safeLineNumber = clampLineNumber(state, lineNumber);
-   const line = state.doc.line(safeLineNumber);
+    const safeLineNumber = clampLineNumber(state, lineNumber);
+    const line = state.doc.line(safeLineNumber);
 
-   return Decoration.set([Decoration.line({ class: 'cm-click-activeLine' }).range(line.from)]);
+    return Decoration.set([Decoration.line({ class: 'cm-click-activeLine' }).range(line.from)]);
 }
 
 function getMagicLineDecorations(state: EditorState, lineClasses: Map<number, MagicLineClass>) {
-   const decorations = Array.from(lineClasses.entries())
-      .filter(([lineNumber]) => lineNumber >= 1 && lineNumber <= state.doc.lines)
-      .map(([lineNumber, className]) => {
-         const line = state.doc.line(lineNumber);
-         return Decoration.line({ class: className }).range(line.from);
-      });
+    const decorations = Array.from(lineClasses.entries())
+        .filter(([lineNumber]) => lineNumber >= 1 && lineNumber <= state.doc.lines)
+        .map(([lineNumber, className]) => {
+            const line = state.doc.line(lineNumber);
+            return Decoration.line({ class: className }).range(line.from);
+        });
 
-   return Decoration.set(decorations, true);
+    return Decoration.set(decorations, true);
 }
 
 function createFoldMarkerSVG(open: boolean): SVGSVGElement {
-   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-   svg.setAttribute('width', '12');
-   svg.setAttribute('height', '12');
-   svg.setAttribute('viewBox', '0 0 12 12');
-   svg.setAttribute('fill', 'none');
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '12');
+    svg.setAttribute('height', '12');
+    svg.setAttribute('viewBox', '0 0 12 12');
+    svg.setAttribute('fill', 'none');
 
-   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-   path.setAttribute('d', open ? 'M3 4.5L6 7.5L9 4.5' : 'M4.5 3L7.5 6L4.5 9');
-   path.setAttribute('stroke', 'currentColor');
-   path.setAttribute('stroke-width', '1.5');
-   path.setAttribute('stroke-linecap', 'round');
-   path.setAttribute('stroke-linejoin', 'round');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', open ? 'M3 4.5L6 7.5L9 4.5' : 'M4.5 3L7.5 6L4.5 9');
+    path.setAttribute('stroke', 'currentColor');
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
 
-   svg.appendChild(path);
-   return svg;
+    svg.appendChild(path);
+    return svg;
 }
 
 function makeFoldMarker(open: boolean): HTMLElement {
-   const marker = document.createElement('span');
-   marker.className = open ? 'cm-fold-open' : 'cm-fold-closed';
-   marker.title = open ? '折叠代码' : '展开代码';
-   marker.appendChild(createFoldMarkerSVG(open));
-   return marker;
+    const marker = document.createElement('span');
+    marker.className = open ? 'cm-fold-open' : 'cm-fold-closed';
+    marker.title = open ? '折叠代码' : '展开代码';
+    marker.appendChild(createFoldMarkerSVG(open));
+    return marker;
 }
 
 function buildExtensions(): Extension[] {
-   const extensions: Extension[] = [
-      EditorState.readOnly.of(true),
-      EditorView.editable.of(false),
-      drawSelection(),
-      bracketMatching(),
-      oneDark,
-      getLanguageExtension(),
-      activeLineNumberField,
-      activeLineField,
-      EditorView.decorations.compute([], (state) =>
-         getMagicLineDecorations(state, parsedCode.value.lineClasses)
-      ),
-      activeLineGutterPlugin,
-      activeLineClickHandler,
-      bracketFoldFallback,
-      keymap.of(foldKeymap),
-      EditorView.theme({
-         '&': {
-            backgroundColor: 'var(--fold-code-bg)',
-            color: 'var(--fold-code-text)'
-         },
-         '.cm-content': {
-            caretColor: 'transparent'
-         }
-      })
-   ];
+    const extensions: Extension[] = [
+        EditorState.readOnly.of(true),
+        EditorView.editable.of(false),
+        drawSelection(),
+        bracketMatching(),
+        oneDark,
+        getLanguageExtension(),
+        activeLineNumberField,
+        activeLineField,
+        EditorView.decorations.compute([], (state) =>
+            getMagicLineDecorations(state, parsedCode.value.lineClasses)
+        ),
+        activeLineGutterPlugin,
+        activeLineClickHandler,
+        bracketFoldFallback,
+        keymap.of(foldKeymap),
+        EditorView.theme({
+            '&': {
+                backgroundColor: 'var(--fold-code-bg)',
+                color: 'var(--fold-code-text)'
+            },
+            '.cm-content': {
+                caretColor: 'transparent'
+            }
+        })
+    ];
 
-   if (props.lineNumbers) {
-      extensions.push(lineNumbers());
-   }
+    if (props.lineNumbers) {
+        extensions.push(lineNumbers());
+    }
 
-   if (props.folding) {
-      extensions.push(foldGutter({ markerDOM: makeFoldMarker }));
-   }
+    if (props.folding) {
+        extensions.push(foldGutter({ markerDOM: makeFoldMarker }));
+    }
 
-   return extensions;
+    return extensions;
 }
 
 const bracketFoldFallback = foldService.of((state, lineStart, lineEnd) => {
-   const doc = state.doc.toString();
-   const openings = collectOpenBrackets(doc, lineStart, lineEnd);
+    const doc = state.doc.toString();
+    const openings = collectOpenBrackets(doc, lineStart, lineEnd);
 
-   for (const opening of openings) {
-      const closing = findMatchingBracket(doc, opening);
-      if (closing < 0) continue;
+    for (const opening of openings) {
+        const closing = findMatchingBracket(doc, opening);
+        if (closing < 0) continue;
 
-      const openingLine = state.doc.lineAt(opening);
-      const closingLine = state.doc.lineAt(closing);
-      if (closingLine.number > openingLine.number) {
-         return { from: opening + 1, to: closing };
-      }
-   }
+        const openingLine = state.doc.lineAt(opening);
+        const closingLine = state.doc.lineAt(closing);
+        if (closingLine.number > openingLine.number) {
+            return { from: opening + 1, to: closing };
+        }
+    }
 
-   return null;
+    return null;
 });
 
 function collectOpenBrackets(doc: string, lineStart: number, lineEnd: number): number[] {
-   const openings: number[] = [];
-   let quote: string | null = null;
-   let escaped = false;
-   let inLineComment = false;
-   let inBlockComment = false;
+    const openings: number[] = [];
+    let quote: string | null = null;
+    let escaped = false;
+    let inLineComment = false;
+    let inBlockComment = false;
 
-   for (let index = 0; index < lineEnd; index++) {
-      const char = doc[index];
-      const next = doc[index + 1];
+    for (let index = 0; index < lineEnd; index++) {
+        const char = doc[index];
+        const next = doc[index + 1];
 
-      if (inLineComment) {
-         if (char === '\n') inLineComment = false;
-         continue;
-      }
-      if (inBlockComment) {
-         if (char === '*' && next === '/') {
-            inBlockComment = false;
+        if (inLineComment) {
+            if (char === '\n') inLineComment = false;
+            continue;
+        }
+        if (inBlockComment) {
+            if (char === '*' && next === '/') {
+                inBlockComment = false;
+                index++;
+            }
+            continue;
+        }
+        if (quote) {
+            if (escaped) {
+                escaped = false;
+            } else if (char === '\\') {
+                escaped = true;
+            } else if (char === quote) {
+                quote = null;
+            }
+            continue;
+        }
+        if (char === '/' && next === '/') {
+            inLineComment = true;
             index++;
-         }
-         continue;
-      }
-      if (quote) {
-         if (escaped) {
+            continue;
+        }
+        if (char === '/' && next === '*') {
+            inBlockComment = true;
+            index++;
+            continue;
+        }
+        if (char === '"' || char === "'" || char === '`') {
+            quote = char;
             escaped = false;
-         } else if (char === '\\') {
-            escaped = true;
-         } else if (char === quote) {
-            quote = null;
-         }
-         continue;
-      }
-      if (char === '/' && next === '/') {
-         inLineComment = true;
-         index++;
-         continue;
-      }
-      if (char === '/' && next === '*') {
-         inBlockComment = true;
-         index++;
-         continue;
-      }
-      if (char === '"' || char === "'" || char === '`') {
-         quote = char;
-         escaped = false;
-         continue;
-      }
-      if (index >= lineStart && OPEN_TO_CLOSE.has(char)) {
-         openings.push(index);
-      }
-   }
+            continue;
+        }
+        if (index >= lineStart && OPEN_TO_CLOSE.has(char)) {
+            openings.push(index);
+        }
+    }
 
-   return openings;
+    return openings;
 }
 
 function findMatchingBracket(doc: string, openingPosition: number): number {
-   const stack: Array<{ char: string; position: number }> = [];
-   let quote: string | null = null;
-   let escaped = false;
-   let inLineComment = false;
-   let inBlockComment = false;
+    const stack: Array<{ char: string; position: number }> = [];
+    let quote: string | null = null;
+    let escaped = false;
+    let inLineComment = false;
+    let inBlockComment = false;
 
-   for (let index = 0; index < doc.length; index++) {
-      const char = doc[index];
-      const next = doc[index + 1];
+    for (let index = 0; index < doc.length; index++) {
+        const char = doc[index];
+        const next = doc[index + 1];
 
-      if (inLineComment) {
-         if (char === '\n') inLineComment = false;
-         continue;
-      }
-      if (inBlockComment) {
-         if (char === '*' && next === '/') {
-            inBlockComment = false;
+        if (inLineComment) {
+            if (char === '\n') inLineComment = false;
+            continue;
+        }
+        if (inBlockComment) {
+            if (char === '*' && next === '/') {
+                inBlockComment = false;
+                index++;
+            }
+            continue;
+        }
+        if (quote) {
+            if (escaped) {
+                escaped = false;
+            } else if (char === '\\') {
+                escaped = true;
+            } else if (char === quote) {
+                quote = null;
+            }
+            continue;
+        }
+        if (char === '/' && next === '/') {
+            inLineComment = true;
             index++;
-         }
-         continue;
-      }
-      if (quote) {
-         if (escaped) {
+            continue;
+        }
+        if (char === '/' && next === '*') {
+            inBlockComment = true;
+            index++;
+            continue;
+        }
+        if (char === '"' || char === "'" || char === '`') {
+            quote = char;
             escaped = false;
-         } else if (char === '\\') {
-            escaped = true;
-         } else if (char === quote) {
-            quote = null;
-         }
-         continue;
-      }
-      if (char === '/' && next === '/') {
-         inLineComment = true;
-         index++;
-         continue;
-      }
-      if (char === '/' && next === '*') {
-         inBlockComment = true;
-         index++;
-         continue;
-      }
-      if (char === '"' || char === "'" || char === '`') {
-         quote = char;
-         escaped = false;
-         continue;
-      }
-      if (OPEN_TO_CLOSE.has(char)) {
-         stack.push({ char, position: index });
-         continue;
-      }
+            continue;
+        }
+        if (OPEN_TO_CLOSE.has(char)) {
+            stack.push({ char, position: index });
+            continue;
+        }
 
-      const latest = stack[stack.length - 1];
-      if (!latest || OPEN_TO_CLOSE.get(latest.char) !== char) continue;
+        const latest = stack[stack.length - 1];
+        if (!latest || OPEN_TO_CLOSE.get(latest.char) !== char) continue;
 
-      stack.pop();
-      if (latest.position === openingPosition) {
-         return index;
-      }
-   }
+        stack.pop();
+        if (latest.position === openingPosition) {
+            return index;
+        }
+    }
 
-   return -1;
+    return -1;
 }
 
 function initEditor() {
-   if (!editorContainer.value) return;
+    if (!editorContainer.value) return;
 
-   editorView.value?.destroy();
-   editorView.value = new EditorView({
-      state: EditorState.create({
-         doc: sourceCode.value,
-         extensions: buildExtensions()
-      }),
-      parent: editorContainer.value
-   });
+    editorView.value?.destroy();
+    editorView.value = new EditorView({
+        state: EditorState.create({
+            doc: sourceCode.value,
+            extensions: buildExtensions()
+        }),
+        parent: editorContainer.value
+    });
 }
 
 function updateEditorCode(code: string) {
-   if (!editorView.value) {
-      initEditor();
-      return;
-   }
+    if (!editorView.value) {
+        initEditor();
+        return;
+    }
 
-   const currentCode = editorView.value.state.doc.toString();
-   if (currentCode === code) return;
+    const currentCode = editorView.value.state.doc.toString();
+    if (currentCode === code) return;
 
-   editorView.value.dispatch({
-      changes: {
-         from: 0,
-         to: editorView.value.state.doc.length,
-         insert: code
-      }
-   });
+    editorView.value.dispatch({
+        changes: {
+            from: 0,
+            to: editorView.value.state.doc.length,
+            insert: code
+        }
+    });
 }
 
 function rebuildEditor() {
-   if (!editorView.value) {
-      initEditor();
-      return;
-   }
+    if (!editorView.value) {
+        initEditor();
+        return;
+    }
 
-   editorView.value.setState(
-      EditorState.create({
-         doc: sourceCode.value,
-         extensions: buildExtensions()
-      })
-   );
+    editorView.value.setState(
+        EditorState.create({
+            doc: sourceCode.value,
+            extensions: buildExtensions()
+        })
+    );
 }
 
 async function copyCode() {
-   const code = sourceCode.value;
-   if (!code) return;
+    const code = sourceCode.value;
+    if (!code) return;
 
-   try {
-      if (navigator.clipboard?.writeText) {
-         await navigator.clipboard.writeText(code);
-      } else {
-         const textarea = document.createElement('textarea');
-         textarea.value = code;
-         textarea.setAttribute('readonly', '');
-         textarea.style.position = 'fixed';
-         textarea.style.opacity = '0';
-         document.body.appendChild(textarea);
-         textarea.select();
-         document.execCommand('copy');
-         document.body.removeChild(textarea);
-      }
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(code);
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
 
-      copied.value = true;
-      if (copyTimer) window.clearTimeout(copyTimer);
-      copyTimer = window.setTimeout(() => {
-         copied.value = false;
-      }, 1600);
-   } catch (error) {
-      console.error('[FoldCodeBlock] Copy failed:', error);
-   }
+        copied.value = true;
+        if (copyTimer) window.clearTimeout(copyTimer);
+        copyTimer = window.setTimeout(() => {
+            copied.value = false;
+        }, 1600);
+    } catch (error) {
+        console.error('[FoldCodeBlock] Copy failed:', error);
+    }
 }
 
 watch(sourceCode, updateEditorCode, { flush: 'post' });
 watch([normalizedLang, () => props.lineNumbers, () => props.folding, isDark], rebuildEditor, {
-   flush: 'post'
+    flush: 'post'
 });
 
 onMounted(initEditor);
 
 onUnmounted(() => {
-   if (copyTimer) window.clearTimeout(copyTimer);
-   editorView.value?.destroy();
-   editorView.value = null;
+    if (copyTimer) window.clearTimeout(copyTimer);
+    editorView.value?.destroy();
+    editorView.value = null;
 });
 </script>
 
 <template>
-   <section
-      class="fold-code-block"
-      :class="[`lang-${normalizedLang}`, { 'has-line-numbers': props.lineNumbers }]"
-      :style="{
-         '--fold-code-min-height': props.minHeight,
-         '--fold-code-max-height': props.maxHeight
-      }"
-   >
-      <div v-if="!props.hideHeader" class="fold-code-header">
-         <span class="fold-code-lang">{{ displayTitle }}</span>
-         <button class="fold-code-copy" type="button" @click="copyCode">
-            {{ copied ? '已复制' : '复制' }}
-         </button>
-      </div>
-      <div ref="editorContainer" class="fold-code-editor" />
-   </section>
+    <section
+        class="fold-code-block"
+        :class="[`lang-${normalizedLang}`, { 'has-line-numbers': props.lineNumbers }]"
+        :style="{
+            '--fold-code-min-height': props.minHeight,
+            '--fold-code-max-height': props.maxHeight
+        }"
+    >
+        <div v-if="!props.hideHeader" class="fold-code-header">
+            <span class="fold-code-lang">{{ displayTitle }}</span>
+            <button class="fold-code-copy" type="button" @click="copyCode">
+                {{ copied ? '已复制' : '复制' }}
+            </button>
+        </div>
+        <div ref="editorContainer" class="fold-code-editor" />
+    </section>
 </template>
 
 <style lang="scss" scoped>
 .fold-code-block {
-   --fold-code-bg: #080b0d;
-   --fold-code-panel: #111819;
-   --fold-code-border: #263233;
-   --fold-code-text: #e7f5ef;
-   --fold-code-muted: #789187;
-   --fold-code-line-number: #789187;
-   --fold-code-hover: rgba(231, 245, 239, 0.055);
-   --fold-code-copy-bg: rgba(231, 245, 239, 0.07);
-   --fold-code-copy-hover-bg: rgba(231, 245, 239, 0.13);
-   --fold-code-copy-border: rgba(231, 245, 239, 0.22);
-   --fold-code-scrollbar-thumb: #35484a;
-   --fold-code-scrollbar-thumb-hover: #789187;
-   --fold-code-active-line: rgba(61, 214, 180, 0.08);
-   --fold-code-active-line-border: rgba(61, 214, 180, 0.1);
-   --fold-code-highlight: rgba(61, 214, 180, 0.16);
-   --fold-code-warning: rgba(217, 181, 111, 0.22);
-   --fold-code-error: rgba(255, 143, 122, 0.22);
-   --fold-code-add: rgba(102, 214, 169, 0.18);
-   --fold-code-remove: rgba(255, 143, 122, 0.18);
+    --fold-code-bg: #080b0d;
+    --fold-code-panel: #111819;
+    --fold-code-border: #263233;
+    --fold-code-text: #e7f5ef;
+    --fold-code-muted: #789187;
+    --fold-code-line-number: #789187;
+    --fold-code-hover: rgba(231, 245, 239, 0.055);
+    --fold-code-copy-bg: rgba(231, 245, 239, 0.07);
+    --fold-code-copy-hover-bg: rgba(231, 245, 239, 0.13);
+    --fold-code-copy-border: rgba(231, 245, 239, 0.22);
+    --fold-code-scrollbar-thumb: #35484a;
+    --fold-code-scrollbar-thumb-hover: #789187;
+    --fold-code-active-line: rgba(61, 214, 180, 0.08);
+    --fold-code-active-line-border: rgba(61, 214, 180, 0.1);
+    --fold-code-highlight: rgba(61, 214, 180, 0.16);
+    --fold-code-warning: rgba(217, 181, 111, 0.22);
+    --fold-code-error: rgba(255, 143, 122, 0.22);
+    --fold-code-add: rgba(102, 214, 169, 0.18);
+    --fold-code-remove: rgba(255, 143, 122, 0.18);
 
-   margin: 16px 0;
-   overflow: hidden;
-   border: 1px solid var(--fold-code-border);
-   border-radius: 8px;
-   background: var(--fold-code-bg);
+    margin: 16px 0;
+    overflow: hidden;
+    border: 1px solid var(--fold-code-border);
+    border-radius: 8px;
+    background: var(--fold-code-bg);
 }
 
 .fold-code-header {
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   gap: 10px;
-   min-height: 38px;
-   padding: 7px 10px 7px 14px;
-   border-bottom: 1px solid var(--fold-code-border);
-   background: var(--fold-code-panel);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 38px;
+    padding: 7px 10px 7px 14px;
+    border-bottom: 1px solid var(--fold-code-border);
+    background: var(--fold-code-panel);
 }
 
 .fold-code-lang {
-   overflow: hidden;
-   color: var(--fold-code-muted);
-   font-family: Consolas, Monaco, 'Courier New', monospace;
-   font-size: 12px;
-   font-weight: 700;
-   line-height: 1.4;
-   text-overflow: ellipsis;
-   white-space: nowrap;
+    overflow: hidden;
+    color: var(--fold-code-muted);
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .fold-code-copy {
-   flex-shrink: 0;
-   min-width: 52px;
-   height: 26px;
-   padding: 0 10px;
-   border: 1px solid var(--fold-code-copy-border);
-   border-radius: 6px;
-   color: var(--fold-code-muted);
-   background: var(--fold-code-copy-bg);
-   font-size: 12px;
-   line-height: 24px;
-   cursor: pointer;
-   transition:
-      color 0.15s,
-      border-color 0.15s,
-      background 0.15s;
+    flex-shrink: 0;
+    min-width: 52px;
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--fold-code-copy-border);
+    border-radius: 6px;
+    color: var(--fold-code-muted);
+    background: var(--fold-code-copy-bg);
+    font-size: 12px;
+    line-height: 24px;
+    cursor: pointer;
+    transition:
+        color 0.15s,
+        border-color 0.15s,
+        background 0.15s;
 
-   &:hover {
-      color: var(--fold-code-text);
-      background: var(--fold-code-copy-hover-bg);
-   }
+    &:hover {
+        color: var(--fold-code-text);
+        background: var(--fold-code-copy-hover-bg);
+    }
 }
 
 .fold-code-editor {
-   min-height: var(--fold-code-min-height);
-   max-height: var(--fold-code-max-height);
-   background: var(--fold-code-bg);
+    min-height: var(--fold-code-min-height);
+    max-height: var(--fold-code-max-height);
+    background: var(--fold-code-bg);
 
-   :deep(.cm-editor) {
-      min-height: var(--fold-code-min-height);
-      max-height: var(--fold-code-max-height);
-      font-family: 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
-      font-size: 13.5px;
-      line-height: 1.65;
-      background: var(--fold-code-bg);
-      color: var(--fold-code-text);
+    :deep(.cm-editor) {
+        min-height: var(--fold-code-min-height);
+        max-height: var(--fold-code-max-height);
+        font-family: 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
+        font-size: 13.5px;
+        line-height: 1.65;
+        background: var(--fold-code-bg);
+        color: var(--fold-code-text);
 
-      &.cm-focused {
-         outline: none;
-      }
-   }
+        &.cm-focused {
+            outline: none;
+        }
+    }
 
-   :deep(.cm-scroller) {
-      max-height: var(--fold-code-max-height);
-      overflow: auto;
-      font-family: inherit;
+    :deep(.cm-scroller) {
+        max-height: var(--fold-code-max-height);
+        overflow: auto;
+        font-family: inherit;
 
-      &::-webkit-scrollbar {
-         width: 10px;
-         height: 10px;
-      }
+        &::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
 
-      &::-webkit-scrollbar-track {
-         background: transparent;
-      }
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
 
-      &::-webkit-scrollbar-thumb {
-         border: 3px solid var(--fold-code-bg);
-         border-radius: 999px;
-         background-color: var(--fold-code-scrollbar-thumb);
-         background-clip: padding-box;
+        &::-webkit-scrollbar-thumb {
+            border: 3px solid var(--fold-code-bg);
+            border-radius: 999px;
+            background-color: var(--fold-code-scrollbar-thumb);
+            background-clip: padding-box;
 
-         &:hover {
-            background-color: var(--fold-code-scrollbar-thumb-hover);
-         }
-      }
-   }
+            &:hover {
+                background-color: var(--fold-code-scrollbar-thumb-hover);
+            }
+        }
+    }
 
-   :deep(.cm-content) {
-      padding: 8px 0 14px;
-      caret-color: transparent;
-   }
+    :deep(.cm-content) {
+        padding: 8px 0 14px;
+        caret-color: transparent;
+    }
 
-   :deep(.cm-line) {
-      padding: 0 14px 0 6px;
-   }
+    :deep(.cm-line) {
+        padding: 0 14px 0 6px;
+    }
 
-   :deep(.cm-click-activeLine) {
-      background: var(--fold-code-active-line);
-      box-shadow:
-         inset 0 1px 0 var(--fold-code-active-line-border),
-         inset 0 -1px 0 var(--fold-code-active-line-border);
-   }
+    :deep(.cm-click-activeLine) {
+        background: var(--fold-code-active-line);
+        box-shadow:
+            inset 0 1px 0 var(--fold-code-active-line-border),
+            inset 0 -1px 0 var(--fold-code-active-line-border);
+    }
 
-   :deep(.cm-code-line-highlight) {
-      background: var(--fold-code-highlight);
-   }
+    :deep(.cm-code-line-highlight) {
+        background: var(--fold-code-highlight);
+    }
 
-   :deep(.cm-code-line-warning) {
-      background: var(--fold-code-warning);
-   }
+    :deep(.cm-code-line-warning) {
+        background: var(--fold-code-warning);
+    }
 
-   :deep(.cm-code-line-error) {
-      background: var(--fold-code-error);
-   }
+    :deep(.cm-code-line-error) {
+        background: var(--fold-code-error);
+    }
 
-   :deep(.cm-code-line-add) {
-      background: var(--fold-code-add);
-   }
+    :deep(.cm-code-line-add) {
+        background: var(--fold-code-add);
+    }
 
-   :deep(.cm-code-line-remove) {
-      background: var(--fold-code-remove);
-   }
+    :deep(.cm-code-line-remove) {
+        background: var(--fold-code-remove);
+    }
 
-   :deep(.cm-gutters) {
-      border-right: 1px solid var(--fold-code-border);
-      background: var(--fold-code-bg);
-      color: var(--fold-code-line-number);
-      user-select: none;
-   }
+    :deep(.cm-gutters) {
+        border-right: 1px solid var(--fold-code-border);
+        background: var(--fold-code-bg);
+        color: var(--fold-code-line-number);
+        user-select: none;
+    }
 
-   :deep(.cm-lineNumbers .cm-gutterElement) {
-      min-width: 38px;
-      padding: 0 9px 0 8px;
-      color: var(--fold-code-line-number);
-      font-size: 12px;
-   }
+    :deep(.cm-lineNumbers .cm-gutterElement) {
+        min-width: 38px;
+        padding: 0 9px 0 8px;
+        color: var(--fold-code-line-number);
+        font-size: 12px;
+    }
 
-   :deep(.cm-lineNumbers .cm-gutterElement.cm-activeLineNumber) {
-      color: var(--fold-code-text);
-      font-weight: 700;
-   }
+    :deep(.cm-lineNumbers .cm-gutterElement.cm-activeLineNumber) {
+        color: var(--fold-code-text);
+        font-weight: 700;
+    }
 
-   :deep(.cm-foldGutter) {
-      width: 34px;
+    :deep(.cm-foldGutter) {
+        width: 34px;
 
-      .cm-gutterElement {
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         padding: 0;
-         cursor: pointer;
-      }
-   }
+        .cm-gutterElement {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            cursor: pointer;
+        }
+    }
 
-   :deep(.cm-fold-open),
-   :deep(.cm-fold-closed) {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 18px;
-      border-radius: 4px;
-      color: var(--fold-code-line-number);
-      transition:
-         color 0.15s,
-         background 0.15s;
-   }
+    :deep(.cm-fold-open),
+    :deep(.cm-fold-closed) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 18px;
+        border-radius: 4px;
+        color: var(--fold-code-line-number);
+        transition:
+            color 0.15s,
+            background 0.15s;
+    }
 
-   :deep(.cm-fold-open) {
-      color: transparent;
-   }
+    :deep(.cm-fold-open) {
+        color: transparent;
+    }
 
-   :deep(.cm-gutters:hover .cm-fold-open),
-   :deep(.cm-fold-closed) {
-      color: var(--fold-code-line-number);
-   }
+    :deep(.cm-gutters:hover .cm-fold-open),
+    :deep(.cm-fold-closed) {
+        color: var(--fold-code-line-number);
+    }
 
-   :deep(.cm-gutterElement:hover .cm-fold-open),
-   :deep(.cm-fold-closed:hover) {
-      background: var(--fold-code-hover);
-      color: var(--fold-code-text);
-   }
+    :deep(.cm-gutterElement:hover .cm-fold-open),
+    :deep(.cm-fold-closed:hover) {
+        background: var(--fold-code-hover);
+        color: var(--fold-code-text);
+    }
 
-   :deep(.cm-foldPlaceholder) {
-      padding: 0 7px;
-      border: 1px solid var(--fold-code-border);
-      border-radius: 4px;
-      color: var(--fold-code-muted);
-      background: var(--fold-code-panel);
-      font-size: 11px;
-      cursor: pointer;
-   }
+    :deep(.cm-foldPlaceholder) {
+        padding: 0 7px;
+        border: 1px solid var(--fold-code-border);
+        border-radius: 4px;
+        color: var(--fold-code-muted);
+        background: var(--fold-code-panel);
+        font-size: 11px;
+        cursor: pointer;
+    }
 
-   :deep(.cm-cursor) {
-      display: none;
-   }
+    :deep(.cm-cursor) {
+        display: none;
+    }
 }
 </style>

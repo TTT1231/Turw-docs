@@ -5,13 +5,13 @@ import { Skeleton as ASkeleton, Image as AImage } from 'ant-design-vue';
 type ShowImgType = 'APP-ERROR' | 'FRONTEND-ERROR' | 'LAYERS-STRUCT';
 
 const props = defineProps({
-   showImg: {
-      type: String as () => ShowImgType,
-      required: true,
-      validator: (value: string) => {
-         return ['APP-ERROR', 'FRONTEND-ERROR', 'LAYERS-STRUCT'].includes(value);
-      }
-   }
+    showImg: {
+        type: String as () => ShowImgType,
+        required: true,
+        validator: (value: string) => {
+            return ['APP-ERROR', 'FRONTEND-ERROR', 'LAYERS-STRUCT'].includes(value);
+        }
+    }
 });
 
 //img home
@@ -19,9 +19,9 @@ const imgHome = '/Turw-docs/assets/images/com-icon';
 
 //nuxt error handle skeleton
 const imgMap = {
-   'APP-ERROR': `${imgHome}/application.png`,
-   'FRONTEND-ERROR': `${imgHome}/frontedend.png`,
-   'LAYERS-STRUCT': `${imgHome}/layers-struct.png`
+    'APP-ERROR': `${imgHome}/application.png`,
+    'FRONTEND-ERROR': `${imgHome}/frontedend.png`,
+    'LAYERS-STRUCT': `${imgHome}/layers-struct.png`
 };
 
 const isLoading = ref(true);
@@ -31,34 +31,34 @@ const currentImgSrc = ref(imgMap[props.showImg]);
 const isLayersStruct = computed(() => props.showImg === 'LAYERS-STRUCT');
 
 onMounted(() => {
-   isLoading.value = false;
+    isLoading.value = false;
 });
 </script>
 
 <template>
-   <a-skeleton :loading="isLoading" active>
-      <!-- 第三张图片使用预览功能 -->
-      <div v-if="isLayersStruct" class="w-full flex justify-center">
-         <a-image
-            :src="currentImgSrc"
-            :alt="showImg"
-            :preview="{
-               maskClassName: 'custom-preview-mask'
-            }"
-            class="max-w-full h-auto cursor-pointer"
-         />
-      </div>
+    <a-skeleton :loading="isLoading" active>
+        <!-- 第三张图片使用预览功能 -->
+        <div v-if="isLayersStruct" class="w-full flex justify-center">
+            <a-image
+                :src="currentImgSrc"
+                :alt="showImg"
+                :preview="{
+                    maskClassName: 'custom-preview-mask'
+                }"
+                class="max-w-full h-auto cursor-pointer"
+            />
+        </div>
 
-      <!-- 其他图片也使用预览功能，体验更统一 -->
-      <div v-else class="w-full flex justify-center">
-         <a-image
-            :src="currentImgSrc"
-            :alt="showImg"
-            :preview="{
-               maskClassName: 'custom-preview-mask'
-            }"
-            class="max-w-full h-auto cursor-pointer"
-         />
-      </div>
-   </a-skeleton>
+        <!-- 其他图片也使用预览功能，体验更统一 -->
+        <div v-else class="w-full flex justify-center">
+            <a-image
+                :src="currentImgSrc"
+                :alt="showImg"
+                :preview="{
+                    maskClassName: 'custom-preview-mask'
+                }"
+                class="max-w-full h-auto cursor-pointer"
+            />
+        </div>
+    </a-skeleton>
 </template>

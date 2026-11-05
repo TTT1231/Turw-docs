@@ -7,320 +7,320 @@ $code-block-border-dark: #27364f;
 
 // ==================== 明亮模式: 极简工程信息框 ====================
 .vp-doc .custom-block.info {
-   @include customBlock.custom-block-base(
-      $bg-color: #f8fafc,
-      $border-color: #dbe4f0,
-      $border-left-color: #2563eb,
-      $title-color: #1d4ed8,
-      $text-color: #111827,
-      $code-bg: rgba(37, 99, 235, 0.08),
-      $code-color: #1d4ed8,
-      $code-block-bg: $code-block-bg,
-      $code-block-border: $code-block-border,
-      $link-color: #2563eb,
-      $em-color: #1d4ed8,
-      $blockquote-border: #2563eb,
-      $blockquote-color: #475569,
-      $hr-color: rgba(37, 99, 235, 0.16),
-      $table-bg: #ffffff,
-      $table-border: #dbe4f0,
-      $table-header-bg: rgba(37, 99, 235, 0.07),
-      $table-header-text: #1d4ed8,
-      $table-hover-bg: rgba(37, 99, 235, 0.09),
-      $table-text: #111827,
-      $table-stripe-bg: rgba(37, 99, 235, 0.028)
-   );
+    @include customBlock.custom-block-base(
+        $bg-color: #f8fafc,
+        $border-color: #dbe4f0,
+        $border-left-color: #2563eb,
+        $title-color: #1d4ed8,
+        $text-color: #111827,
+        $code-bg: rgba(37, 99, 235, 0.08),
+        $code-color: #1d4ed8,
+        $code-block-bg: $code-block-bg,
+        $code-block-border: $code-block-border,
+        $link-color: #2563eb,
+        $em-color: #1d4ed8,
+        $blockquote-border: #2563eb,
+        $blockquote-color: #475569,
+        $hr-color: rgba(37, 99, 235, 0.16),
+        $table-bg: #ffffff,
+        $table-border: #dbe4f0,
+        $table-header-bg: rgba(37, 99, 235, 0.07),
+        $table-header-text: #1d4ed8,
+        $table-hover-bg: rgba(37, 99, 235, 0.09),
+        $table-text: #111827,
+        $table-stripe-bg: rgba(37, 99, 235, 0.028)
+    );
 }
 
 .vp-doc .custom-block.tip,
 .vp-doc .custom-block.note {
-   @include customBlock.custom-block-base(
-      $bg-color: #f6fef9,
-      $border-color: #cdebd6,
-      $border-left-color: #16a34a,
-      $title-color: #15803d,
-      $text-color: #111827,
-      $code-bg: rgba(22, 163, 74, 0.09),
-      $code-color: #166534,
-      $code-block-bg: $code-block-bg,
-      $code-block-border: $code-block-border,
-      $link-color: #15803d,
-      $em-color: #15803d,
-      $blockquote-border: #16a34a,
-      $blockquote-color: #475569,
-      $hr-color: rgba(22, 163, 74, 0.16),
-      $table-bg: #ffffff,
-      $table-border: #cdebd6,
-      $table-header-bg: rgba(22, 163, 74, 0.08),
-      $table-header-text: #15803d,
-      $table-hover-bg: rgba(22, 163, 74, 0.1),
-      $table-text: #111827,
-      $table-stripe-bg: rgba(22, 163, 74, 0.035)
-   );
+    @include customBlock.custom-block-base(
+        $bg-color: #f6fef9,
+        $border-color: #cdebd6,
+        $border-left-color: #16a34a,
+        $title-color: #15803d,
+        $text-color: #111827,
+        $code-bg: rgba(22, 163, 74, 0.09),
+        $code-color: #166534,
+        $code-block-bg: $code-block-bg,
+        $code-block-border: $code-block-border,
+        $link-color: #15803d,
+        $em-color: #15803d,
+        $blockquote-border: #16a34a,
+        $blockquote-color: #475569,
+        $hr-color: rgba(22, 163, 74, 0.16),
+        $table-bg: #ffffff,
+        $table-border: #cdebd6,
+        $table-header-bg: rgba(22, 163, 74, 0.08),
+        $table-header-text: #15803d,
+        $table-hover-bg: rgba(22, 163, 74, 0.1),
+        $table-text: #111827,
+        $table-stripe-bg: rgba(22, 163, 74, 0.035)
+    );
 }
 
 .vp-doc .custom-block.warning {
-   @include customBlock.custom-block-base(
-      $bg-color: #fffaf2,
-      $border-color: #f4d5a8,
-      $border-left-color: #d97706,
-      $title-color: #b45309,
-      $text-color: #111827,
-      $code-bg: rgba(217, 119, 6, 0.1),
-      $code-color: #92400e,
-      $code-block-bg: $code-block-bg,
-      $code-block-border: $code-block-border,
-      $link-color: #b45309,
-      $em-color: #b45309,
-      $blockquote-border: #d97706,
-      $blockquote-color: #475569,
-      $hr-color: rgba(217, 119, 6, 0.18),
-      $table-bg: #ffffff,
-      $table-border: #f4d5a8,
-      $table-header-bg: rgba(217, 119, 6, 0.08),
-      $table-header-text: #b45309,
-      $table-hover-bg: rgba(217, 119, 6, 0.1),
-      $table-text: #111827,
-      $table-stripe-bg: rgba(217, 119, 6, 0.035)
-   );
+    @include customBlock.custom-block-base(
+        $bg-color: #fffaf2,
+        $border-color: #f4d5a8,
+        $border-left-color: #d97706,
+        $title-color: #b45309,
+        $text-color: #111827,
+        $code-bg: rgba(217, 119, 6, 0.1),
+        $code-color: #92400e,
+        $code-block-bg: $code-block-bg,
+        $code-block-border: $code-block-border,
+        $link-color: #b45309,
+        $em-color: #b45309,
+        $blockquote-border: #d97706,
+        $blockquote-color: #475569,
+        $hr-color: rgba(217, 119, 6, 0.18),
+        $table-bg: #ffffff,
+        $table-border: #f4d5a8,
+        $table-header-bg: rgba(217, 119, 6, 0.08),
+        $table-header-text: #b45309,
+        $table-hover-bg: rgba(217, 119, 6, 0.1),
+        $table-text: #111827,
+        $table-stripe-bg: rgba(217, 119, 6, 0.035)
+    );
 }
 
 .vp-doc .custom-block.danger,
 .vp-doc .custom-block.caution {
-   @include customBlock.custom-block-base(
-      $bg-color: #fff7f7,
-      $border-color: #f4c7c7,
-      $border-left-color: #dc2626,
-      $title-color: #b91c1c,
-      $text-color: #111827,
-      $code-bg: rgba(220, 38, 38, 0.09),
-      $code-color: #991b1b,
-      $code-block-bg: $code-block-bg,
-      $code-block-border: $code-block-border,
-      $link-color: #b91c1c,
-      $em-color: #b91c1c,
-      $blockquote-border: #dc2626,
-      $blockquote-color: #475569,
-      $hr-color: rgba(220, 38, 38, 0.18),
-      $table-bg: #ffffff,
-      $table-border: #f4c7c7,
-      $table-header-bg: rgba(220, 38, 38, 0.08),
-      $table-header-text: #b91c1c,
-      $table-hover-bg: rgba(220, 38, 38, 0.1),
-      $table-text: #111827,
-      $table-stripe-bg: rgba(220, 38, 38, 0.032)
-   );
+    @include customBlock.custom-block-base(
+        $bg-color: #fff7f7,
+        $border-color: #f4c7c7,
+        $border-left-color: #dc2626,
+        $title-color: #b91c1c,
+        $text-color: #111827,
+        $code-bg: rgba(220, 38, 38, 0.09),
+        $code-color: #991b1b,
+        $code-block-bg: $code-block-bg,
+        $code-block-border: $code-block-border,
+        $link-color: #b91c1c,
+        $em-color: #b91c1c,
+        $blockquote-border: #dc2626,
+        $blockquote-color: #475569,
+        $hr-color: rgba(220, 38, 38, 0.18),
+        $table-bg: #ffffff,
+        $table-border: #f4c7c7,
+        $table-header-bg: rgba(220, 38, 38, 0.08),
+        $table-header-text: #b91c1c,
+        $table-hover-bg: rgba(220, 38, 38, 0.1),
+        $table-text: #111827,
+        $table-stripe-bg: rgba(220, 38, 38, 0.032)
+    );
 }
 
 .vp-doc .custom-block.important {
-   @include customBlock.custom-block-base(
-      $bg-color: #f2fbfd,
-      $border-color: #bce6ef,
-      $border-left-color: #0891b2,
-      $title-color: #0e7490,
-      $text-color: #111827,
-      $code-bg: rgba(8, 145, 178, 0.09),
-      $code-color: #155e75,
-      $code-block-bg: $code-block-bg,
-      $code-block-border: $code-block-border,
-      $link-color: #0e7490,
-      $em-color: #0e7490,
-      $blockquote-border: #0891b2,
-      $blockquote-color: #475569,
-      $hr-color: rgba(8, 145, 178, 0.17),
-      $table-bg: #ffffff,
-      $table-border: #bce6ef,
-      $table-header-bg: rgba(8, 145, 178, 0.08),
-      $table-header-text: #0e7490,
-      $table-hover-bg: rgba(8, 145, 178, 0.1),
-      $table-text: #111827,
-      $table-stripe-bg: rgba(8, 145, 178, 0.035)
-   );
+    @include customBlock.custom-block-base(
+        $bg-color: #f2fbfd,
+        $border-color: #bce6ef,
+        $border-left-color: #0891b2,
+        $title-color: #0e7490,
+        $text-color: #111827,
+        $code-bg: rgba(8, 145, 178, 0.09),
+        $code-color: #155e75,
+        $code-block-bg: $code-block-bg,
+        $code-block-border: $code-block-border,
+        $link-color: #0e7490,
+        $em-color: #0e7490,
+        $blockquote-border: #0891b2,
+        $blockquote-color: #475569,
+        $hr-color: rgba(8, 145, 178, 0.17),
+        $table-bg: #ffffff,
+        $table-border: #bce6ef,
+        $table-header-bg: rgba(8, 145, 178, 0.08),
+        $table-header-text: #0e7490,
+        $table-hover-bg: rgba(8, 145, 178, 0.1),
+        $table-text: #111827,
+        $table-stripe-bg: rgba(8, 145, 178, 0.035)
+    );
 }
 
 .vp-doc .custom-block.details {
-   @include customBlock.custom-block-base(
-      $bg-color: #f8fafc,
-      $border-color: #dbe4f0,
-      $border-left-color: #64748b,
-      $title-color: #334155,
-      $text-color: #111827,
-      $code-bg: rgba(100, 116, 139, 0.1),
-      $code-color: #334155,
-      $code-block-bg: $code-block-bg,
-      $code-block-border: $code-block-border,
-      $link-color: #2563eb,
-      $em-color: #334155,
-      $blockquote-border: #64748b,
-      $blockquote-color: #475569,
-      $hr-color: rgba(100, 116, 139, 0.16),
-      $table-bg: #ffffff,
-      $table-border: #dbe4f0,
-      $table-header-bg: rgba(100, 116, 139, 0.08),
-      $table-header-text: #334155,
-      $table-hover-bg: rgba(100, 116, 139, 0.09),
-      $table-text: #111827,
-      $table-stripe-bg: rgba(100, 116, 139, 0.03)
-   );
+    @include customBlock.custom-block-base(
+        $bg-color: #f8fafc,
+        $border-color: #dbe4f0,
+        $border-left-color: #64748b,
+        $title-color: #334155,
+        $text-color: #111827,
+        $code-bg: rgba(100, 116, 139, 0.1),
+        $code-color: #334155,
+        $code-block-bg: $code-block-bg,
+        $code-block-border: $code-block-border,
+        $link-color: #2563eb,
+        $em-color: #334155,
+        $blockquote-border: #64748b,
+        $blockquote-color: #475569,
+        $hr-color: rgba(100, 116, 139, 0.16),
+        $table-bg: #ffffff,
+        $table-border: #dbe4f0,
+        $table-header-bg: rgba(100, 116, 139, 0.08),
+        $table-header-text: #334155,
+        $table-hover-bg: rgba(100, 116, 139, 0.09),
+        $table-text: #111827,
+        $table-stripe-bg: rgba(100, 116, 139, 0.03)
+    );
 }
 
 // ==================== 暗黑模式 ====================
 .dark {
-   .vp-doc .custom-block.info {
-      @include customBlock.custom-block-base-dark(
-         $bg-color-dark: rgba(96, 165, 250, 0.08),
-         $border-color-dark: rgba(96, 165, 250, 0.22),
-         $border-left-color-dark: #60a5fa,
-         $title-color-dark: #93c5fd,
-         $text-color-dark: #e5e7eb,
-         $code-bg-dark: rgba(96, 165, 250, 0.14),
-         $code-color-dark: #bfdbfe,
-         $code-block-bg-dark: $code-block-bg-dark,
-         $code-block-border-dark: $code-block-border-dark,
-         $link-color-dark: #93c5fd,
-         $em-color-dark: #93c5fd,
-         $blockquote-border-dark: #60a5fa,
-         $blockquote-color-dark: #cbd5e1,
-         $hr-color-dark: rgba(96, 165, 250, 0.18),
-         $table-bg-dark: rgba(96, 165, 250, 0.035),
-         $table-border-dark: rgba(96, 165, 250, 0.18),
-         $table-header-bg-dark: rgba(96, 165, 250, 0.12),
-         $table-header-text-dark: #bfdbfe,
-         $table-hover-bg-dark: rgba(96, 165, 250, 0.15),
-         $table-text-dark: #e5e7eb,
-         $table-stripe-bg-dark: rgba(96, 165, 250, 0.055)
-      );
-   }
+    .vp-doc .custom-block.info {
+        @include customBlock.custom-block-base-dark(
+            $bg-color-dark: rgba(96, 165, 250, 0.08),
+            $border-color-dark: rgba(96, 165, 250, 0.22),
+            $border-left-color-dark: #60a5fa,
+            $title-color-dark: #93c5fd,
+            $text-color-dark: #e5e7eb,
+            $code-bg-dark: rgba(96, 165, 250, 0.14),
+            $code-color-dark: #bfdbfe,
+            $code-block-bg-dark: $code-block-bg-dark,
+            $code-block-border-dark: $code-block-border-dark,
+            $link-color-dark: #93c5fd,
+            $em-color-dark: #93c5fd,
+            $blockquote-border-dark: #60a5fa,
+            $blockquote-color-dark: #cbd5e1,
+            $hr-color-dark: rgba(96, 165, 250, 0.18),
+            $table-bg-dark: rgba(96, 165, 250, 0.035),
+            $table-border-dark: rgba(96, 165, 250, 0.18),
+            $table-header-bg-dark: rgba(96, 165, 250, 0.12),
+            $table-header-text-dark: #bfdbfe,
+            $table-hover-bg-dark: rgba(96, 165, 250, 0.15),
+            $table-text-dark: #e5e7eb,
+            $table-stripe-bg-dark: rgba(96, 165, 250, 0.055)
+        );
+    }
 
-   .vp-doc .custom-block.tip,
-   .vp-doc .custom-block.note {
-      @include customBlock.custom-block-base-dark(
-         $bg-color-dark: rgba(74, 222, 128, 0.08),
-         $border-color-dark: rgba(74, 222, 128, 0.22),
-         $border-left-color-dark: #4ade80,
-         $title-color-dark: #86efac,
-         $text-color-dark: #e5e7eb,
-         $code-bg-dark: rgba(74, 222, 128, 0.13),
-         $code-color-dark: #bbf7d0,
-         $code-block-bg-dark: $code-block-bg-dark,
-         $code-block-border-dark: $code-block-border-dark,
-         $link-color-dark: #86efac,
-         $em-color-dark: #86efac,
-         $blockquote-border-dark: #4ade80,
-         $blockquote-color-dark: #cbd5e1,
-         $hr-color-dark: rgba(74, 222, 128, 0.18),
-         $table-bg-dark: rgba(74, 222, 128, 0.03),
-         $table-border-dark: rgba(74, 222, 128, 0.17),
-         $table-header-bg-dark: rgba(74, 222, 128, 0.11),
-         $table-header-text-dark: #bbf7d0,
-         $table-hover-bg-dark: rgba(74, 222, 128, 0.14),
-         $table-text-dark: #e5e7eb,
-         $table-stripe-bg-dark: rgba(74, 222, 128, 0.05)
-      );
-   }
+    .vp-doc .custom-block.tip,
+    .vp-doc .custom-block.note {
+        @include customBlock.custom-block-base-dark(
+            $bg-color-dark: rgba(74, 222, 128, 0.08),
+            $border-color-dark: rgba(74, 222, 128, 0.22),
+            $border-left-color-dark: #4ade80,
+            $title-color-dark: #86efac,
+            $text-color-dark: #e5e7eb,
+            $code-bg-dark: rgba(74, 222, 128, 0.13),
+            $code-color-dark: #bbf7d0,
+            $code-block-bg-dark: $code-block-bg-dark,
+            $code-block-border-dark: $code-block-border-dark,
+            $link-color-dark: #86efac,
+            $em-color-dark: #86efac,
+            $blockquote-border-dark: #4ade80,
+            $blockquote-color-dark: #cbd5e1,
+            $hr-color-dark: rgba(74, 222, 128, 0.18),
+            $table-bg-dark: rgba(74, 222, 128, 0.03),
+            $table-border-dark: rgba(74, 222, 128, 0.17),
+            $table-header-bg-dark: rgba(74, 222, 128, 0.11),
+            $table-header-text-dark: #bbf7d0,
+            $table-hover-bg-dark: rgba(74, 222, 128, 0.14),
+            $table-text-dark: #e5e7eb,
+            $table-stripe-bg-dark: rgba(74, 222, 128, 0.05)
+        );
+    }
 
-   .vp-doc .custom-block.warning {
-      @include customBlock.custom-block-base-dark(
-         $bg-color-dark: rgba(251, 191, 36, 0.08),
-         $border-color-dark: rgba(251, 191, 36, 0.22),
-         $border-left-color-dark: #fbbf24,
-         $title-color-dark: #fde68a,
-         $text-color-dark: #e5e7eb,
-         $code-bg-dark: rgba(251, 191, 36, 0.14),
-         $code-color-dark: #fde68a,
-         $code-block-bg-dark: $code-block-bg-dark,
-         $code-block-border-dark: $code-block-border-dark,
-         $link-color-dark: #fde68a,
-         $em-color-dark: #fde68a,
-         $blockquote-border-dark: #fbbf24,
-         $blockquote-color-dark: #cbd5e1,
-         $hr-color-dark: rgba(251, 191, 36, 0.18),
-         $table-bg-dark: rgba(251, 191, 36, 0.03),
-         $table-border-dark: rgba(251, 191, 36, 0.17),
-         $table-header-bg-dark: rgba(251, 191, 36, 0.12),
-         $table-header-text-dark: #fde68a,
-         $table-hover-bg-dark: rgba(251, 191, 36, 0.14),
-         $table-text-dark: #e5e7eb,
-         $table-stripe-bg-dark: rgba(251, 191, 36, 0.05)
-      );
-   }
+    .vp-doc .custom-block.warning {
+        @include customBlock.custom-block-base-dark(
+            $bg-color-dark: rgba(251, 191, 36, 0.08),
+            $border-color-dark: rgba(251, 191, 36, 0.22),
+            $border-left-color-dark: #fbbf24,
+            $title-color-dark: #fde68a,
+            $text-color-dark: #e5e7eb,
+            $code-bg-dark: rgba(251, 191, 36, 0.14),
+            $code-color-dark: #fde68a,
+            $code-block-bg-dark: $code-block-bg-dark,
+            $code-block-border-dark: $code-block-border-dark,
+            $link-color-dark: #fde68a,
+            $em-color-dark: #fde68a,
+            $blockquote-border-dark: #fbbf24,
+            $blockquote-color-dark: #cbd5e1,
+            $hr-color-dark: rgba(251, 191, 36, 0.18),
+            $table-bg-dark: rgba(251, 191, 36, 0.03),
+            $table-border-dark: rgba(251, 191, 36, 0.17),
+            $table-header-bg-dark: rgba(251, 191, 36, 0.12),
+            $table-header-text-dark: #fde68a,
+            $table-hover-bg-dark: rgba(251, 191, 36, 0.14),
+            $table-text-dark: #e5e7eb,
+            $table-stripe-bg-dark: rgba(251, 191, 36, 0.05)
+        );
+    }
 
-   .vp-doc .custom-block.danger,
-   .vp-doc .custom-block.caution {
-      @include customBlock.custom-block-base-dark(
-         $bg-color-dark: rgba(248, 113, 113, 0.08),
-         $border-color-dark: rgba(248, 113, 113, 0.22),
-         $border-left-color-dark: #f87171,
-         $title-color-dark: #fecaca,
-         $text-color-dark: #e5e7eb,
-         $code-bg-dark: rgba(248, 113, 113, 0.14),
-         $code-color-dark: #fecaca,
-         $code-block-bg-dark: $code-block-bg-dark,
-         $code-block-border-dark: $code-block-border-dark,
-         $link-color-dark: #fecaca,
-         $em-color-dark: #fecaca,
-         $blockquote-border-dark: #f87171,
-         $blockquote-color-dark: #cbd5e1,
-         $hr-color-dark: rgba(248, 113, 113, 0.18),
-         $table-bg-dark: rgba(248, 113, 113, 0.03),
-         $table-border-dark: rgba(248, 113, 113, 0.17),
-         $table-header-bg-dark: rgba(248, 113, 113, 0.12),
-         $table-header-text-dark: #fecaca,
-         $table-hover-bg-dark: rgba(248, 113, 113, 0.14),
-         $table-text-dark: #e5e7eb,
-         $table-stripe-bg-dark: rgba(248, 113, 113, 0.05)
-      );
-   }
+    .vp-doc .custom-block.danger,
+    .vp-doc .custom-block.caution {
+        @include customBlock.custom-block-base-dark(
+            $bg-color-dark: rgba(248, 113, 113, 0.08),
+            $border-color-dark: rgba(248, 113, 113, 0.22),
+            $border-left-color-dark: #f87171,
+            $title-color-dark: #fecaca,
+            $text-color-dark: #e5e7eb,
+            $code-bg-dark: rgba(248, 113, 113, 0.14),
+            $code-color-dark: #fecaca,
+            $code-block-bg-dark: $code-block-bg-dark,
+            $code-block-border-dark: $code-block-border-dark,
+            $link-color-dark: #fecaca,
+            $em-color-dark: #fecaca,
+            $blockquote-border-dark: #f87171,
+            $blockquote-color-dark: #cbd5e1,
+            $hr-color-dark: rgba(248, 113, 113, 0.18),
+            $table-bg-dark: rgba(248, 113, 113, 0.03),
+            $table-border-dark: rgba(248, 113, 113, 0.17),
+            $table-header-bg-dark: rgba(248, 113, 113, 0.12),
+            $table-header-text-dark: #fecaca,
+            $table-hover-bg-dark: rgba(248, 113, 113, 0.14),
+            $table-text-dark: #e5e7eb,
+            $table-stripe-bg-dark: rgba(248, 113, 113, 0.05)
+        );
+    }
 
-   .vp-doc .custom-block.important {
-      @include customBlock.custom-block-base-dark(
-         $bg-color-dark: rgba(34, 211, 238, 0.08),
-         $border-color-dark: rgba(34, 211, 238, 0.22),
-         $border-left-color-dark: #22d3ee,
-         $title-color-dark: #a5f3fc,
-         $text-color-dark: #e5e7eb,
-         $code-bg-dark: rgba(34, 211, 238, 0.13),
-         $code-color-dark: #a5f3fc,
-         $code-block-bg-dark: $code-block-bg-dark,
-         $code-block-border-dark: $code-block-border-dark,
-         $link-color-dark: #a5f3fc,
-         $em-color-dark: #a5f3fc,
-         $blockquote-border-dark: #22d3ee,
-         $blockquote-color-dark: #cbd5e1,
-         $hr-color-dark: rgba(34, 211, 238, 0.18),
-         $table-bg-dark: rgba(34, 211, 238, 0.03),
-         $table-border-dark: rgba(34, 211, 238, 0.17),
-         $table-header-bg-dark: rgba(34, 211, 238, 0.11),
-         $table-header-text-dark: #a5f3fc,
-         $table-hover-bg-dark: rgba(34, 211, 238, 0.14),
-         $table-text-dark: #e5e7eb,
-         $table-stripe-bg-dark: rgba(34, 211, 238, 0.05)
-      );
-   }
+    .vp-doc .custom-block.important {
+        @include customBlock.custom-block-base-dark(
+            $bg-color-dark: rgba(34, 211, 238, 0.08),
+            $border-color-dark: rgba(34, 211, 238, 0.22),
+            $border-left-color-dark: #22d3ee,
+            $title-color-dark: #a5f3fc,
+            $text-color-dark: #e5e7eb,
+            $code-bg-dark: rgba(34, 211, 238, 0.13),
+            $code-color-dark: #a5f3fc,
+            $code-block-bg-dark: $code-block-bg-dark,
+            $code-block-border-dark: $code-block-border-dark,
+            $link-color-dark: #a5f3fc,
+            $em-color-dark: #a5f3fc,
+            $blockquote-border-dark: #22d3ee,
+            $blockquote-color-dark: #cbd5e1,
+            $hr-color-dark: rgba(34, 211, 238, 0.18),
+            $table-bg-dark: rgba(34, 211, 238, 0.03),
+            $table-border-dark: rgba(34, 211, 238, 0.17),
+            $table-header-bg-dark: rgba(34, 211, 238, 0.11),
+            $table-header-text-dark: #a5f3fc,
+            $table-hover-bg-dark: rgba(34, 211, 238, 0.14),
+            $table-text-dark: #e5e7eb,
+            $table-stripe-bg-dark: rgba(34, 211, 238, 0.05)
+        );
+    }
 
-   .vp-doc .custom-block.details {
-      @include customBlock.custom-block-base-dark(
-         $bg-color-dark: rgba(148, 163, 184, 0.07),
-         $border-color-dark: rgba(148, 163, 184, 0.18),
-         $border-left-color-dark: #94a3b8,
-         $title-color-dark: #cbd5e1,
-         $text-color-dark: #e5e7eb,
-         $code-bg-dark: rgba(148, 163, 184, 0.12),
-         $code-color-dark: #cbd5e1,
-         $code-block-bg-dark: $code-block-bg-dark,
-         $code-block-border-dark: $code-block-border-dark,
-         $link-color-dark: #93c5fd,
-         $em-color-dark: #cbd5e1,
-         $blockquote-border-dark: #94a3b8,
-         $blockquote-color-dark: #cbd5e1,
-         $hr-color-dark: rgba(148, 163, 184, 0.16),
-         $table-bg-dark: rgba(148, 163, 184, 0.025),
-         $table-border-dark: rgba(148, 163, 184, 0.15),
-         $table-header-bg-dark: rgba(148, 163, 184, 0.1),
-         $table-header-text-dark: #cbd5e1,
-         $table-hover-bg-dark: rgba(148, 163, 184, 0.12),
-         $table-text-dark: #e5e7eb,
-         $table-stripe-bg-dark: rgba(148, 163, 184, 0.045)
-      );
-   }
+    .vp-doc .custom-block.details {
+        @include customBlock.custom-block-base-dark(
+            $bg-color-dark: rgba(148, 163, 184, 0.07),
+            $border-color-dark: rgba(148, 163, 184, 0.18),
+            $border-left-color-dark: #94a3b8,
+            $title-color-dark: #cbd5e1,
+            $text-color-dark: #e5e7eb,
+            $code-bg-dark: rgba(148, 163, 184, 0.12),
+            $code-color-dark: #cbd5e1,
+            $code-block-bg-dark: $code-block-bg-dark,
+            $code-block-border-dark: $code-block-border-dark,
+            $link-color-dark: #93c5fd,
+            $em-color-dark: #cbd5e1,
+            $blockquote-border-dark: #94a3b8,
+            $blockquote-color-dark: #cbd5e1,
+            $hr-color-dark: rgba(148, 163, 184, 0.16),
+            $table-bg-dark: rgba(148, 163, 184, 0.025),
+            $table-border-dark: rgba(148, 163, 184, 0.15),
+            $table-header-bg-dark: rgba(148, 163, 184, 0.1),
+            $table-header-text-dark: #cbd5e1,
+            $table-hover-bg-dark: rgba(148, 163, 184, 0.12),
+            $table-text-dark: #e5e7eb,
+            $table-stripe-bg-dark: rgba(148, 163, 184, 0.045)
+        );
+    }
 }

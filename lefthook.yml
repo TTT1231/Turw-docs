@@ -1,0 +1,19 @@
+piped: true
+
+pre-commit:
+  jobs:
+    - name: oxfmt
+      run: bunx oxfmt {staged_files}
+      stage_fixed: true
+    - name: cspell
+      run: bunx cspell --no-progress --no-summary {staged_files}
+    - name: check-links
+      glob: "*.md"
+      run: bun run check:links {staged_files}
+    - name: check
+      run: bun run check
+
+pre-push:
+  jobs:
+    - name: manifest
+      run: bun run check:manifest

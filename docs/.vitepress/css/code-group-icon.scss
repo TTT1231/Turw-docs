@@ -5,22 +5,22 @@
 
 /* 徽标基础样式 mixin */
 @mixin badgeBase() {
-   display: inline-flex;
-   align-items: center;
-   justify-content: center;
-   padding: 2px 5px;
-   border-radius: 4px;
-   font-size: 11px;
-   font-weight: 750;
-   text-transform: uppercase;
-   line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 750;
+    text-transform: uppercase;
+    line-height: 1;
 }
 
 /* Code Group: 在标签前显示语言徽标（基于 data-title 后缀匹配） */
 .vp-code-group .tabs label {
-   display: inline-flex;
-   align-items: center;
-   gap: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 //=================================== 文本徽标 ===================================//
@@ -29,27 +29,27 @@
 .vp-code-group .tabs label[data-title$=".js"]::before,
 .vp-code-group .tabs label[data-title$=".mjs"]::before,
 .vp-code-group .tabs label[data-title$=".cjs"]::before {
-   content: "JS";
-   @include badgeBase();
-   background: rgba(217, 119, 6, 0.1);
-   color: #b45309;
-   border: 1px solid rgba(217, 119, 6, 0.2);
+    content: "JS";
+    @include badgeBase();
+    background: rgba(217, 119, 6, 0.1);
+    color: #b45309;
+    border: 1px solid rgba(217, 119, 6, 0.2);
 }
 .vp-code-group .tabs label[data-title$=".ts"]::before {
-   content: "TS";
-   @include badgeBase();
-   background: rgba(37, 99, 235, 0.1);
-   color: #1d4ed8;
-   font-weight: 700;
-   border: 1px solid rgba(37, 99, 235, 0.2);
+    content: "TS";
+    @include badgeBase();
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+    font-weight: 700;
+    border: 1px solid rgba(37, 99, 235, 0.2);
 }
 .vp-code-group .tabs label[data-title$=".d.ts"]::before {
-   content: ".TS";
-   @include badgeBase();
-   background: rgba(22, 163, 74, 0.1);
-   color: #15803d;
-   border: 1px solid rgba(22, 163, 74, 0.2);
-   font-weight: 700;
+    content: ".TS";
+    @include badgeBase();
+    background: rgba(22, 163, 74, 0.1);
+    color: #15803d;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    font-weight: 700;
 }
 
 //公共图标路径变量
@@ -57,7 +57,7 @@ $commonIconPath: "/Turw-docs/assets/images/code-icon";
 
 //获取图标目标路径函数
 @function getIconUrl($icon-name) {
-   @return "#{$commonIconPath}/#{$icon-name}.svg";
+    @return "#{$commonIconPath}/#{$icon-name}.svg";
 }
 
 /*
@@ -66,100 +66,104 @@ $commonIconPath: "/Turw-docs/assets/images/code-icon";
    Tips: 没有参数时，外围括号可以删除.
 */
 $iconConfigs: (
-   // ========================= 基础图标 =======================
-   ".json": getIconUrl("json"),
-   ".vue": getIconUrl("vue"),
-   ".sh": getIconUrl("shell"),
-   ".bash": getIconUrl("shell"),
-   ".html": getIconUrl("html"),
-   ".md": getIconUrl("markdown"),
-   // ========================= 扩展图标 =======================
-   ".prettierignore": getIconUrl("prettier"),
-   ".prettierrc": getIconUrl("prettier"),
-   ".prettierrc.json": getIconUrl("prettier"),
-   "eslint.config.mjs": getIconUrl("eslint"),
-   "vite.config.ts": getIconUrl("vite"),
-   ".prisma": getIconUrl("prisma"),
-   "pre-commit": getIconUrl("husky"),
-   ".editorconfig": (getIconUrl("editorconfig"), #ffffff, 22px),
-   "esbuild.config.mjs": getIconUrl("esbuild"),
-   ".fastify.ts": getIconUrl("fastify"),
-   "global.code-snippets": getIconUrl("vscode"),
-   "code-workspace": getIconUrl("vscode"),
-   "schema.json": getIconUrl("json-schema"),
-   "stylelint.config.mjs": getIconUrl("stylelint"),
-   ".stylelintignore": getIconUrl("stylelint"),
-   "cspell.json": getIconUrl("cspell"),
-   "nginx.conf": getIconUrl("nginx"),
-   ".cpp": getIconUrl("cpp")
+    // ========================= 基础图标 =======================
+    ".json": getIconUrl("json"),
+    ".vue": getIconUrl("vue"),
+    ".sh": getIconUrl("shell"),
+    ".bash": getIconUrl("shell"),
+    ".html": getIconUrl("html"),
+    ".md": getIconUrl("markdown"),
+    // ========================= 扩展图标 =======================
+    ".prettierignore": getIconUrl("prettier"),
+    ".prettierrc": getIconUrl("prettier"),
+    ".prettierrc.json": getIconUrl("prettier"),
+    "eslint.config.mjs": getIconUrl("eslint"),
+    "vite.config.ts": getIconUrl("vite"),
+    ".prisma": getIconUrl("prisma"),
+    "pre-commit": getIconUrl("husky"),
+    ".editorconfig": (
+        getIconUrl("editorconfig"),
+        #ffffff,
+        22px
+    ),
+    "esbuild.config.mjs": getIconUrl("esbuild"),
+    ".fastify.ts": getIconUrl("fastify"),
+    "global.code-snippets": getIconUrl("vscode"),
+    "code-workspace": getIconUrl("vscode"),
+    "schema.json": getIconUrl("json-schema"),
+    "stylelint.config.mjs": getIconUrl("stylelint"),
+    ".stylelintignore": getIconUrl("stylelint"),
+    "cspell.json": getIconUrl("cspell"),
+    "nginx.conf": getIconUrl("nginx"),
+    ".cpp": getIconUrl("cpp")
 );
 
 // 生成图标样式
 @each $key, $value in $iconConfigs {
-   .vp-code-group .tabs label[data-title$="#{$key}"]::before {
-      @include badgeBase();
+    .vp-code-group .tabs label[data-title$="#{$key}"]::before {
+        @include badgeBase();
 
-      @if meta.type-of($value) == "list" {
-         //加了括号，有多个参数
-         $iconUrl: list.nth($value, 1);
-         $bgColor: null;
-         $size: null;
+        @if meta.type-of($value) == "list" {
+            //加了括号，有多个参数
+            $iconUrl: list.nth($value, 1);
+            $bgColor: null;
+            $size: null;
 
-         @if list.length($value) > 1 {
-            $bgColor: list.nth($value, 2);
-         }
-         @if list.length($value) > 2 {
-            $size: list.nth($value, 3);
-         }
+            @if list.length($value) > 1 {
+                $bgColor: list.nth($value, 2);
+            }
+            @if list.length($value) > 2 {
+                $size: list.nth($value, 3);
+            }
 
-         @if $bgColor and $size {
-            @include codeIconNameSpace.applyIcon($iconUrl, $bgColor, $size);
-         } @else if $bgColor {
-            @include codeIconNameSpace.applyIcon($iconUrl, $bgColor);
-         } @else {
-            @include codeIconNameSpace.applyIcon($iconUrl);
-         }
-      } @else {
-         //单个参数
-         @include codeIconNameSpace.applyIcon($value);
-      }
-   }
+            @if $bgColor and $size {
+                @include codeIconNameSpace.applyIcon($iconUrl, $bgColor, $size);
+            } @else if $bgColor {
+                @include codeIconNameSpace.applyIcon($iconUrl, $bgColor);
+            } @else {
+                @include codeIconNameSpace.applyIcon($iconUrl);
+            }
+        } @else {
+            //单个参数
+            @include codeIconNameSpace.applyIcon($value);
+        }
+    }
 }
 
 .vp-code-group .tabs label[data-title$=".md"]::before,
 .vp-code-group .tabs label[data-title$=".markdown"]::before {
-   content: "MD";
-   @include badgeBase();
-   background: rgba(100, 116, 139, 0.1);
-   color: #475569;
-   border: 1px solid rgba(100, 116, 139, 0.2);
+    content: "MD";
+    @include badgeBase();
+    background: rgba(100, 116, 139, 0.1);
+    color: #475569;
+    border: 1px solid rgba(100, 116, 139, 0.2);
 }
 
 .dark {
-   .vp-code-group .tabs label[data-title$=".js"]::before,
-   .vp-code-group .tabs label[data-title$=".mjs"]::before,
-   .vp-code-group .tabs label[data-title$=".cjs"]::before {
-      background: rgba(245, 158, 11, 0.16);
-      color: #fbbf24;
-      border-color: rgba(245, 158, 11, 0.28);
-   }
+    .vp-code-group .tabs label[data-title$=".js"]::before,
+    .vp-code-group .tabs label[data-title$=".mjs"]::before,
+    .vp-code-group .tabs label[data-title$=".cjs"]::before {
+        background: rgba(245, 158, 11, 0.16);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.28);
+    }
 
-   .vp-code-group .tabs label[data-title$=".ts"]::before {
-      background: rgba(59, 130, 246, 0.16);
-      color: #93c5fd;
-      border-color: rgba(59, 130, 246, 0.28);
-   }
+    .vp-code-group .tabs label[data-title$=".ts"]::before {
+        background: rgba(59, 130, 246, 0.16);
+        color: #93c5fd;
+        border-color: rgba(59, 130, 246, 0.28);
+    }
 
-   .vp-code-group .tabs label[data-title$=".d.ts"]::before {
-      background: rgba(34, 197, 94, 0.16);
-      color: #86efac;
-      border-color: rgba(34, 197, 94, 0.28);
-   }
+    .vp-code-group .tabs label[data-title$=".d.ts"]::before {
+        background: rgba(34, 197, 94, 0.16);
+        color: #86efac;
+        border-color: rgba(34, 197, 94, 0.28);
+    }
 
-   .vp-code-group .tabs label[data-title$=".md"]::before,
-   .vp-code-group .tabs label[data-title$=".markdown"]::before {
-      background: rgba(148, 163, 184, 0.16);
-      color: #cbd5e1;
-      border-color: rgba(148, 163, 184, 0.28);
-   }
+    .vp-code-group .tabs label[data-title$=".md"]::before,
+    .vp-code-group .tabs label[data-title$=".markdown"]::before {
+        background: rgba(148, 163, 184, 0.16);
+        color: #cbd5e1;
+        border-color: rgba(148, 163, 184, 0.28);
+    }
 }

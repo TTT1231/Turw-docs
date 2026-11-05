@@ -1,34 +1,35 @@
 {
-   "type": "module",
-   "devDependencies": {
-      "@tailwindcss/postcss": "^4.3.0",
-      "cspell": "^10.0.0",
-      "postcss": "^8.5.15",
-      "prettier": "^3.8.3",
-      "sass": "^1.100.0",
-      "tailwindcss": "^4.3.0",
-      "vitepress": "^1.6.4"
-   },
-   "scripts": {
-      "dev": "vitepress dev docs",
-      "docs:build": "vitepress build docs",
-      "docs:preview": "vitepress preview docs",
-      "format": "prettier --write docs/",
-      "check:cspell": "cspell .",
-      "generate-manifest": "node ./scripts/generate-manifest.mjs"
-   },
-   "dependencies": {
-      "@codemirror/lang-html": "^6.4.11",
-      "@codemirror/lang-javascript": "^6.2.5",
-      "@codemirror/lang-json": "^6.0.2",
-      "@codemirror/lang-markdown": "^6.5.0",
-      "@codemirror/lang-vue": "^0.1.3",
-      "@codemirror/language": "^6.12.3",
-      "@codemirror/search": "^6.7.0",
-      "@codemirror/state": "^6.6.0",
-      "@codemirror/theme-one-dark": "^6.1.3",
-      "@codemirror/view": "^6.43.0",
-      "ant-design-vue": "^4.2.6",
-      "vue": "^3.5.34"
-   }
+    "type": "module",
+    "scripts": {
+        "dev": "vitepress dev docs",
+        "docs:build": "vitepress build docs",
+        "check:code-style": "oxfmt --check docs/ scripts/",
+        "check:links": "node ./scripts/check-vitepress-link.mjs",
+        "check:words": "cspell .",
+        "check:manifest": "node ./scripts/check-manifest.mjs",
+        "check": "bun run check:code-style && bun run check:words && bun run check:links && bun run check:manifest",
+        "generate-manifest": "node ./scripts/generate-manifest.mjs",
+        "prepare": "lefthook install"
+    },
+    "dependencies": {
+        "@codemirror/lang-html": "^6.4.12",
+        "@codemirror/lang-javascript": "^6.2.5",
+        "@codemirror/lang-json": "^6.0.2",
+        "@codemirror/lang-markdown": "^6.5.2",
+        "@codemirror/lang-vue": "^0.1.3",
+        "@codemirror/language": "^6.13.1",
+        "@codemirror/search": "^6.7.2",
+        "@codemirror/state": "^6.7.6",
+        "@codemirror/theme-one-dark": "^6.1.3",
+        "@codemirror/view": "^6.43.15",
+        "ant-design-vue": "^4.2.6",
+        "vue": "^3.5.44"
+    },
+    "devDependencies": {
+        "cspell": "^10.4.0",
+        "lefthook": "^2.2.2",
+        "oxfmt": "^0.76.0",
+        "sass": "^1.107.1",
+        "vitepress": "^1.6.4"
+    }
 }

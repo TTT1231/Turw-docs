@@ -1,329 +1,329 @@
 // 代码组图标
 @mixin applyIcon($bg-image-url, $bg-color: transparent, $size: 18px) {
-   content: "";
-   display: inline-block;
-   width: $size;
-   height: $size;
-   margin-right: 4px;
-   background-color: $bg-color;
-   background-image: url($bg-image-url);
-   background-position: center;
-   background-size: contain;
-   background-repeat: no-repeat;
+    content: "";
+    display: inline-block;
+    width: $size;
+    height: $size;
+    margin-right: 4px;
+    background-color: $bg-color;
+    background-image: url($bg-image-url);
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
 }
 
 @mixin custom-block-table(
-   $table-bg,
-   $table-border,
-   $table-header-bg,
-   $table-header-text,
-   $table-hover-bg,
-   $table-text,
-   $table-stripe-bg
+    $table-bg,
+    $table-border,
+    $table-header-bg,
+    $table-header-text,
+    $table-hover-bg,
+    $table-text,
+    $table-stripe-bg
 ) {
-   table {
-      display: table;
-      overflow-x: auto;
-      width: 100%;
-      min-width: 100%;
-      margin: 14px 0 4px;
-      border: 1px solid $table-border !important;
-      border-radius: 7px;
-      border-spacing: 0;
-      border-collapse: separate;
-      background: $table-bg !important;
-      box-shadow: none;
+    table {
+        display: table;
+        overflow-x: auto;
+        width: 100%;
+        min-width: 100%;
+        margin: 14px 0 4px;
+        border: 1px solid $table-border !important;
+        border-radius: 7px;
+        border-spacing: 0;
+        border-collapse: separate;
+        background: $table-bg !important;
+        box-shadow: none;
 
-      thead,
-      tbody,
-      tr {
-         width: 100%;
-      }
+        thead,
+        tbody,
+        tr {
+            width: 100%;
+        }
 
-      th,
-      td {
-         border: 0 !important;
-         border-bottom: 1px solid $table-border !important;
-         border-left: 1px solid $table-border !important;
-         padding: 9px 12px;
-         line-height: 1.66;
-         background: transparent !important;
-      }
+        th,
+        td {
+            border: 0 !important;
+            border-bottom: 1px solid $table-border !important;
+            border-left: 1px solid $table-border !important;
+            padding: 9px 12px;
+            line-height: 1.66;
+            background: transparent !important;
+        }
 
-      th:first-child,
-      td:first-child {
-         border-left: 0 !important;
-      }
+        th:first-child,
+        td:first-child {
+            border-left: 0 !important;
+        }
 
-      tbody tr:last-child td {
-         border-bottom: 0 !important;
-      }
+        tbody tr:last-child td {
+            border-bottom: 0 !important;
+        }
 
-      tr {
-         background: transparent !important;
-         transition: background-color 0.16s ease;
-      }
+        tr {
+            background: transparent !important;
+            transition: background-color 0.16s ease;
+        }
 
-      th {
-         color: $table-header-text !important;
-         background: $table-header-bg !important;
-         font-weight: 700;
-      }
+        th {
+            color: $table-header-text !important;
+            background: $table-header-bg !important;
+            font-weight: 700;
+        }
 
-      td {
-         color: $table-text !important;
-      }
+        td {
+            color: $table-text !important;
+        }
 
-      tbody tr:nth-child(2n) td {
-         background: $table-stripe-bg !important;
-      }
+        tbody tr:nth-child(2n) td {
+            background: $table-stripe-bg !important;
+        }
 
-      tbody tr:hover td {
-         background: $table-hover-bg !important;
-      }
-   }
+        tbody tr:hover td {
+            background: $table-hover-bg !important;
+        }
+    }
 }
 
 @mixin custom-block-base(
-   $bg-color,
-   $border-color,
-   $border-left-color,
-   $title-color,
-   $text-color,
-   $code-bg,
-   $code-color,
-   $code-block-bg,
-   $code-block-border,
-   $link-color,
-   $em-color,
-   $blockquote-border,
-   $blockquote-color,
-   $hr-color,
-   $table-bg: $bg-color,
-   $table-border: $border-color,
-   $table-header-bg: rgba($border-left-color, 0.08),
-   $table-header-text: $title-color,
-   $table-hover-bg: rgba($border-left-color, 0.09),
-   $table-text: $text-color,
-   $table-stripe-bg: rgba($border-left-color, 0.035)
+    $bg-color,
+    $border-color,
+    $border-left-color,
+    $title-color,
+    $text-color,
+    $code-bg,
+    $code-color,
+    $code-block-bg,
+    $code-block-border,
+    $link-color,
+    $em-color,
+    $blockquote-border,
+    $blockquote-color,
+    $hr-color,
+    $table-bg: $bg-color,
+    $table-border: $border-color,
+    $table-header-bg: rgba($border-left-color, 0.08),
+    $table-header-text: $title-color,
+    $table-hover-bg: rgba($border-left-color, 0.09),
+    $table-text: $text-color,
+    $table-stripe-bg: rgba($border-left-color, 0.035)
 ) {
-   position: relative;
-   margin: 20px 0;
-   padding: 15px 17px;
-   border: 1px solid $border-color;
-   border-left: 3px solid $border-left-color;
-   border-radius: 8px;
-   background: $bg-color;
-   box-shadow: none;
+    position: relative;
+    margin: 20px 0;
+    padding: 15px 17px;
+    border: 1px solid $border-color;
+    border-left: 3px solid $border-left-color;
+    border-radius: 8px;
+    background: $bg-color;
+    box-shadow: none;
 
-   .custom-block-title,
-   summary {
-      color: $title-color;
-      font-size: 14px;
-      font-weight: 750;
-      letter-spacing: 0;
-   }
+    .custom-block-title,
+    summary {
+        color: $title-color;
+        font-size: 14px;
+        font-weight: 750;
+        letter-spacing: 0;
+    }
 
-   .custom-block-title {
-      margin-bottom: 8px;
-      line-height: 1.45;
-   }
+    .custom-block-title {
+        margin-bottom: 8px;
+        line-height: 1.45;
+    }
 
-   summary {
-      cursor: pointer;
-      outline: none;
-   }
+    summary {
+        cursor: pointer;
+        outline: none;
+    }
 
-   p,
-   li {
-      color: $text-color;
-      font-size: 14.5px;
-      line-height: 1.7;
-   }
+    p,
+    li {
+        color: $text-color;
+        font-size: 14.5px;
+        line-height: 1.7;
+    }
 
-   p {
-      margin: 10px 0;
-   }
+    p {
+        margin: 10px 0;
+    }
 
-   p:last-child,
-   ul:last-child,
-   ol:last-child {
-      margin-bottom: 0;
-   }
+    p:last-child,
+    ul:last-child,
+    ol:last-child {
+        margin-bottom: 0;
+    }
 
-   @include custom-block-table(
-      $table-bg,
-      $table-border,
-      $table-header-bg,
-      $table-header-text,
-      $table-hover-bg,
-      $table-text,
-      $table-stripe-bg
-   );
+    @include custom-block-table(
+        $table-bg,
+        $table-border,
+        $table-header-bg,
+        $table-header-text,
+        $table-hover-bg,
+        $table-text,
+        $table-stripe-bg
+    );
 
-   :not(pre) > code {
-      border: 1px solid rgba($border-left-color, 0.18);
-      border-radius: 5px;
-      padding: 2px 6px;
-      color: $code-color !important;
-      background: $code-bg !important;
-      font-size: 0.88em;
-      font-weight: 650;
-   }
+    :not(pre) > code {
+        border: 1px solid rgba($border-left-color, 0.18);
+        border-radius: 5px;
+        padding: 2px 6px;
+        color: $code-color !important;
+        background: $code-bg !important;
+        font-size: 0.88em;
+        font-weight: 650;
+    }
 
-   div[class*="language-"] {
-      margin: 14px 0;
-      border: 1px solid $code-block-border !important;
-      border-radius: 8px;
-      background: $code-block-bg !important;
-      box-shadow: none;
+    div[class*="language-"] {
+        margin: 14px 0;
+        border: 1px solid $code-block-border !important;
+        border-radius: 8px;
+        background: $code-block-bg !important;
+        box-shadow: none;
 
-      pre,
-      code {
-         background: transparent !important;
-      }
-   }
+        pre,
+        code {
+            background: transparent !important;
+        }
+    }
 
-   .vp-code-group {
-      margin: 14px 0;
-      border-color: $code-block-border;
-      box-shadow: none;
+    .vp-code-group {
+        margin: 14px 0;
+        border-color: $code-block-border;
+        box-shadow: none;
 
-      div[class*="language-"] {
-         margin: 0;
-         border: 0 !important;
-         border-radius: 0;
-      }
-   }
+        div[class*="language-"] {
+            margin: 0;
+            border: 0 !important;
+            border-radius: 0;
+        }
+    }
 
-   a {
-      color: $link-color;
-      font-weight: 650;
-      text-decoration-color: rgba($border-left-color, 0.32);
+    a {
+        color: $link-color;
+        font-weight: 650;
+        text-decoration-color: rgba($border-left-color, 0.32);
 
-      &:hover {
-         color: $link-color;
-         text-decoration-color: currentcolor;
-      }
-   }
+        &:hover {
+            color: $link-color;
+            text-decoration-color: currentcolor;
+        }
+    }
 
-   strong {
-      color: $text-color;
-      font-weight: 750;
-   }
+    strong {
+        color: $text-color;
+        font-weight: 750;
+    }
 
-   em {
-      color: $em-color;
-      font-style: italic;
-   }
+    em {
+        color: $em-color;
+        font-style: italic;
+    }
 
-   em strong,
-   strong em {
-      color: $em-color;
-      font-weight: 750;
-      font-style: italic;
-   }
+    em strong,
+    strong em {
+        color: $em-color;
+        font-weight: 750;
+        font-style: italic;
+    }
 
-   blockquote {
-      margin: 12px 0;
-      border-left: 3px solid $blockquote-border;
-      border-radius: 0 6px 6px 0;
-      background: rgba($border-left-color, 0.055);
-      color: $blockquote-color;
-   }
+    blockquote {
+        margin: 12px 0;
+        border-left: 3px solid $blockquote-border;
+        border-radius: 0 6px 6px 0;
+        background: rgba($border-left-color, 0.055);
+        color: $blockquote-color;
+    }
 
-   hr {
-      border-top: 1px solid $hr-color;
-   }
+    hr {
+        border-top: 1px solid $hr-color;
+    }
 }
 
 @mixin custom-block-base-dark(
-   $bg-color-dark,
-   $border-color-dark,
-   $border-left-color-dark,
-   $title-color-dark,
-   $text-color-dark,
-   $code-bg-dark,
-   $code-color-dark,
-   $code-block-bg-dark,
-   $code-block-border-dark,
-   $link-color-dark,
-   $em-color-dark,
-   $blockquote-border-dark,
-   $blockquote-color-dark,
-   $hr-color-dark,
-   $table-bg-dark: rgba(255, 255, 255, 0.02),
-   $table-border-dark: $border-color-dark,
-   $table-header-bg-dark: rgba($border-left-color-dark, 0.13),
-   $table-header-text-dark: $title-color-dark,
-   $table-hover-bg-dark: rgba($border-left-color-dark, 0.14),
-   $table-text-dark: $text-color-dark,
-   $table-stripe-bg-dark: rgba($border-left-color-dark, 0.05)
+    $bg-color-dark,
+    $border-color-dark,
+    $border-left-color-dark,
+    $title-color-dark,
+    $text-color-dark,
+    $code-bg-dark,
+    $code-color-dark,
+    $code-block-bg-dark,
+    $code-block-border-dark,
+    $link-color-dark,
+    $em-color-dark,
+    $blockquote-border-dark,
+    $blockquote-color-dark,
+    $hr-color-dark,
+    $table-bg-dark: rgba(255, 255, 255, 0.02),
+    $table-border-dark: $border-color-dark,
+    $table-header-bg-dark: rgba($border-left-color-dark, 0.13),
+    $table-header-text-dark: $title-color-dark,
+    $table-hover-bg-dark: rgba($border-left-color-dark, 0.14),
+    $table-text-dark: $text-color-dark,
+    $table-stripe-bg-dark: rgba($border-left-color-dark, 0.05)
 ) {
-   background: $bg-color-dark !important;
-   border-color: $border-color-dark !important;
-   border-left-color: $border-left-color-dark !important;
-   box-shadow: none;
+    background: $bg-color-dark !important;
+    border-color: $border-color-dark !important;
+    border-left-color: $border-left-color-dark !important;
+    box-shadow: none;
 
-   .custom-block-title,
-   summary {
-      color: $title-color-dark !important;
-   }
+    .custom-block-title,
+    summary {
+        color: $title-color-dark !important;
+    }
 
-   p,
-   li,
-   strong {
-      color: $text-color-dark !important;
-   }
+    p,
+    li,
+    strong {
+        color: $text-color-dark !important;
+    }
 
-   @include custom-block-table(
-      $table-bg-dark,
-      $table-border-dark,
-      $table-header-bg-dark,
-      $table-header-text-dark,
-      $table-hover-bg-dark,
-      $table-text-dark,
-      $table-stripe-bg-dark
-   );
+    @include custom-block-table(
+        $table-bg-dark,
+        $table-border-dark,
+        $table-header-bg-dark,
+        $table-header-text-dark,
+        $table-hover-bg-dark,
+        $table-text-dark,
+        $table-stripe-bg-dark
+    );
 
-   :not(pre) > code {
-      border-color: rgba($border-left-color-dark, 0.24);
-      color: $code-color-dark !important;
-      background: $code-bg-dark !important;
-   }
+    :not(pre) > code {
+        border-color: rgba($border-left-color-dark, 0.24);
+        color: $code-color-dark !important;
+        background: $code-bg-dark !important;
+    }
 
-   div[class*="language-"] {
-      border-color: $code-block-border-dark !important;
-      background: $code-block-bg-dark !important;
-   }
+    div[class*="language-"] {
+        border-color: $code-block-border-dark !important;
+        background: $code-block-bg-dark !important;
+    }
 
-   .vp-code-group {
-      border-color: $code-block-border-dark !important;
-   }
+    .vp-code-group {
+        border-color: $code-block-border-dark !important;
+    }
 
-   a {
-      color: $link-color-dark !important;
-      text-decoration-color: rgba($border-left-color-dark, 0.42);
+    a {
+        color: $link-color-dark !important;
+        text-decoration-color: rgba($border-left-color-dark, 0.42);
 
-      &:hover {
-         color: $link-color-dark !important;
-         text-decoration-color: currentcolor;
-      }
-   }
+        &:hover {
+            color: $link-color-dark !important;
+            text-decoration-color: currentcolor;
+        }
+    }
 
-   em,
-   em strong,
-   strong em {
-      color: $em-color-dark !important;
-   }
+    em,
+    em strong,
+    strong em {
+        color: $em-color-dark !important;
+    }
 
-   blockquote {
-      border-left-color: $blockquote-border-dark !important;
-      background: rgba($border-left-color-dark, 0.07) !important;
-      color: $blockquote-color-dark !important;
-   }
+    blockquote {
+        border-left-color: $blockquote-border-dark !important;
+        background: rgba($border-left-color-dark, 0.07) !important;
+        color: $blockquote-color-dark !important;
+    }
 
-   hr {
-      border-top-color: $hr-color-dark !important;
-   }
+    hr {
+        border-top-color: $hr-color-dark !important;
+    }
 }

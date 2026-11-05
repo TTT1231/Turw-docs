@@ -13,10 +13,5 @@ secret/
 docs/.vitepress/.build-temp
 docs/.vitepress/.temp/
 
-# Husky - keep the _ folder and custom hooks, ignore generated ones
-.husky/*
-!.husky/_
-!.husky/pre-push
-
-# claude
-.claude/settings.local.json
+# AI
+.claude
