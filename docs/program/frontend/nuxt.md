@@ -2,6 +2,8 @@
 outline: [2, 3]
 ---
 
+# Nuxt
+
 ## 目录
 
 ::: code-group

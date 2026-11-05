@@ -2,7 +2,9 @@
 outline: [2, 3]
 ---
 
-## vue
+# Vue
+
+## 核心机制
 
 针对定义对象vue2抛出错误的问题，vue3结合使用**ES6**中的Reflect（对象操作工具箱），  
 相比Object.defineProperty()【vue2】成功返回对象，失败抛出错的头疼问题。

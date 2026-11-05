@@ -2,7 +2,7 @@
 outline: deep
 ---
 
-# Electron
+# electron
 
 ## 类型统一与安全
 
