@@ -13,22 +13,22 @@ graphQL统一用`POST`请求，即使是`GET`。主要是如果是用`GET`请求
 
 ```graphql
 type User {
-   id: Int!
-   name: String
-   other1: Other1! # one - one
-   other2: [Other2!] # one - many
+    id: Int!
+    name: String
+    other1: Other1! # one - one
+    other2: [Other2!] # one - many
 }
 
 type Other1 {
-   id: Int!
-   userId: Int!
-   user: User! # 反向关联，用来确定是否通过other1去反向查询用户，根据需要添加即可
-   # some filed....
+    id: Int!
+    userId: Int!
+    user: User! # 反向关联，用来确定是否通过other1去反向查询用户，根据需要添加即可
+    # some filed....
 }
 type Other2 {
-   id: Int!
-   userId: Int!
-   # some filed....
+    id: Int!
+    userId: Int!
+    # some filed....
 }
 ```
 
@@ -128,9 +128,9 @@ const typeDefs = readFileSync(join(__dirname, '../src/graphql/schema.graphql'), 
 
 // 注册 Mercurius
 await app.getHttpAdapter().getInstance().register(mercurius, {
-   schema: typeDefs,
-   resolvers,
-   graphiql: true // 启用 GraphQL Playground
+    schema: typeDefs,
+    resolvers,
+    graphiql: true // 启用 GraphQL Playground
 });
 
 // //插件policy配置对象
@@ -146,40 +146,41 @@ await app.getHttpAdapter().getInstance().register(mercurius, {
 
 // 注册 Mercurius Cache 插件
 await app.register(MercuriusCache, {
-   // all: true, // 决定是否全部缓存query
+    // all: true, // 决定是否全部缓存query
 
-   //缓存策略
-   policy: {
-      Query: {
-         //缓存全部users查询结果，ttl为60秒
-         users: {
-            ttl: 60
-         }
+    //缓存策略
+    policy: {
+        Query: {
+            //缓存全部users查询结果，ttl为60秒
+            users: {
+                ttl: 60
+            }
 
-         // ================================================  细粒度控制 =====================================
-         //!注意：如果这个字段和其他的字段关联了，那么就需要加上references，否则就会有前端拿到过期数据
+            // ================================================  细粒度控制 =====================================
+            //!注意：如果这个字段和其他的字段关联了，那么就需要加上references，否则就会有前端拿到过期数据
 
-         //细粒度缓存，只缓存user查询getUserInfo字段
-         // getUserInfo: {
-         //   ttl: 60,
-         //   skip: (_source: unknown, args: unknown, context: any) => {
-         //     return context.role === 'admin'; // 管理员跳过缓存，每次查最新
-         //   },
-         // },
+            //细粒度缓存，只缓存user查询getUserInfo字段
+            // getUserInfo: {
+            //   ttl: 60,
+            //   skip: (_source: unknown, args: unknown, context: any) => {
+            //     return context.role === 'admin'; // 管理员跳过缓存，每次查最新
+            //   },
+            // },
 
-         //更加细粒度缓存，只缓存特定用户的查询结果
-         // user: {
-         //   ttl: 60,
-         //   // !注意：这里必须要加上extendKey，否则就会把所有用户的查询结果都缓存起来，导致数据混乱
-         //   //  只缓存特定用户
-         //   //     extendKey: (_source, args) => args.userId,
-         // },
-      }
-   }
+            //更加细粒度缓存，只缓存特定用户的查询结果
+            // user: {
+            //   ttl: 60,
+            //   // !注意：这里必须要加上extendKey，否则就会把所有用户的查询结果都缓存起来，导致数据混乱
+            //   //  只缓存特定用户
+            //   //     extendKey: (_source, args) => args.userId,
+            // },
+        }
+    }
 });
 ```
 
 :::
+
 ::: warning 注意
 类型不匹配会缓存错误 - 如果 resolver 返回与 schema 不匹配的类型，错误结果也会被缓存
 :::
@@ -253,7 +254,7 @@ query2: { user: { id: "1", avatar: "old.jpg" } } // 过期了！
 - hash 算法固定为SHA-256
 - hash字段名固定为sha256Hash
 - 回退机制：当收到PersistedQueryNotFound 说明后端找不到这个hash此时客户端（前端）会再次发送query+hash
-  :::
+:::
 
 ### link中间件
 
@@ -285,12 +286,12 @@ const uri = 'http://localhost:3000/graphql';
 const httpLink = new HttpLink({ uri });
 
 const apqLink = new PersistedQueryLink({
-   useGETForHashedQueries: true,
-   sha256: (queryString) => sha256(queryString)
+    useGETForHashedQueries: true,
+    sha256: (queryString) => sha256(queryString)
 }).concat(httpLink);
 
 export const apolloClient = new ApolloClient({
-   link: ApolloLink.split(({ operationType }) => operationType === 'query', apqLink, httpLink),
-   cache: new InMemoryCache()
+    link: ApolloLink.split(({ operationType }) => operationType === 'query', apqLink, httpLink),
+    cache: new InMemoryCache()
 });
 ```

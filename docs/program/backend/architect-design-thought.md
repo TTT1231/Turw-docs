@@ -93,74 +93,74 @@ private A a;
 import 'reflect-metadata';
 //controller 装饰器
 export const Controller = (path?: string): ClassDecorator => {
-   return (target: Function) => {
-      Reflect.defineMetadata('controller:path', path, target);
-      //用于后面的自动扫描
-      Reflect.defineMetadata('controller', true, target);
-   };
+    return (target: Function) => {
+        Reflect.defineMetadata('controller:path', path, target);
+        //用于后面的自动扫描
+        Reflect.defineMetadata('controller', true, target);
+    };
 };
 
 //Injectable 装饰器
 export const Injectable = (): ClassDecorator => {
-   return (target: Function) => {
-      Reflect.defineMetadata('injectable', true, target);
-   };
+    return (target: Function) => {
+        Reflect.defineMetadata('injectable', true, target);
+    };
 };
 
 //GET装饰器
 export const Get = (path?: string): MethodDecorator => {
-   return (target: Object, propertyKey: string | Symbol, descriptor: PropertyDescriptor) => {
-      //propertyKey：被修饰的方法名
-      Reflect.defineMetadata('http:method', 'GET', descriptor.value!);
-      Reflect.defineMetadata('http:method:path', path, descriptor.value!);
-   };
+    return (target: Object, propertyKey: string | Symbol, descriptor: PropertyDescriptor) => {
+        //propertyKey：被修饰的方法名
+        Reflect.defineMetadata('http:method', 'GET', descriptor.value!);
+        Reflect.defineMetadata('http:method:path', path, descriptor.value!);
+    };
 };
 
 interface ModuleMetadata {
-   providers?: Function[];
-   imports?: Function[];
-   exports?: Function[];
-   controllers?: Function[];
+    providers?: Function[];
+    imports?: Function[];
+    exports?: Function[];
+    controllers?: Function[];
 }
 //module 装饰器
 export const Module = (metadata: ModuleMetadata): ClassDecorator => {
-   return (target) => {
-      Reflect.defineMetadata('module:true', true, target);
+    return (target) => {
+        Reflect.defineMetadata('module:true', true, target);
 
-      //关联控制器和模块
-      //一个模块可以包含多个控制器，用于模块化管理控制器
-      defineModule(target, metadata.controllers || []); //controllers -> module
-      Reflect.defineMetadata('controllers', metadata.controllers, target); //module ->controllers
+        //关联控制器和模块
+        //一个模块可以包含多个控制器，用于模块化管理控制器
+        defineModule(target, metadata.controllers || []); //controllers -> module
+        Reflect.defineMetadata('controllers', metadata.controllers, target); //module ->controllers
 
-      //关联提供者（providers）和模块
-      defineProvidersModule(target, metadata.providers || []); //providers -> module
-      Reflect.defineMetadata('providers', metadata.providers, target); //module ->providers
+        //关联提供者（providers）和模块
+        defineProvidersModule(target, metadata.providers || []); //providers -> module
+        Reflect.defineMetadata('providers', metadata.providers, target); //module ->providers
 
-      //在类上保存exports
-      Reflect.defineMetadata('exports', metadata.exports, target);
-      //在类上保存imports
-      Reflect.defineMetadata('imports', metadata.imports, target);
-   };
+        //在类上保存exports
+        Reflect.defineMetadata('exports', metadata.exports, target);
+        //在类上保存imports
+        Reflect.defineMetadata('imports', metadata.imports, target);
+    };
 };
 
 //给每个控制器添加元数据，标识它们属于哪个模块
 export function defineModule(target: Function, metadataControllers: Function[]) {
-   metadataControllers.forEach((controller) => {
-      //在target上标记controller
-      Reflect.defineMetadata('MODULE_METADATA', target, controller);
-   });
+    metadataControllers.forEach((controller) => {
+        //在target上标记controller
+        Reflect.defineMetadata('MODULE_METADATA', target, controller);
+    });
 }
 //定义 Provider 类型，可以是类或 useClass 对象
 type Provider = Function | { useClass: Function };
 
 //给每个提供者添加元数据，标识服务属于哪个模块
 export function defineProvidersModule(target: Function, providers: Provider[] = []) {
-   defineModule(
-      target,
-      (providers ?? [])
-         .map((provider) => (typeof provider === 'function' ? provider : provider.useClass))
-         .filter(Boolean)
-   );
+    defineModule(
+        target,
+        (providers ?? [])
+            .map((provider) => (typeof provider === 'function' ? provider : provider.useClass))
+            .filter(Boolean)
+    );
 }
 ```
 
@@ -171,149 +171,149 @@ import 'reflect-metadata';
  * 依赖注入容器 - 模拟 NestJS 的 IoC 容器
  */
 export class Container {
-   // 存储所有注册的 providers (包括 services 和 controllers)
-   private providers = new Map<Function, any>();
-   // 存储已经创建的实例，确保单例
-   private instances = new Map<Function, any>();
+    // 存储所有注册的 providers (包括 services 和 controllers)
+    private providers = new Map<Function, any>();
+    // 存储已经创建的实例，确保单例
+    private instances = new Map<Function, any>();
 
-   /**
-    * 注册模块
-    */
-   async registerModule(moduleClass: Function): Promise<void> {
-      console.log(`📋 Registering module: ${moduleClass.name}`);
+    /**
+     * 注册模块
+     */
+    async registerModule(moduleClass: Function): Promise<void> {
+        console.log(`📋 Registering module: ${moduleClass.name}`);
 
-      // 获取模块的 providers，controllers 和 imports
-      const providers = Reflect.getMetadata('providers', moduleClass) || [];
-      const controllers = Reflect.getMetadata('controllers', moduleClass) || [];
-      const imports = Reflect.getMetadata('imports', moduleClass) || [];
+        // 获取模块的 providers，controllers 和 imports
+        const providers = Reflect.getMetadata('providers', moduleClass) || [];
+        const controllers = Reflect.getMetadata('controllers', moduleClass) || [];
+        const imports = Reflect.getMetadata('imports', moduleClass) || [];
 
-      // 注册导入的imports模块
-      for (const importedModule of imports) {
-         await this.registerModule(importedModule);
-      }
+        // 注册导入的imports模块
+        for (const importedModule of imports) {
+            await this.registerModule(importedModule);
+        }
 
-      // 注册 providers
-      for (const provider of providers) {
-         await this.registerProvider(provider);
-      }
+        // 注册 providers
+        for (const provider of providers) {
+            await this.registerProvider(provider);
+        }
 
-      // 注册 controllers (controllers 也是 providers)
-      //创建controller实例
-      //负责给controller注入service
-      //管理controller的生命周期
-      for (const controller of controllers) {
-         await this.registerProvider(controller);
-      }
+        // 注册 controllers (controllers 也是 providers)
+        //创建controller实例
+        //负责给controller注入service
+        //管理controller的生命周期
+        for (const controller of controllers) {
+            await this.registerProvider(controller);
+        }
 
-      console.log(`✅ Module ${moduleClass.name} registered successfully`);
-   }
+        console.log(`✅ Module ${moduleClass.name} registered successfully`);
+    }
 
-   /**
-    * 注册单个 provider
-    */
-   async registerProvider(provider: any): Promise<void> {
-      let providerClass: Function;
+    /**
+     * 注册单个 provider
+     */
+    async registerProvider(provider: any): Promise<void> {
+        let providerClass: Function;
 
-      if (typeof provider === 'function') {
-         //如果传入的 provider 本身就是一个函数/类（比如 UserService）
-         providerClass = provider;
-      } else if (provider.useClass) {
-         //如果传入的是一个对象，且包含 useClass 属性（比如 { useClass: UserService }）
-         providerClass = provider.useClass;
-      } else {
-         throw new Error(`Invalid provider: ${provider}`);
-      }
+        if (typeof provider === 'function') {
+            //如果传入的 provider 本身就是一个函数/类（比如 UserService）
+            providerClass = provider;
+        } else if (provider.useClass) {
+            //如果传入的是一个对象，且包含 useClass 属性（比如 { useClass: UserService }）
+            providerClass = provider.useClass;
+        } else {
+            throw new Error(`Invalid provider: ${provider}`);
+        }
 
-      // 检查是否是有效的 injectable 或 controller
-      const isInjectable = Reflect.getMetadata('injectable', providerClass);
-      const isController = Reflect.getMetadata('controller', providerClass);
+        // 检查是否是有效的 injectable 或 controller
+        const isInjectable = Reflect.getMetadata('injectable', providerClass);
+        const isController = Reflect.getMetadata('controller', providerClass);
 
-      if (!isInjectable && !isController) {
-         throw new Error(
-            `${providerClass.name} must be marked with @Injectable() or @Controller()`
-         );
-      }
+        if (!isInjectable && !isController) {
+            throw new Error(
+                `${providerClass.name} must be marked with @Injectable() or @Controller()`
+            );
+        }
 
-      //调试输出用，用来输出到底是controller还是service
-      if (isController) {
-         console.log(`🎯 Registering Controller: ${providerClass.name}`);
-      } else {
-         console.log(`📦 Registering Service: ${providerClass.name}`);
-      }
+        //调试输出用，用来输出到底是controller还是service
+        if (isController) {
+            console.log(`🎯 Registering Controller: ${providerClass.name}`);
+        } else {
+            console.log(`📦 Registering Service: ${providerClass.name}`);
+        }
 
-      this.providers.set(providerClass, provider);
-   }
+        this.providers.set(providerClass, provider);
+    }
 
-   /**
-    * 获取 provider 实例（DI实现）,如果没有实例则创建
-    */
-   async get<T>(providerClass: Function): Promise<T> {
-      // 如果已经有实例，直接返回（单例模式）
-      if (this.instances.has(providerClass)) {
-         return this.instances.get(providerClass);
-      }
+    /**
+     * 获取 provider 实例（DI实现）,如果没有实例则创建
+     */
+    async get<T>(providerClass: Function): Promise<T> {
+        // 如果已经有实例，直接返回（单例模式）
+        if (this.instances.has(providerClass)) {
+            return this.instances.get(providerClass);
+        }
 
-      // 检查是否已注册
-      if (!this.providers.has(providerClass)) {
-         throw new Error(`Provider ${providerClass.name} is not registered`);
-      }
+        // 检查是否已注册
+        if (!this.providers.has(providerClass)) {
+            throw new Error(`Provider ${providerClass.name} is not registered`);
+        }
 
-      // 创建实例
-      const instance = await this.createInstance(providerClass);
-      this.instances.set(providerClass, instance);
+        // 创建实例
+        const instance = await this.createInstance(providerClass);
+        this.instances.set(providerClass, instance);
 
-      return instance;
-   }
+        return instance;
+    }
 
-   /**
-    * 创建实例并处理依赖注入
-    */
-   private async createInstance(providerClass: Function): Promise<any> {
-      // 获取构造函数参数类型
-      const paramTypes = Reflect.getMetadata('design:paramtypes', providerClass) || [];
+    /**
+     * 创建实例并处理依赖注入
+     */
+    private async createInstance(providerClass: Function): Promise<any> {
+        // 获取构造函数参数类型
+        const paramTypes = Reflect.getMetadata('design:paramtypes', providerClass) || [];
 
-      //print paramTypes for debug
-      console.log(`🔍 Resolving dependencies for: ${paramTypes}`);
-      // 解析依赖，也就是provider的构造函数参数
-      const dependencies = [];
-      for (const paramType of paramTypes) {
-         if (paramType && this.providers.has(paramType)) {
-            const dependency = await this.get(paramType);
-            dependencies.push(dependency);
-         } else {
-            // 如果依赖没有注册，传入 null
-            dependencies.push(null);
-         }
-      }
+        //print paramTypes for debug
+        console.log(`🔍 Resolving dependencies for: ${paramTypes}`);
+        // 解析依赖，也就是provider的构造函数参数
+        const dependencies = [];
+        for (const paramType of paramTypes) {
+            if (paramType && this.providers.has(paramType)) {
+                const dependency = await this.get(paramType);
+                dependencies.push(dependency);
+            } else {
+                // 如果依赖没有注册，传入 null
+                dependencies.push(null);
+            }
+        }
 
-      // 创建实例
-      const instance = new (providerClass as any)(...dependencies);
-      console.log(`🎯 Created instance: ${providerClass.name}`);
+        // 创建实例
+        const instance = new (providerClass as any)(...dependencies);
+        console.log(`🎯 Created instance: ${providerClass.name}`);
 
-      return instance;
-   }
+        return instance;
+    }
 
-   /**
-    * 检查 provider 是否已注册
-    */
-   has(providerClass: Function): boolean {
-      return this.providers.has(providerClass);
-   }
+    /**
+     * 检查 provider 是否已注册
+     */
+    has(providerClass: Function): boolean {
+        return this.providers.has(providerClass);
+    }
 
-   /**
-    * 获取所有已注册的 providers
-    */
-   getProviders(): Function[] {
-      return Array.from(this.providers.keys());
-   }
+    /**
+     * 获取所有已注册的 providers
+     */
+    getProviders(): Function[] {
+        return Array.from(this.providers.keys());
+    }
 
-   /**
-    * 清除所有实例（用于测试）
-    */
-   clear(): void {
-      this.providers.clear();
-      this.instances.clear();
-   }
+    /**
+     * 清除所有实例（用于测试）
+     */
+    clear(): void {
+        this.providers.clear();
+        this.instances.clear();
+    }
 }
 ```
 
@@ -322,24 +322,24 @@ export class Container {
  * NestJS 工厂类 - 模拟 NestJS 的应用创建过程
  */
 export class NestFactory {
-   /**
-    * 创建 Nest 应用实例
-    * @param moduleClass - 根模块类
-    * @returns NestApplication 实例
-    */
-   static async create(moduleClass: Function): Promise<NestApplication> {
-      console.log('🚀 Starting Nest application...');
+    /**
+     * 创建 Nest 应用实例
+     * @param moduleClass - 根模块类
+     * @returns NestApplication 实例
+     */
+    static async create(moduleClass: Function): Promise<NestApplication> {
+        console.log('🚀 Starting Nest application...');
 
-      // 创建应用实例
-      const app = new NestApplication(moduleClass);
+        // 创建应用实例
+        const app = new NestApplication(moduleClass);
 
-      // 初始化应用
-      await app.init();
+        // 初始化应用
+        await app.init();
 
-      console.log('✅ Nest application successfully started');
+        console.log('✅ Nest application successfully started');
 
-      return app;
-   }
+        return app;
+    }
 }
 ```
 
@@ -356,144 +356,147 @@ import { RouteScanner } from './RouterScanner';
  * 扫描所有控制器，注册路由
  */
 export class NestApplication {
-   private container: Container;
-   private routeScanner: RouteScanner;
-   private server?: http.Server;
-   private rootModule: Function;
+    private container: Container;
+    private routeScanner: RouteScanner;
+    private server?: http.Server;
+    private rootModule: Function;
 
-   constructor(moduleClass: Function) {
-      this.rootModule = moduleClass;
-      this.container = new Container();
-      this.routeScanner = new RouteScanner(this.container);
-   }
+    constructor(moduleClass: Function) {
+        this.rootModule = moduleClass;
+        this.container = new Container();
+        this.routeScanner = new RouteScanner(this.container);
+    }
 
-   /**
-    * 初始化应用
-    */
-   async init(): Promise<void> {
-      // 验证根模块，判断是否有效
-      this.validateRootModule();
+    /**
+     * 初始化应用
+     */
+    async init(): Promise<void> {
+        // 验证根模块，判断是否有效
+        this.validateRootModule();
 
-      // 初始化IOC容器，注册所有  providers，controllers 和 imports
-      await this.initializeContainer();
+        // 初始化IOC容器，注册所有  providers，controllers 和 imports
+        await this.initializeContainer();
 
-      // 扫描并注册路由
-      await this.scanRoutes();
+        // 扫描并注册路由
+        await this.scanRoutes();
 
-      console.log('✅ Application initialized successfully');
-   }
+        console.log('✅ Application initialized successfully');
+    }
 
-   /**
-    * 验证根模块，根据模块元信息，判断是否是模块
-    */
-   private validateRootModule(): void {
-      const isModule = Reflect.getMetadata('module:true', this.rootModule);
-      if (!isModule) {
-         throw new Error(
-            `${this.rootModule.name} is not a valid module. Did you forget to add @Module() decorator?`
-         );
-      }
-   }
-
-   /**
-    * 初始化容器
-    */
-   private async initializeContainer(): Promise<void> {
-      console.log('📦 Initializing IoC container...');
-      await this.container.registerModule(this.rootModule);
-      console.log('✅ IoC container initialized');
-   }
-
-   /**
-    * 扫描路由
-    */
-   private async scanRoutes(): Promise<void> {
-      console.log('🔍 Scanning routes...');
-      await this.routeScanner.scanModule(this.rootModule);
-      console.log('✅ Routes scanned and registered');
-   }
-
-   /**
-    * 启动 HTTP 服务器
-    */
-   async listen(port: number): Promise<void> {
-      return new Promise((resolve) => {
-         this.server = http.createServer((req, res) => {
-            this.handleRequest(req, res);
-         });
-
-         this.server.listen(port, () => {
-            console.log(`🌐 Application is running on: http://localhost:${port}`);
-            resolve();
-         });
-      });
-   }
-
-   /**
-    * 处理 HTTP 请求
-    */
-   private async handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-      try {
-         const method = req.method?.toUpperCase();
-         const url = req.url;
-
-         console.log(`📥 ${method} ${url}`);
-
-         // 查找匹配的路由
-         const route = this.routeScanner.findRoute(method || '', url || '');
-
-         if (!route) {
-            res.writeHead(404, { 'Content-Type': 'application/json' });
-            res.end(
-               JSON.stringify({
-                  statusCode: 404,
-                  message: 'Cannot ' + method + ' ' + url
-               })
+    /**
+     * 验证根模块，根据模块元信息，判断是否是模块
+     */
+    private validateRootModule(): void {
+        const isModule = Reflect.getMetadata('module:true', this.rootModule);
+        if (!isModule) {
+            throw new Error(
+                `${this.rootModule.name} is not a valid module. Did you forget to add @Module() decorator?`
             );
-            return;
-         }
+        }
+    }
 
-         // 执行控制器方法
-         const result = await route.handler();
+    /**
+     * 初始化容器
+     */
+    private async initializeContainer(): Promise<void> {
+        console.log('📦 Initializing IoC container...');
+        await this.container.registerModule(this.rootModule);
+        console.log('✅ IoC container initialized');
+    }
 
-         // 返回响应
-         res.writeHead(200, { 'Content-Type': 'application/json' });
-         res.end(JSON.stringify(result));
-      } catch (error) {
-         console.error('❌ Error handling request:', error);
-         res.writeHead(500, { 'Content-Type': 'application/json' });
-         res.end(
-            JSON.stringify({
-               statusCode: 500,
-               message: 'Internal server error'
-            })
-         );
-      }
-   }
+    /**
+     * 扫描路由
+     */
+    private async scanRoutes(): Promise<void> {
+        console.log('🔍 Scanning routes...');
+        await this.routeScanner.scanModule(this.rootModule);
+        console.log('✅ Routes scanned and registered');
+    }
 
-   /**
-    * 关闭应用
-    */
-   async close(): Promise<void> {
-      if (this.server) {
-         return new Promise((resolve) => {
-            this.server!.close(() => {
-               console.log('🛑 Application closed');
-               resolve();
+    /**
+     * 启动 HTTP 服务器
+     */
+    async listen(port: number): Promise<void> {
+        return new Promise((resolve) => {
+            this.server = http.createServer((req, res) => {
+                this.handleRequest(req, res);
             });
-         });
-      }
-   }
-   getRouteScannerInstance(): RouteScanner {
-      return this.routeScanner;
-   }
 
-   /**
-    * 获取容器实例
-    */
-   getContainer(): Container {
-      return this.container;
-   }
+            this.server.listen(port, () => {
+                console.log(`🌐 Application is running on: http://localhost:${port}`);
+                resolve();
+            });
+        });
+    }
+
+    /**
+     * 处理 HTTP 请求
+     */
+    private async handleRequest(
+        req: http.IncomingMessage,
+        res: http.ServerResponse
+    ): Promise<void> {
+        try {
+            const method = req.method?.toUpperCase();
+            const url = req.url;
+
+            console.log(`📥 ${method} ${url}`);
+
+            // 查找匹配的路由
+            const route = this.routeScanner.findRoute(method || '', url || '');
+
+            if (!route) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(
+                    JSON.stringify({
+                        statusCode: 404,
+                        message: 'Cannot ' + method + ' ' + url
+                    })
+                );
+                return;
+            }
+
+            // 执行控制器方法
+            const result = await route.handler();
+
+            // 返回响应
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+        } catch (error) {
+            console.error('❌ Error handling request:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(
+                JSON.stringify({
+                    statusCode: 500,
+                    message: 'Internal server error'
+                })
+            );
+        }
+    }
+
+    /**
+     * 关闭应用
+     */
+    async close(): Promise<void> {
+        if (this.server) {
+            return new Promise((resolve) => {
+                this.server!.close(() => {
+                    console.log('🛑 Application closed');
+                    resolve();
+                });
+            });
+        }
+    }
+    getRouteScannerInstance(): RouteScanner {
+        return this.routeScanner;
+    }
+
+    /**
+     * 获取容器实例
+     */
+    getContainer(): Container {
+        return this.container;
+    }
 }
 ```
 
@@ -504,166 +507,166 @@ import { Container } from './IOC_Container';
  * 路由信息接口
  */
 interface RouteInfo {
-   method: string;
-   path: string;
-   handler: () => Promise<any>;
-   controllerClass: Function;
-   methodName: string;
+    method: string;
+    path: string;
+    handler: () => Promise<any>;
+    controllerClass: Function;
+    methodName: string;
 }
 
 /**
  * 路由扫描器 - 扫描控制器并注册路由
  */
 export class RouteScanner {
-   private routes: RouteInfo[] = [];
-   private container: Container;
+    private routes: RouteInfo[] = [];
+    private container: Container;
 
-   constructor(container: Container) {
-      this.container = container;
-   }
+    constructor(container: Container) {
+        this.container = container;
+    }
 
-   /**
-    * 扫描模块中的控制器
-    */
-   async scanModule(moduleClass: Function): Promise<void> {
-      // 获取模块中的所有控制器，在module类上通过元数据获取
-      const controllers = Reflect.getMetadata('controllers', moduleClass) || [];
+    /**
+     * 扫描模块中的控制器
+     */
+    async scanModule(moduleClass: Function): Promise<void> {
+        // 获取模块中的所有控制器，在module类上通过元数据获取
+        const controllers = Reflect.getMetadata('controllers', moduleClass) || [];
 
-      //扫描成功后，对路由进行注册
-      for (const controllerClass of controllers) {
-         await this.scanController(controllerClass);
-      }
+        //扫描成功后，对路由进行注册
+        for (const controllerClass of controllers) {
+            await this.scanController(controllerClass);
+        }
 
-      // 递归扫描导入的模块
-      const imports = Reflect.getMetadata('imports', moduleClass) || [];
-      for (const importedModule of imports) {
-         await this.scanModule(importedModule);
-      }
-   }
+        // 递归扫描导入的模块
+        const imports = Reflect.getMetadata('imports', moduleClass) || [];
+        for (const importedModule of imports) {
+            await this.scanModule(importedModule);
+        }
+    }
 
-   /**
-    * 扫描单个控制器
-    */
-   async scanController(controllerClass: Function): Promise<void> {
-      const isController = Reflect.getMetadata('controller', controllerClass);
-      if (!isController) {
-         //不是控制器
-         return;
-      }
-      console.log(`🎯 Scanning controller: ${controllerClass.name}`);
+    /**
+     * 扫描单个控制器
+     */
+    async scanController(controllerClass: Function): Promise<void> {
+        const isController = Reflect.getMetadata('controller', controllerClass);
+        if (!isController) {
+            //不是控制器
+            return;
+        }
+        console.log(`🎯 Scanning controller: ${controllerClass.name}`);
 
-      // 获取控制器路径
-      const controllerPath = Reflect.getMetadata('controller:path', controllerClass) || '';
+        // 获取控制器路径
+        const controllerPath = Reflect.getMetadata('controller:path', controllerClass) || '';
 
-      // 获取控制器实例，这里没有的时候会创建实例，并处理依赖注入
-      const controllerInstance = await this.container.get(controllerClass);
+        // 获取控制器实例，这里没有的时候会创建实例，并处理依赖注入
+        const controllerInstance = await this.container.get(controllerClass);
 
-      // 扫描控制器的方法
-      const prototype = controllerClass.prototype;
-      const methodNames = Object.getOwnPropertyNames(prototype).filter(
-         (name) => name !== 'constructor' && typeof prototype[name] === 'function'
-      );
+        // 扫描控制器的方法
+        const prototype = controllerClass.prototype;
+        const methodNames = Object.getOwnPropertyNames(prototype).filter(
+            (name) => name !== 'constructor' && typeof prototype[name] === 'function'
+        );
 
-      for (const methodName of methodNames) {
-         const method = prototype[methodName];
+        for (const methodName of methodNames) {
+            const method = prototype[methodName];
 
-         // 检查是否有 HTTP 方法装饰器
-         const httpMethod = Reflect.getMetadata('http:method', method);
-         const methodPath = Reflect.getMetadata('http:method:path', method);
+            // 检查是否有 HTTP 方法装饰器
+            const httpMethod = Reflect.getMetadata('http:method', method);
+            const methodPath = Reflect.getMetadata('http:method:path', method);
 
-         if (httpMethod) {
-            // 构建完整路径
-            const fullPath = this.buildPath(controllerPath, methodPath);
+            if (httpMethod) {
+                // 构建完整路径
+                const fullPath = this.buildPath(controllerPath, methodPath);
 
-            // 创建路由处理函数
-            const handler = async () => {
-               return await (controllerInstance as any)[methodName]();
-            };
+                // 创建路由处理函数
+                const handler = async () => {
+                    return await (controllerInstance as any)[methodName]();
+                };
 
-            // 注册路由
-            const route: RouteInfo = {
-               method: httpMethod,
-               path: fullPath,
-               handler,
-               controllerClass,
-               methodName
-            };
+                // 注册路由
+                const route: RouteInfo = {
+                    method: httpMethod,
+                    path: fullPath,
+                    handler,
+                    controllerClass,
+                    methodName
+                };
 
-            this.routes.push(route);
+                this.routes.push(route);
+                console.log(
+                    `📍 Registered route: ${httpMethod} ${fullPath} -> ${controllerClass.name}.${methodName}`
+                );
+            }
+        }
+    }
+
+    /**
+     * 构建完整路径
+     */
+    private buildPath(controllerPath: string, methodPath: string): string {
+        // 清理路径
+        const cleanControllerPath = this.cleanPath(controllerPath);
+        const cleanMethodPath = this.cleanPath(methodPath);
+
+        // 拼接路径
+        if (!cleanControllerPath && !cleanMethodPath) {
+            return '/';
+        }
+
+        return ('/' + [cleanControllerPath, cleanMethodPath].filter(Boolean).join('/')).replace(
+            /\/+/g,
+            '/'
+        );
+    }
+
+    /**
+     * 清理路径（移除前后斜杠）
+     */
+    private cleanPath(path: string): string {
+        if (!path) return '';
+        return path.replace(/^\/+|\/+$/g, '');
+    }
+
+    /**
+     * 查找匹配的路由
+     */
+    findRoute(method: string, url: string): RouteInfo | null {
+        // 简单的精确匹配（实际的路由器会支持参数和通配符）
+        const route = this.routes.find((route) => route.method === method && route.path === url);
+
+        if (route) {
             console.log(
-               `📍 Registered route: ${httpMethod} ${fullPath} -> ${controllerClass.name}.${methodName}`
+                `🎯 Route matched: ${method} ${url} -> ${route.controllerClass.name}.${route.methodName}`
             );
-         }
-      }
-   }
+        }
 
-   /**
-    * 构建完整路径
-    */
-   private buildPath(controllerPath: string, methodPath: string): string {
-      // 清理路径
-      const cleanControllerPath = this.cleanPath(controllerPath);
-      const cleanMethodPath = this.cleanPath(methodPath);
+        return route || null;
+    }
 
-      // 拼接路径
-      if (!cleanControllerPath && !cleanMethodPath) {
-         return '/';
-      }
+    /**
+     * 获取所有路由
+     */
+    getRoutes(): RouteInfo[] {
+        return [...this.routes];
+    }
 
-      return ('/' + [cleanControllerPath, cleanMethodPath].filter(Boolean).join('/')).replace(
-         /\/+/g,
-         '/'
-      );
-   }
+    /**
+     * 打印所有路由（用于调试）
+     */
+    printRoutes(): void {
+        console.log('\n📋 Registered Routes:');
+        if (this.routes.length === 0) {
+            console.log('  No routes registered');
+            return;
+        }
 
-   /**
-    * 清理路径（移除前后斜杠）
-    */
-   private cleanPath(path: string): string {
-      if (!path) return '';
-      return path.replace(/^\/+|\/+$/g, '');
-   }
-
-   /**
-    * 查找匹配的路由
-    */
-   findRoute(method: string, url: string): RouteInfo | null {
-      // 简单的精确匹配（实际的路由器会支持参数和通配符）
-      const route = this.routes.find((route) => route.method === method && route.path === url);
-
-      if (route) {
-         console.log(
-            `🎯 Route matched: ${method} ${url} -> ${route.controllerClass.name}.${route.methodName}`
-         );
-      }
-
-      return route || null;
-   }
-
-   /**
-    * 获取所有路由
-    */
-   getRoutes(): RouteInfo[] {
-      return [...this.routes];
-   }
-
-   /**
-    * 打印所有路由（用于调试）
-    */
-   printRoutes(): void {
-      console.log('\n📋 Registered Routes:');
-      if (this.routes.length === 0) {
-         console.log('  No routes registered');
-         return;
-      }
-
-      this.routes.forEach((route) => {
-         console.log(
-            `  ${route.method.padEnd(6)} ${route.path.padEnd(20)} -> ${route.controllerClass.name}.${route.methodName}`
-         );
-      });
-      console.log();
-   }
+        this.routes.forEach((route) => {
+            console.log(
+                `  ${route.method.padEnd(6)} ${route.path.padEnd(20)} -> ${route.controllerClass.name}.${route.methodName}`
+            );
+        });
+        console.log();
+    }
 }
 ```
 
@@ -671,49 +674,49 @@ export class RouteScanner {
 //app.server.ts
 @Injectable()
 export class AppService {
-   getHello(): string {
-      return 'Hello NestJS';
-   }
+    getHello(): string {
+        return 'Hello NestJS';
+    }
 }
 //app.controller.ts
 @Controller()
 export class AppController {
-   constructor(private readonly appService: AppService) {}
-   @Get()
-   getHello(): string {
-      return this.appService.getHello();
-   }
+    constructor(private readonly appService: AppService) {}
+    @Get()
+    getHello(): string {
+        return this.appService.getHello();
+    }
 }
 //===================================根模块=======================
 //app.module.ts
 //模块划分
 @Module({
-   controllers: [AppController, UserController],
-   providers: [AppService, UserService],
-   imports: [],
-   exports: []
+    controllers: [AppController, UserController],
+    providers: [AppService, UserService],
+    imports: [],
+    exports: []
 })
 export class AppModule {}
 
 //user.server.ts
 @Injectable()
 export class UserService {
-   getAllUsers() {
-      return {
-         message: 'Get all users',
-         users: ['nihao']
-      };
-   }
+    getAllUsers() {
+        return {
+            message: 'Get all users',
+            users: ['nihao']
+        };
+    }
 }
 //user.controller.ts
 @Controller('/users')
 export class UserController {
-   constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) {}
 
-   @Get()
-   getAllUsers(): any {
-      return this.userService.getAllUsers();
-   }
+    @Get()
+    getAllUsers(): any {
+        return this.userService.getAllUsers();
+    }
 }
 
 //=================================启动入口==========================
@@ -722,14 +725,14 @@ export class UserController {
  * 应用入口文件 - 演示 NestJS 的启动过程
  */
 async function bootstrap() {
-   try {
-      // 创建应用实例
-      const app = await NestFactory.create(AppModule);
+    try {
+        // 创建应用实例
+        const app = await NestFactory.create(AppModule);
 
-      // 启动服务器
-      const port = 3000;
-      await app.listen(port);
-   } catch {}
+        // 启动服务器
+        const port = 3000;
+        await app.listen(port);
+    } catch {}
 }
 
 // 启动应用

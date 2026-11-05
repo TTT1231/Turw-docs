@@ -22,53 +22,53 @@ outline: deep
 ```ts [slice-breakpoint.upload.ts]
 //===========================前端================================
 const handleUpLoadFiles = async (e: Event) => {
-   const file = (e.target as HTMLInputElement).files![0];
-   const fileName = file.name;
+    const file = (e.target as HTMLInputElement).files![0];
+    const fileName = file.name;
 
-   const chunkSize = 1024 * 1024; // 1MB
-   const chunkSizeTotal = Math.ceil(file.size / chunkSize); //分片总数
+    const chunkSize = 1024 * 1024; // 1MB
+    const chunkSizeTotal = Math.ceil(file.size / chunkSize); //分片总数
 
-   const fileId = generateUUID(); //文件id可以随意生成，唯一就可以以便临时存储
+    const fileId = generateUUID(); //文件id可以随意生成，唯一就可以以便临时存储
 
-   for (let i = 0; i < chunkSizeTotal; i++) {
-      const start = i * chunkSize;
-      const end = Math.min(start + chunkSize, file.size);
+    for (let i = 0; i < chunkSizeTotal; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
 
-      const chunk = file.slice(start, end); //获取当前分片
+        const chunk = file.slice(start, end); //获取当前分片
 
-      //创建FormData对象
-      const formData = new FormData();
-      formData.append('file', chunk);
-      formData.append('fileId', fileId);
-      formData.append('chunkIndex', i.toString());
+        //创建FormData对象
+        const formData = new FormData();
+        formData.append('file', chunk);
+        formData.append('fileId', fileId);
+        formData.append('chunkIndex', i.toString());
 
-      $fetch('/api/upload', {
-         method: 'POST',
-         body: formData
-      });
-   }
-   //合并
-   await $fetch('/api/merage', {
-      method: 'POST',
-      body: { fileId, fileName }
-   });
+        $fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+    }
+    //合并
+    await $fetch('/api/merage', {
+        method: 'POST',
+        body: { fileId, fileName }
+    });
 };
 //===========================后端================================
 //前端传递过来的分片数据进行临时目录存储
 export default defineEventHandler(async (event) => {
-   //这里不考虑上传分片过来数据错误
-   const formData = await readMultipartFormData(event);
-   const file = formData?.find((item) => item.name === 'file');
-   const fileID = formData?.find((item) => item.name === 'fileId')?.data.toString();
-   const chunkIndex = formData?.find((item) => item.name === 'chunkIndex')?.data.toString();
-   //分片要存放目录
-   const chunkDir = path.join(process.cwd(), 'uploads', fileID);
-   //分片目标存放位置
-   const chunkPath = path.join(chunkDir, chunkIndex);
-   fs.ensureDirSync(chunkDir);
-   fs.writeFileSync(chunkPath, file.data);
+    //这里不考虑上传分片过来数据错误
+    const formData = await readMultipartFormData(event);
+    const file = formData?.find((item) => item.name === 'file');
+    const fileID = formData?.find((item) => item.name === 'fileId')?.data.toString();
+    const chunkIndex = formData?.find((item) => item.name === 'chunkIndex')?.data.toString();
+    //分片要存放目录
+    const chunkDir = path.join(process.cwd(), 'uploads', fileID);
+    //分片目标存放位置
+    const chunkPath = path.join(chunkDir, chunkIndex);
+    fs.ensureDirSync(chunkDir);
+    fs.writeFileSync(chunkPath, file.data);
 
-   return 'success';
+    return 'success';
 });
 //合并分片就简单多了，主要逻辑是获取分片的目标位置，然后读取所有分片数据(注意排序)，最后写入
 ```
@@ -89,198 +89,198 @@ export default defineEventHandler(async (event) => {
 ```ts [demo.ts]
 //单个文件上传
 const simulateFileUpload = async (file: UploadFile): Promise<void> => {
-   const signal = file.abortInstance?.signal ?? new AbortController().signal;
+    const signal = file.abortInstance?.signal ?? new AbortController().signal;
 
-   // 处理上传中止的逻辑
-   const handleAbort = (message: string) => {
-      console.log(message);
-      file.progress = file.progress || 0;
-      file.status = 'error';
-      throw new Error(message);
-   };
+    // 处理上传中止的逻辑
+    const handleAbort = (message: string) => {
+        console.log(message);
+        file.progress = file.progress || 0;
+        file.status = 'error';
+        throw new Error(message);
+    };
 
-   // 监听中止信号，通过AbortController 中abort中止信号
-   signal.addEventListener('abort', () => handleAbort('上传已被中止'));
+    // 监听中止信号，通过AbortController 中abort中止信号
+    signal.addEventListener('abort', () => handleAbort('上传已被中止'));
 
-   try {
-      if (signal.aborted) {
-         file.progress = file.progress || 0;
-         console.log('上传已被中止');
-         return; // 中止时提前返回
-      }
+    try {
+        if (signal.aborted) {
+            file.progress = file.progress || 0;
+            console.log('上传已被中止');
+            return; // 中止时提前返回
+        }
 
-      file.status = 'uploading';
+        file.status = 'uploading';
 
-      //主要完成根据字段名进行过滤，然后存储到相应对象中
-      const extendDBInfo = getExtendDBInfoObj();
-      if (!extendDBInfo) {
-         file.status = 'error';
-         throw new Error('缺少上传必要字段');
-      }
-
-      // 计算文件的MD5，worker计算
-      const md5Hash = await computeFileWholeMD5(
-         file.originFileObj!,
-         file.chunkSize || defaultChunkSize,
-         signal
-      );
-      console.log('文件整体 MD5');
-
-      // 检查文件是否已经上传过
-      //主要根据服务器中存储文件上传的临时目录，检查文件整体hash的分片数
-      const checkFileApi = await $fetch<ApiResponse<CheckFileServerDTO>>(
-         '/api/back/arts-management/check-file',
-         {
-            method: 'POST',
-            body: { fileWholeMD5: md5Hash },
-            signal: signal
-         }
-      );
-
-      file.uploadMaxChunkIndex = checkFileApi.data?.currentChunkIndex ?? 0;
-      const totalChunks = file.chunkCount ?? 1;
-      file.fileContentWholeMD5 = md5Hash;
-
-      // 如果文件已经完整上传过
-      if (
-         checkFileApi.status === HTTPStatus.OK &&
-         checkFileApi.data?.currentChunkIndex === file.chunkCount
-      ) {
-         console.log('文件已完整上传');
-         const isInDB = await $fetch<ApiResponse<'success' | 'uploading' | 'failed' | undefined>>(
-            '/api/back/arts-management/db-exist',
-            {
-               method: 'POST',
-               signal: signal,
-               body: { fileWholeMd5: md5Hash }
-            }
-         );
-
-         if (isInDB.status === HTTPStatus.OK && !isInDB.data) {
-            await setFileStatus(md5Hash, 'uploading', extendDBInfo, file);
-            const uploadRes = await uploadFileToDB(md5Hash, file, totalChunks, extendDBInfo);
-            if (uploadRes) {
-               await setFileStatus(md5Hash, 'success', extendDBInfo, file);
-               resolveUpload(file);
-            } else {
-               file.status = 'error';
-               resolveUpload(file);
-            }
-         } else {
-            resolveUpload(file); // 文件已经在数据库中
-         }
-         return;
-      }
-
-      // 处理部分上传的情况，继续上传剩余的部分
-      if (checkFileApi.status === HTTPStatus.OK && checkFileApi.data?.currentChunkIndex !== -1) {
-         file.uploadMaxChunkIndex = checkFileApi.data.currentChunkIndex;
-         file.progress = ((file.uploadMaxChunkIndex / totalChunks) * 100).toFixed(2);
-         console.log('检测到部分上传，开始断点续传');
-      }
-
-      // 主上传循环
-      for (let chunkIndex = file.uploadMaxChunkIndex; chunkIndex < totalChunks; chunkIndex++) {
-         if (signal.aborted) {
-            console.log('上传被中止');
-            return;
-         }
-
-         if (file.status === 'paused') {
-            console.log('上传已暂停');
-            return;
-         }
-
-         if (file.status === 'error') {
-            throw new Error('上传失败');
-         }
-
-         const chunkUploadRes = await upLoadFileChunk(file, extendDBInfo);
-         if (signal.aborted) {
-            console.log('上传被中止');
-            return;
-         }
-
-         if (chunkUploadRes === 'user-cancel') {
-            console.log('用户取消上传');
-            return;
-         }
-
-         if (chunkUploadRes === undefined || chunkUploadRes.status !== HTTPStatus.OK) {
+        //主要完成根据字段名进行过滤，然后存储到相应对象中
+        const extendDBInfo = getExtendDBInfoObj();
+        if (!extendDBInfo) {
             file.status = 'error';
-            throw new Error('上传失败');
-         }
+            throw new Error('缺少上传必要字段');
+        }
 
-         // 更新上传进度和当前分片索引
-         file.progress = ((chunkUploadRes.data?.currentChunksIndex! / totalChunks) * 100).toFixed(
-            2
-         );
-         file.uploadMaxChunkIndex =
-            chunkUploadRes.data?.currentChunksIndex ?? file.uploadMaxChunkIndex;
+        // 计算文件的MD5，worker计算
+        const md5Hash = await computeFileWholeMD5(
+            file.originFileObj!,
+            file.chunkSize || defaultChunkSize,
+            signal
+        );
+        console.log('文件整体 MD5');
 
-         await new Promise((res) => setTimeout(res, 200)); // 延迟，避免请求过于频繁
-      }
+        // 检查文件是否已经上传过
+        //主要根据服务器中存储文件上传的临时目录，检查文件整体hash的分片数
+        const checkFileApi = await $fetch<ApiResponse<CheckFileServerDTO>>(
+            '/api/back/arts-management/check-file',
+            {
+                method: 'POST',
+                body: { fileWholeMD5: md5Hash },
+                signal: signal
+            }
+        );
 
-      // 上传完成后保存到数据库
-      await setFileStatus(md5Hash, 'uploading', extendDBInfo, file);
-      const uploadRes = await uploadFileToDB(md5Hash, file, totalChunks, extendDBInfo);
+        file.uploadMaxChunkIndex = checkFileApi.data?.currentChunkIndex ?? 0;
+        const totalChunks = file.chunkCount ?? 1;
+        file.fileContentWholeMD5 = md5Hash;
 
-      if (uploadRes) {
-         await setFileStatus(md5Hash, 'success', extendDBInfo, file);
-         resolveUpload(file);
-      } else {
-         file.status = 'error';
-         resolveUpload(file);
-      }
-   } catch (error) {
-      console.error('上传过程中发生错误:', error);
-      file.status = 'error';
-      file.progress = file.progress || 0;
-      throw error;
-   }
+        // 如果文件已经完整上传过
+        if (
+            checkFileApi.status === HTTPStatus.OK &&
+            checkFileApi.data?.currentChunkIndex === file.chunkCount
+        ) {
+            console.log('文件已完整上传');
+            const isInDB = await $fetch<
+                ApiResponse<'success' | 'uploading' | 'failed' | undefined>
+            >('/api/back/arts-management/db-exist', {
+                method: 'POST',
+                signal: signal,
+                body: { fileWholeMd5: md5Hash }
+            });
+
+            if (isInDB.status === HTTPStatus.OK && !isInDB.data) {
+                await setFileStatus(md5Hash, 'uploading', extendDBInfo, file);
+                const uploadRes = await uploadFileToDB(md5Hash, file, totalChunks, extendDBInfo);
+                if (uploadRes) {
+                    await setFileStatus(md5Hash, 'success', extendDBInfo, file);
+                    resolveUpload(file);
+                } else {
+                    file.status = 'error';
+                    resolveUpload(file);
+                }
+            } else {
+                resolveUpload(file); // 文件已经在数据库中
+            }
+            return;
+        }
+
+        // 处理部分上传的情况，继续上传剩余的部分
+        if (checkFileApi.status === HTTPStatus.OK && checkFileApi.data?.currentChunkIndex !== -1) {
+            file.uploadMaxChunkIndex = checkFileApi.data.currentChunkIndex;
+            file.progress = ((file.uploadMaxChunkIndex / totalChunks) * 100).toFixed(2);
+            console.log('检测到部分上传，开始断点续传');
+        }
+
+        // 主上传循环
+        for (let chunkIndex = file.uploadMaxChunkIndex; chunkIndex < totalChunks; chunkIndex++) {
+            if (signal.aborted) {
+                console.log('上传被中止');
+                return;
+            }
+
+            if (file.status === 'paused') {
+                console.log('上传已暂停');
+                return;
+            }
+
+            if (file.status === 'error') {
+                throw new Error('上传失败');
+            }
+
+            const chunkUploadRes = await upLoadFileChunk(file, extendDBInfo);
+            if (signal.aborted) {
+                console.log('上传被中止');
+                return;
+            }
+
+            if (chunkUploadRes === 'user-cancel') {
+                console.log('用户取消上传');
+                return;
+            }
+
+            if (chunkUploadRes === undefined || chunkUploadRes.status !== HTTPStatus.OK) {
+                file.status = 'error';
+                throw new Error('上传失败');
+            }
+
+            // 更新上传进度和当前分片索引
+            file.progress = (
+                (chunkUploadRes.data?.currentChunksIndex! / totalChunks) *
+                100
+            ).toFixed(2);
+            file.uploadMaxChunkIndex =
+                chunkUploadRes.data?.currentChunksIndex ?? file.uploadMaxChunkIndex;
+
+            await new Promise((res) => setTimeout(res, 200)); // 延迟，避免请求过于频繁
+        }
+
+        // 上传完成后保存到数据库
+        await setFileStatus(md5Hash, 'uploading', extendDBInfo, file);
+        const uploadRes = await uploadFileToDB(md5Hash, file, totalChunks, extendDBInfo);
+
+        if (uploadRes) {
+            await setFileStatus(md5Hash, 'success', extendDBInfo, file);
+            resolveUpload(file);
+        } else {
+            file.status = 'error';
+            resolveUpload(file);
+        }
+    } catch (error) {
+        console.error('上传过程中发生错误:', error);
+        file.status = 'error';
+        file.progress = file.progress || 0;
+        throw error;
+    }
 };
 
 // 辅助函数：设置文件状态
 const setFileStatus = async (
-   md5Hash: string,
-   status: string,
-   extendDBInfo: any,
-   file: UploadFile
+    md5Hash: string,
+    status: string,
+    extendDBInfo: any,
+    file: UploadFile
 ) => {
-   await $fetch('/api/back/arts-management/set-status', {
-      method: 'POST',
-      body: { fileWholeMd5: md5Hash, status }
-   });
+    await $fetch('/api/back/arts-management/set-status', {
+        method: 'POST',
+        body: { fileWholeMd5: md5Hash, status }
+    });
 };
 
 // 辅助函数：上传文件到数据库
 const uploadFileToDB = async (
-   md5Hash: string,
-   file: UploadFile,
-   totalChunks: number,
-   extendDBInfo: any
+    md5Hash: string,
+    file: UploadFile,
+    totalChunks: number,
+    extendDBInfo: any
 ) => {
-   const uploadRes = await $fetch<ApiResponse<boolean>>('/api/back/arts-management/upload-db', {
-      method: 'POST',
-      body: {
-         currentChunkIndex: file.uploadMaxChunkIndex,
-         totalChunks,
-         fileWholeMd5: md5Hash,
-         totalSize: file.size,
-         projectName: extendDBInfo.projectName ?? file.name,
-         productType: extendDBInfo.productType,
-         targetId: extendDBInfo.targetId,
-         targetName: extendDBInfo.targetName
-      }
-   });
+    const uploadRes = await $fetch<ApiResponse<boolean>>('/api/back/arts-management/upload-db', {
+        method: 'POST',
+        body: {
+            currentChunkIndex: file.uploadMaxChunkIndex,
+            totalChunks,
+            fileWholeMd5: md5Hash,
+            totalSize: file.size,
+            projectName: extendDBInfo.projectName ?? file.name,
+            productType: extendDBInfo.productType,
+            targetId: extendDBInfo.targetId,
+            targetName: extendDBInfo.targetName
+        }
+    });
 
-   return uploadRes.status === HTTPStatus.OK && uploadRes.data === true;
+    return uploadRes.status === HTTPStatus.OK && uploadRes.data === true;
 };
 
 // 辅助函数：处理上传完成
 const resolveUpload = (file: UploadFile) => {
-   file.progress = 100;
-   file.status = 'done';
+    file.progress = 100;
+    file.status = 'done';
 };
 
 //================================computed utils====================
@@ -291,61 +291,61 @@ import SparkMD5 from 'spark-md5';
 // md5Utils.ts
 
 export async function computeFileWholeMD5(
-   file: File,
-   chunkSize: number,
-   signal: AbortSignal
+    file: File,
+    chunkSize: number,
+    signal: AbortSignal
 ): Promise<string> {
-   return new Promise<string>((resolve, reject) => {
-      // 创建 Worker
-      const computeMD5Thread = new Worker(new URL('./md5Worker.js', import.meta.url), {
-         type: 'module'
-      });
+    return new Promise<string>((resolve, reject) => {
+        // 创建 Worker
+        const computeMD5Thread = new Worker(new URL('./md5Worker.js', import.meta.url), {
+            type: 'module'
+        });
 
-      // 监听 Worker 返回的 MD5 结果
-      computeMD5Thread.onmessage = (event) => {
-         const { fileHash } = event.data;
-         if (fileHash) {
-            resolve(fileHash); // 计算完成，返回结果
-         } else {
-            reject(new Error('Failed to compute MD5 hash'));
-         }
-         computeMD5Thread.terminate(); // 计算完成后终止 Worker
-      };
+        // 监听 Worker 返回的 MD5 结果
+        computeMD5Thread.onmessage = (event) => {
+            const { fileHash } = event.data;
+            if (fileHash) {
+                resolve(fileHash); // 计算完成，返回结果
+            } else {
+                reject(new Error('Failed to compute MD5 hash'));
+            }
+            computeMD5Thread.terminate(); // 计算完成后终止 Worker
+        };
 
-      computeMD5Thread.onerror = (err) => {
-         reject(new Error('Worker error: ' + err.message));
-         computeMD5Thread.terminate(); // 发生错误时终止 Worker
-      };
+        computeMD5Thread.onerror = (err) => {
+            reject(new Error('Worker error: ' + err.message));
+            computeMD5Thread.terminate(); // 发生错误时终止 Worker
+        };
 
-      // Handle abort
-      signal.addEventListener('abort', () => {
-         console.log('MD5 computation aborted');
-         computeMD5Thread.terminate(); // Terminate Worker when abort is triggered
-         reject(new Error('MD5 computation aborted by user'));
-      });
-      // 计算文件分片总数
-      const totalChunks = Math.ceil(file.size / chunkSize);
-      const chunkPromises: Promise<ArrayBuffer>[] = [];
+        // Handle abort
+        signal.addEventListener('abort', () => {
+            console.log('MD5 computation aborted');
+            computeMD5Thread.terminate(); // Terminate Worker when abort is triggered
+            reject(new Error('MD5 computation aborted by user'));
+        });
+        // 计算文件分片总数
+        const totalChunks = Math.ceil(file.size / chunkSize);
+        const chunkPromises: Promise<ArrayBuffer>[] = [];
 
-      // 逐个分片读取并转换为 ArrayBuffer
-      for (let i = 0; i < totalChunks; i++) {
-         const start = i * chunkSize;
-         const end = Math.min((i + 1) * chunkSize, file.size);
-         const chunk = file.slice(start, end); // 分片
-         chunkPromises.push(chunk.arrayBuffer()); // 将每个分片转换为 ArrayBuffer
-      }
+        // 逐个分片读取并转换为 ArrayBuffer
+        for (let i = 0; i < totalChunks; i++) {
+            const start = i * chunkSize;
+            const end = Math.min((i + 1) * chunkSize, file.size);
+            const chunk = file.slice(start, end); // 分片
+            chunkPromises.push(chunk.arrayBuffer()); // 将每个分片转换为 ArrayBuffer
+        }
 
-      // 等待所有分片的 ArrayBuffer 完成后再传递给 Worker
-      Promise.all(chunkPromises)
-         .then((chunks) => {
-            // 将所有分片（ArrayBuffer）传递给 Worker
-            computeMD5Thread.postMessage({ chunks }, chunks);
-         })
-         .catch((error) => {
-            reject(error);
-            computeMD5Thread.terminate(); // Terminate Worker on error
-         });
-   });
+        // 等待所有分片的 ArrayBuffer 完成后再传递给 Worker
+        Promise.all(chunkPromises)
+            .then((chunks) => {
+                // 将所有分片（ArrayBuffer）传递给 Worker
+                computeMD5Thread.postMessage({ chunks }, chunks);
+            })
+            .catch((error) => {
+                reject(error);
+                computeMD5Thread.terminate(); // Terminate Worker on error
+            });
+    });
 }
 
 /**
@@ -354,57 +354,57 @@ export async function computeFileWholeMD5(
  * @returns Promise<string> 返回 MD5 哈希字符串
  */
 export async function computeChunkMD5(chunk: Blob): Promise<string> {
-   return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      const spark = new SparkMD5.ArrayBuffer();
+    return new Promise((resolve, reject) => {
+        const fileReader = new FileReader();
+        const spark = new SparkMD5.ArrayBuffer();
 
-      fileReader.onload = (event) => {
-         try {
-            if (!event.target?.result) {
-               throw new Error('FileReader failed to read chunk');
+        fileReader.onload = (event) => {
+            try {
+                if (!event.target?.result) {
+                    throw new Error('FileReader failed to read chunk');
+                }
+
+                // 更新 SparkMD5 哈希计算
+                spark.append(event.target.result as ArrayBuffer);
+
+                // 获取最终哈希值（16进制字符串）
+                const md5 = spark.end();
+                resolve(md5);
+            } catch (err) {
+                reject(err);
             }
+        };
 
-            // 更新 SparkMD5 哈希计算
-            spark.append(event.target.result as ArrayBuffer);
+        fileReader.onerror = () => {
+            reject(new Error('FileReader error'));
+        };
 
-            // 获取最终哈希值（16进制字符串）
-            const md5 = spark.end();
-            resolve(md5);
-         } catch (err) {
-            reject(err);
-         }
-      };
-
-      fileReader.onerror = () => {
-         reject(new Error('FileReader error'));
-      };
-
-      // 以 ArrayBuffer 形式读取数据
-      fileReader.readAsArrayBuffer(chunk);
-   });
+        // 以 ArrayBuffer 形式读取数据
+        fileReader.readAsArrayBuffer(chunk);
+    });
 }
 
 //==================================computed worker.js ======================
 import SparkMD5 from 'spark-md5';
 
 self.onmessage = function (e) {
-   const chunks = e.data.chunks; // 接收所有分片的 ArrayBuffer
+    const chunks = e.data.chunks; // 接收所有分片的 ArrayBuffer
 
-   const spark = new SparkMD5.ArrayBuffer();
+    const spark = new SparkMD5.ArrayBuffer();
 
-   try {
-      // 累加所有分片的 MD5
-      for (let i = 0; i < chunks.length; i++) {
-         spark.append(chunks[i]);
-      }
+    try {
+        // 累加所有分片的 MD5
+        for (let i = 0; i < chunks.length; i++) {
+            spark.append(chunks[i]);
+        }
 
-      // 完成 MD5 计算
-      const finalHash = spark.end();
-      self.postMessage({ fileHash: finalHash });
-   } catch {
-      self.postMessage({ fileHash: null });
-      self.close();
-   }
+        // 完成 MD5 计算
+        const finalHash = spark.end();
+        self.postMessage({ fileHash: finalHash });
+    } catch {
+        self.postMessage({ fileHash: null });
+        self.close();
+    }
 };
 ```
 
@@ -437,36 +437,36 @@ const father = useTemplateRef('father');
 const son = useTemplateRef('son');
 
 onMounted(() => {
-   father.value!.onmouseenter = () => {
-      son.value!.style.height = 'auto';
-      const height = son.value!.offsetHeight + 'px';
-      son.value!.style.height = '0px';
-      //强制渲染,渲染Layout，强制重排
-      son.value!.clientHeight;
-      son.value!.style.transition = '0.5s';
-      son.value!.style.height = height;
-   };
-   father.value!.onmouseleave = () => {
-      son.value!.style.height = '0px';
-      son.value!.style.transition = '0.5s';
-   };
+    father.value!.onmouseenter = () => {
+        son.value!.style.height = 'auto';
+        const height = son.value!.offsetHeight + 'px';
+        son.value!.style.height = '0px';
+        //强制渲染,渲染Layout，强制重排
+        son.value!.clientHeight;
+        son.value!.style.transition = '0.5s';
+        son.value!.style.height = height;
+    };
+    father.value!.onmouseleave = () => {
+        son.value!.style.height = '0px';
+        son.value!.style.transition = '0.5s';
+    };
 });
 </script>
 <template>
-   <div class="flex flex-col items-center h-screen">
-      <div class="relative inline-block" ref="father">
-         鼠标移入显示下拉内容
-         <div
-            class="absolute top-full left-0 bg-cyan-400 w-64
+    <div class="flex flex-col items-center h-screen">
+        <div class="relative inline-block" ref="father">
+            鼠标移入显示下拉内容
+            <div
+                class="absolute top-full left-0 bg-cyan-400 w-64
        overflow-hidden h-0 
        transition-all duration-300 
       "
-            ref="son"
-         >
-            ...下拉内容（占位用）...
-         </div>
-      </div>
-   </div>
+                ref="son"
+            >
+                ...下拉内容（占位用）...
+            </div>
+        </div>
+    </div>
 </template>
 ```
 
@@ -486,15 +486,15 @@ onMounted(() => {
 ```html [usage.html]
 <!-- tailwind css 写法 -->
 <div class="relative inline-block group">
-   鼠标移入显示下拉内容
-   <div
-      class="absolute top-full left-0 bg-cyan-400 w-64
+    鼠标移入显示下拉内容
+    <div
+        class="absolute top-full left-0 bg-cyan-400 w-64
        overflow-hidden origin-top scale-y-0 group-hover:scale-y-100
        transition-transform duration-300 ease-in-out
       "
-   >
-      ...下拉内容（占位）...
-   </div>
+    >
+        ...下拉内容（占位）...
+    </div>
 </div>
 ```
 
@@ -516,6 +516,7 @@ onMounted(() => {
 ## 二次组件封装
 
 注意封装完后，需要将事件通过ref去暴露。
+
 ::: code-group-fold line-numbers
 
 ```vue [demo.vue]
@@ -538,17 +539,17 @@ const vm = getCurrentInstance();
 
 //将事件方法暴露给父组件，供其ref（父组件）调用
 function changeRef(expose: Element | ButtonInstance | null) {
-   if (vm) {
-      vm.exposed = expose;
-   }
+    if (vm) {
+        vm.exposed = expose;
+    }
 }
 
 //ts 提示
 defineExpose({} as ButtonInstance);
 </script>
 <template>
-   <!-- 注意这里不能用div或者容器包裹，否则事件会冒泡会被重复执行 -->
-   <component :is="h(Button, { ...$attrs, ref: changeRef }, $slots)"> </component>
+    <!-- 注意这里不能用div或者容器包裹，否则事件会冒泡会被重复执行 -->
+    <component :is="h(Button, { ...$attrs, ref: changeRef }, $slots)"> </component>
 </template>
 ```
 
@@ -589,129 +590,130 @@ import { FileUploader } from './modules/uploader';
 
 //参数序列化
 function getParamsSerializer(paramsSerializer: RequestClientOptions['paramsSerializer']) {
-   if (typeof paramsSerializer === 'string') {
-      switch (paramsSerializer) {
-         case 'brackets': {
-            return (params: any) => qs.stringify(params, { arrayFormat: 'brackets' });
-         }
-         case 'comma': {
-            return (params: any) => qs.stringify(params, { arrayFormat: 'comma' });
-         }
-         case 'indices': {
-            return (params: any) => qs.stringify(params, { arrayFormat: 'indices' });
-         }
-         case 'repeat': {
-            return (params: any) => qs.stringify(params, { arrayFormat: 'repeat' });
-         }
-      }
-   }
-   return paramsSerializer;
+    if (typeof paramsSerializer === 'string') {
+        switch (paramsSerializer) {
+            case 'brackets': {
+                return (params: any) => qs.stringify(params, { arrayFormat: 'brackets' });
+            }
+            case 'comma': {
+                return (params: any) => qs.stringify(params, { arrayFormat: 'comma' });
+            }
+            case 'indices': {
+                return (params: any) => qs.stringify(params, { arrayFormat: 'indices' });
+            }
+            case 'repeat': {
+                return (params: any) => qs.stringify(params, { arrayFormat: 'repeat' });
+            }
+        }
+    }
+    return paramsSerializer;
 }
 //请求客户端类
 class RequestClient {
-   public addRequestInterceptor: InterceptorManager['addRequestInterceptor'];
-   public addResponseInterceptor: InterceptorManager['addResponseInterceptor'];
+    public addRequestInterceptor: InterceptorManager['addRequestInterceptor'];
+    public addResponseInterceptor: InterceptorManager['addResponseInterceptor'];
 
-   public readonly instance: AxiosInstance;
+    public readonly instance: AxiosInstance;
 
-   public download: FileDownloader['download'];
-   public upload: FileUploader['upload'];
+    public download: FileDownloader['download'];
+    public upload: FileUploader['upload'];
 
-   /**
-    * 构造函数，用于创建Axios实例
-    * @param options - Axios请求配置，可选
-    */
-   constructor(options: RequestClientOptions = {}) {
-      const defaultConfig: RequestClientOptions = {
-         headers: {
-            'Content-Type': 'application/json;charset=utf-8' as const satisfies RequestContentType
-         },
-         responseReturn: 'raw',
-         //默认超时时间10s
-         timeout: 10_000
-      };
-      const { ...axiosConfig } = options;
-      const requestConfig = merge(axiosConfig, defaultConfig);
+    /**
+     * 构造函数，用于创建Axios实例
+     * @param options - Axios请求配置，可选
+     */
+    constructor(options: RequestClientOptions = {}) {
+        const defaultConfig: RequestClientOptions = {
+            headers: {
+                'Content-Type':
+                    'application/json;charset=utf-8' as const satisfies RequestContentType
+            },
+            responseReturn: 'raw',
+            //默认超时时间10s
+            timeout: 10_000
+        };
+        const { ...axiosConfig } = options;
+        const requestConfig = merge(axiosConfig, defaultConfig);
 
-      // 仅在存在 paramsSerializer 时进行规范化，避免将 undefined 赋值导致类型错误
-      // 没有就是用axios默认
-      const normalizedParamsSerializer = getParamsSerializer(requestConfig.paramsSerializer);
-      if (normalizedParamsSerializer !== undefined) {
-         requestConfig.paramsSerializer = normalizedParamsSerializer;
-      }
-      this.instance = axios.create(requestConfig);
+        // 仅在存在 paramsSerializer 时进行规范化，避免将 undefined 赋值导致类型错误
+        // 没有就是用axios默认
+        const normalizedParamsSerializer = getParamsSerializer(requestConfig.paramsSerializer);
+        if (normalizedParamsSerializer !== undefined) {
+            requestConfig.paramsSerializer = normalizedParamsSerializer;
+        }
+        this.instance = axios.create(requestConfig);
 
-      bindMethods(this);
+        bindMethods(this);
 
-      //实例化拦截器管理器
-      const interceptorManager = new InterceptorManager(this.instance);
-      this.addRequestInterceptor =
-         interceptorManager.addRequestInterceptor.bind(interceptorManager);
-      this.addResponseInterceptor =
-         interceptorManager.addResponseInterceptor.bind(interceptorManager);
+        //实例化拦截器管理器
+        const interceptorManager = new InterceptorManager(this.instance);
+        this.addRequestInterceptor =
+            interceptorManager.addRequestInterceptor.bind(interceptorManager);
+        this.addResponseInterceptor =
+            interceptorManager.addResponseInterceptor.bind(interceptorManager);
 
-      // 实例化文件上传和下载器
-      const fileUploader = new FileUploader(this);
-      this.upload = fileUploader.upload.bind(fileUploader);
-      const fileDownloader = new FileDownloader(this);
-      this.download = fileDownloader.download.bind(fileDownloader);
-   }
+        // 实例化文件上传和下载器
+        const fileUploader = new FileUploader(this);
+        this.upload = fileUploader.upload.bind(fileUploader);
+        const fileDownloader = new FileDownloader(this);
+        this.download = fileDownloader.download.bind(fileDownloader);
+    }
 
-   /**
-    * DELETE 请求
-    */
-   public delete<T = any>(url: string, config?: RequestClientConfig): Promise<T> {
-      return this.request<T>(url, { ...config, method: 'DELETE' });
-   }
+    /**
+     * DELETE 请求
+     */
+    public delete<T = any>(url: string, config?: RequestClientConfig): Promise<T> {
+        return this.request<T>(url, { ...config, method: 'DELETE' });
+    }
 
-   /**
-    * GET请求
-    */
-   public get<T = any>(url: string, config?: RequestClientConfig): Promise<T> {
-      return this.request<T>(url, { ...config, method: 'GET' });
-   }
+    /**
+     * GET请求
+     */
+    public get<T = any>(url: string, config?: RequestClientConfig): Promise<T> {
+        return this.request<T>(url, { ...config, method: 'GET' });
+    }
 
-   /**
-    * POST请求
-    */
-   public post<T = any>(url: string, data?: any, config?: RequestClientConfig): Promise<T> {
-      return this.request<T>(url, { ...config, data, method: 'POST' });
-   }
-   /**
-    * PUT请求方法
-    */
-   public put<T = any>(url: string, data?: any, config?: RequestClientConfig): Promise<T> {
-      return this.request<T>(url, { ...config, data, method: 'PUT' });
-   }
-   /**
-    * request请求
-    */
-   public async request<T = any>(url: string, config: RequestClientConfig): Promise<T> {
-      try {
-         /**
-          * ...(config.paramsSerializer ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) } : {})
-          * 如果在某次请求的config提供了paramsSerializer会覆盖全局设置;
-          * 没有提供就默认采用RequestClient实例化的config，没有提供就是axios默认
-          */
-         const response: AxiosResponse<T> = await this.instance.request({
-            url,
-            ...config,
-            ...(config.paramsSerializer
-               ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) }
-               : {})
-         } as any);
-         return response as T;
-      } catch (error: any) {
-         throw error.response ? error.response.data : error;
-      }
-   }
+    /**
+     * POST请求
+     */
+    public post<T = any>(url: string, data?: any, config?: RequestClientConfig): Promise<T> {
+        return this.request<T>(url, { ...config, data, method: 'POST' });
+    }
+    /**
+     * PUT请求方法
+     */
+    public put<T = any>(url: string, data?: any, config?: RequestClientConfig): Promise<T> {
+        return this.request<T>(url, { ...config, data, method: 'PUT' });
+    }
+    /**
+     * request请求
+     */
+    public async request<T = any>(url: string, config: RequestClientConfig): Promise<T> {
+        try {
+            /**
+             * ...(config.paramsSerializer ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) } : {})
+             * 如果在某次请求的config提供了paramsSerializer会覆盖全局设置;
+             * 没有提供就默认采用RequestClient实例化的config，没有提供就是axios默认
+             */
+            const response: AxiosResponse<T> = await this.instance.request({
+                url,
+                ...config,
+                ...(config.paramsSerializer
+                    ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) }
+                    : {})
+            } as any);
+            return response as T;
+        } catch (error: any) {
+            throw error.response ? error.response.data : error;
+        }
+    }
 
-   /**
-    * 获取基础URL
-    */
-   public getBaseUrl() {
-      return this.instance.defaults.baseURL;
-   }
+    /**
+     * 获取基础URL
+     */
+    public getBaseUrl() {
+        return this.instance.defaults.baseURL;
+    }
 }
 
 export { RequestClient };
@@ -724,35 +726,35 @@ import type { RequestInterceptorConfig, ResponseInterceptorConfig } from '../typ
 //==================== 默认拦截器配置====================
 //解决只定义一个导致的问题
 const defaultRequestInterceptorConfig: RequestInterceptorConfig = {
-   fulfilled: (config) => config,
-   rejected: (error) => Promise.reject(error)
+    fulfilled: (config) => config,
+    rejected: (error) => Promise.reject(error)
 };
 const defaultResponseInterceptorConfig: ResponseInterceptorConfig = {
-   fulfilled: (response: AxiosResponse) => response,
-   rejected: (error) => Promise.reject(error)
+    fulfilled: (response: AxiosResponse) => response,
+    rejected: (error) => Promise.reject(error)
 };
 
 //==================== 拦截器管理类====================
 class InterceptorManager {
-   private axiosInstance: AxiosInstance;
+    private axiosInstance: AxiosInstance;
 
-   constructor(instance: AxiosInstance) {
-      this.axiosInstance = instance;
-   }
+    constructor(instance: AxiosInstance) {
+        this.axiosInstance = instance;
+    }
 
-   addRequestInterceptor({
-      fulfilled,
-      rejected
-   }: RequestInterceptorConfig = defaultRequestInterceptorConfig) {
-      this.axiosInstance.interceptors.request.use(fulfilled, rejected);
-   }
+    addRequestInterceptor({
+        fulfilled,
+        rejected
+    }: RequestInterceptorConfig = defaultRequestInterceptorConfig) {
+        this.axiosInstance.interceptors.request.use(fulfilled, rejected);
+    }
 
-   addResponseInterceptor<T = any>({
-      fulfilled,
-      rejected
-   }: ResponseInterceptorConfig<T> = defaultResponseInterceptorConfig) {
-      this.axiosInstance.interceptors.response.use(fulfilled, rejected);
-   }
+    addResponseInterceptor<T = any>({
+        fulfilled,
+        rejected
+    }: ResponseInterceptorConfig<T> = defaultResponseInterceptorConfig) {
+        this.axiosInstance.interceptors.response.use(fulfilled, rejected);
+    }
 }
 
 export { InterceptorManager };
@@ -764,47 +766,49 @@ import type { ResponseInterceptorConfig } from './types';
 
 //默认响应拦截器
 export const defaultResponseInterceptor = ({
-   codeField = 'code',
-   dataField = 'data',
-   successCode = 0
+    codeField = 'code',
+    dataField = 'data',
+    successCode = 0
 }: {
-   /**代表访问结果的字段名，默认为code */
-   //!注意，这个要和后端返回的字段名一致
-   codeField: string;
-   /**响应数据中实际装载数据的字段名默认为data,或者提供自定义解析函数返回解析数据，函数接受response.data */
-   //!注意，这个要和后端返回的数据字段名一致
-   dataField: string | ((data: any) => any);
-   /**
-    * @description 找字段
-    * 当codeField和successCode相同，代表接口访问成功 如果提供了一个函数返回true代表接口访问成功。
-    * successCode: 'success' or 0 or (code) => code === 'success'
-    */
-   //!注意，这个的值要和codeField对应的后端返回值一致，或者提供一个函数来判断
-   successCode: ((code: any) => boolean) | number | string;
+    /**代表访问结果的字段名，默认为code */
+    //!注意，这个要和后端返回的字段名一致
+    codeField: string;
+    /**响应数据中实际装载数据的字段名默认为data,或者提供自定义解析函数返回解析数据，函数接受response.data */
+    //!注意，这个要和后端返回的数据字段名一致
+    dataField: string | ((data: any) => any);
+    /**
+     * @description 找字段
+     * 当codeField和successCode相同，代表接口访问成功 如果提供了一个函数返回true代表接口访问成功。
+     * successCode: 'success' or 0 or (code) => code === 'success'
+     */
+    //!注意，这个的值要和codeField对应的后端返回值一致，或者提供一个函数来判断
+    successCode: ((code: any) => boolean) | number | string;
 }): ResponseInterceptorConfig => {
-   return {
-      fulfilled: (response) => {
-         const { config, data: responseData, status } = response;
+    return {
+        fulfilled: (response) => {
+            const { config, data: responseData, status } = response;
 
-         if (config.responseReturn === 'raw') {
-            return response;
-         }
-
-         //这个·responseData[codeField]·表示从data中取对应字段的值
-         if (status >= 200 && status < 400) {
-            if (config.responseReturn === 'body') {
-               return responseData;
-            } else if (
-               isFunction(successCode)
-                  ? successCode(responseData[codeField])
-                  : responseData[codeField] === successCode
-            ) {
-               return isFunction(dataField) ? dataField(responseData) : responseData[dataField];
+            if (config.responseReturn === 'raw') {
+                return response;
             }
-         }
-         throw Object.assign({}, response, { response });
-      }
-   };
+
+            //这个·responseData[codeField]·表示从data中取对应字段的值
+            if (status >= 200 && status < 400) {
+                if (config.responseReturn === 'body') {
+                    return responseData;
+                } else if (
+                    isFunction(successCode)
+                        ? successCode(responseData[codeField])
+                        : responseData[codeField] === successCode
+                ) {
+                    return isFunction(dataField)
+                        ? dataField(responseData)
+                        : responseData[dataField];
+                }
+            }
+            throw Object.assign({}, response, { response });
+        }
+    };
 };
 ```
 
@@ -813,34 +817,34 @@ import type { RequestClientConfig } from '../types';
 import type { RequestClient } from '../request-client';
 
 type DownloadRequestConfig = {
-   /**
-    * 定义期望获得的数据类型。
-    * raw: 原始的AxiosResponse，包括headers、status等。
-    * body: 只返回响应数据的BODY部分(Blob)
-    */
-   responseReturn?: 'raw' | 'body';
+    /**
+     * 定义期望获得的数据类型。
+     * raw: 原始的AxiosResponse，包括headers、status等。
+     * body: 只返回响应数据的BODY部分(Blob)
+     */
+    responseReturn?: 'raw' | 'body';
 } & Omit<RequestClientConfig, 'responseType'>;
 
 class FileDownloader {
-   private client: RequestClient;
-   constructor(client: RequestClient) {
-      this.client = client;
-   }
+    private client: RequestClient;
+    constructor(client: RequestClient) {
+        this.client = client;
+    }
 
-   /**
-    * 下载文件
-    * @param url - 文件下载的URL地址
-    * @param config - 配置信息，可选
-    * @return 如果config.responseReturn为'body'，则返回Blob(默认)，否则返回RequestResponse<Blob>
-    */
-   public async download<T = Blob>(url: string, config?: DownloadRequestConfig): Promise<T> {
-      const finalConfig: RequestClientConfig = {
-         ...config,
-         responseType: 'blob'
-      };
+    /**
+     * 下载文件
+     * @param url - 文件下载的URL地址
+     * @param config - 配置信息，可选
+     * @return 如果config.responseReturn为'body'，则返回Blob(默认)，否则返回RequestResponse<Blob>
+     */
+    public async download<T = Blob>(url: string, config?: DownloadRequestConfig): Promise<T> {
+        const finalConfig: RequestClientConfig = {
+            ...config,
+            responseType: 'blob'
+        };
 
-      return await this.client.get<T>(url, finalConfig);
-   }
+        return await this.client.get<T>(url, finalConfig);
+    }
 }
 export { FileDownloader };
 ```
@@ -851,19 +855,19 @@ import type { RequestClient } from '../request-client';
 import type { RequestClientConfig, RequestContentType } from '../types';
 
 class FileUploader {
-   private client: RequestClient;
-   constructor(client: RequestClient) {
-      this.client = client;
-   }
+    private client: RequestClient;
+    constructor(client: RequestClient) {
+        this.client = client;
+    }
 
-   async upload<T = any>(
-      url: string,
-      data: Record<string, any> & { file: File | Blob },
-      config?: RequestClientConfig
-   ): Promise<T> {
-      const formData = new FormData();
+    async upload<T = any>(
+        url: string,
+        data: Record<string, any> & { file: File | Blob },
+        config?: RequestClientConfig
+    ): Promise<T> {
+        const formData = new FormData();
 
-      /**
+        /**
      * @rawdata 
       const data = {
          name: 'John',
@@ -878,27 +882,27 @@ class FileUploader {
       hobbies[1]: gaming
       file: [object Blob]
      */
-      Object.entries(data).forEach(([key, value]) => {
-         if (Array.isArray(value)) {
-            value.forEach((item, index) => {
-               !isUndefined(item) && formData.append(`${key}[${index}]`, item);
-            });
-         } else {
-            !isUndefined(value) && formData.append(key, value);
-         }
-      });
+        Object.entries(data).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                    !isUndefined(item) && formData.append(`${key}[${index}]`, item);
+                });
+            } else {
+                !isUndefined(value) && formData.append(key, value);
+            }
+        });
 
-      const finalConfig: RequestClientConfig = {
-         ...config,
-         headers: {
-            'Content-Type':
-               'multipart/form-data;charset=utf-8' as const satisfies RequestContentType,
-            ...config?.headers
-         }
-      };
+        const finalConfig: RequestClientConfig = {
+            ...config,
+            headers: {
+                'Content-Type':
+                    'multipart/form-data;charset=utf-8' as const satisfies RequestContentType,
+                ...config?.headers
+            }
+        };
 
-      return this.client.post<T>(url, formData, finalConfig);
-   }
+        return this.client.post<T>(url, formData, finalConfig);
+    }
 }
 
 export { FileUploader };
@@ -911,77 +915,77 @@ export { FileUploader };
  *
  */
 import type {
-   AxiosRequestConfig,
-   AxiosResponse,
-   CreateAxiosDefaults,
-   InternalAxiosRequestConfig
+    AxiosRequestConfig,
+    AxiosResponse,
+    CreateAxiosDefaults,
+    InternalAxiosRequestConfig
 } from 'axios';
 
 type ExtendOptions<T = any> = {
-   /**
-    * 主要就是解决param在各个框架中不一致的问题，导致识别不到参数
-    * 参数序列化方式。预置的有
-    * - brackets: ids[]=1&ids[]=2&ids[]=3
-    * - comma: ids=1,2,3
-    * - indices: ids[0]=1&ids[1]=2&ids[2]=3
-    * - repeat: ids=1&ids=2&ids=3
-    *
-    * 最后一个AxiosRequestConfig<D>["paramsSerializer"];允许自定义参数序列化逻辑
-    * 特别是当预置的几种方式不符合需求的时候
-    */
-   paramsSerializer?:
-      | 'brackets'
-      | 'comma'
-      | 'indices'
-      | 'repeat'
-      | AxiosRequestConfig<T>['paramsSerializer'];
+    /**
+     * 主要就是解决param在各个框架中不一致的问题，导致识别不到参数
+     * 参数序列化方式。预置的有
+     * - brackets: ids[]=1&ids[]=2&ids[]=3
+     * - comma: ids=1,2,3
+     * - indices: ids[0]=1&ids[1]=2&ids[2]=3
+     * - repeat: ids=1&ids=2&ids=3
+     *
+     * 最后一个AxiosRequestConfig<D>["paramsSerializer"];允许自定义参数序列化逻辑
+     * 特别是当预置的几种方式不符合需求的时候
+     */
+    paramsSerializer?:
+        | 'brackets'
+        | 'comma'
+        | 'indices'
+        | 'repeat'
+        | AxiosRequestConfig<T>['paramsSerializer'];
 
-   /**
-    * 响应数据的返回方式。
-    * - raw: 原始的AxiosResponse，包括headers、status等，不做是否成功请求的检查。
-    * - body: 返回响应数据的BODY部分（只会根据status检查请求是否成功，忽略对code的判断，这种情况下应由调用方检查请求是否成功）。
-    * - data: 解构响应的BODY数据，只返回其中的data节点数据（会检查status和code是否为成功状态）。
-    */
-   responseReturn?: 'body' | 'data' | 'raw';
+    /**
+     * 响应数据的返回方式。
+     * - raw: 原始的AxiosResponse，包括headers、status等，不做是否成功请求的检查。
+     * - body: 返回响应数据的BODY部分（只会根据status检查请求是否成功，忽略对code的判断，这种情况下应由调用方检查请求是否成功）。
+     * - data: 解构响应的BODY数据，只返回其中的data节点数据（会检查status和code是否为成功状态）。
+     */
+    responseReturn?: 'body' | 'data' | 'raw';
 };
 
 type RequestClientConfig<T = any> = AxiosRequestConfig<T> & ExtendOptions<T>;
 
 type RequestResponse<T = any> = AxiosResponse<T> & {
-   config: RequestClientConfig<T>;
+    config: RequestClientConfig<T>;
 };
 
 type RequestContentType =
-   | 'application/json;charset=utf-8'
-   | 'application/octet-stream;charset=utf-8'
-   | 'application/x-www-form-urlencoded;charset=utf-8'
-   | 'multipart/form-data;charset=utf-8';
+    | 'application/json;charset=utf-8'
+    | 'application/octet-stream;charset=utf-8'
+    | 'application/x-www-form-urlencoded;charset=utf-8'
+    | 'multipart/form-data;charset=utf-8';
 
 //请求options
 type RequestClientOptions = CreateAxiosDefaults & ExtendOptions;
 
 interface RequestInterceptorConfig {
-   fulfilled: (
-      config: InternalAxiosRequestConfig & ExtendOptions
-   ) =>
-      | (InternalAxiosRequestConfig<any> & ExtendOptions)
-      | Promise<InternalAxiosRequestConfig<any> & ExtendOptions>;
+    fulfilled: (
+        config: InternalAxiosRequestConfig & ExtendOptions
+    ) =>
+        | (InternalAxiosRequestConfig<any> & ExtendOptions)
+        | Promise<InternalAxiosRequestConfig<any> & ExtendOptions>;
 
-   rejected?: (error: any) => any;
+    rejected?: (error: any) => any;
 }
 
 interface ResponseInterceptorConfig<T = any> {
-   fulfilled: (response: RequestResponse<T>) => RequestResponse | Promise<RequestResponse>;
-   rejected?: (error: any) => any;
+    fulfilled: (response: RequestResponse<T>) => RequestResponse | Promise<RequestResponse>;
+    rejected?: (error: any) => any;
 }
 
 export type {
-   RequestClientConfig,
-   RequestClientOptions,
-   RequestContentType,
-   RequestInterceptorConfig,
-   RequestResponse,
-   ResponseInterceptorConfig
+    RequestClientConfig,
+    RequestClientOptions,
+    RequestContentType,
+    RequestInterceptorConfig,
+    RequestResponse,
+    ResponseInterceptorConfig
 };
 ```
 
@@ -997,23 +1001,23 @@ import { defu as merge } from 'defu';
  * 主要就是支持 const {method1} = instance; method1()不会出现this指向错误的问题。
  */
 export function bindMethods<T extends object>(instance: T): void {
-   const prototype = Object.getPrototypeOf(instance);
-   const propertyNames = Object.getOwnPropertyNames(prototype);
+    const prototype = Object.getPrototypeOf(instance);
+    const propertyNames = Object.getOwnPropertyNames(prototype);
 
-   propertyNames.forEach((propertyName) => {
-      const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
-      const propertyValue = instance[propertyName as keyof T];
+    propertyNames.forEach((propertyName) => {
+        const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
+        const propertyValue = instance[propertyName as keyof T];
 
-      if (
-         typeof propertyValue === 'function' &&
-         propertyName !== 'constructor' &&
-         descriptor &&
-         !descriptor.get &&
-         !descriptor.set
-      ) {
-         instance[propertyName as keyof T] = propertyValue.bind(instance);
-      }
-   });
+        if (
+            typeof propertyValue === 'function' &&
+            propertyName !== 'constructor' &&
+            descriptor &&
+            !descriptor.get &&
+            !descriptor.set
+        ) {
+            instance[propertyName as keyof T] = propertyValue.bind(instance);
+        }
+    });
 }
 export { merge };
 
@@ -1023,22 +1027,22 @@ export { merge };
  * @returns 布尔值：是 string 字面量返回 true，否则返回 false
  */
 export function isString(value: unknown): value is string {
-   return typeof value === 'string';
+    return typeof value === 'string';
 }
 
 //判断是否是函数
 export function isFunction(value: unknown): value is Function {
-   return typeof value === 'function';
+    return typeof value === 'function';
 }
 
 //判断是否是undefined
 export function isUndefined(value: unknown): value is undefined {
-   return typeof value === 'undefined';
+    return typeof value === 'undefined';
 }
 
 //判断是否为boolean
 export function isBoolean(value: unknown): value is boolean {
-   return typeof value === 'boolean';
+    return typeof value === 'boolean';
 }
 ```
 
@@ -1069,11 +1073,11 @@ export function isBoolean(value: unknown): value is boolean {
 
 ```ts [demo.ts]
 const client = new RequestClient({
-   baseURL: '/api',
-   responseReturn: 'body',
-   //brackets,comma,indices,repeat
-   //都不符合时自定义函数实现，来模拟参数序列化
-   /**
+    baseURL: '/api',
+    responseReturn: 'body',
+    //brackets,comma,indices,repeat
+    //都不符合时自定义函数实现，来模拟参数序列化
+    /**
     * @example                     
     *                              [!code ++]
     * paramsSerializer: 'brackets' [!code ++]
@@ -1092,24 +1096,24 @@ const client = new RequestClient({
          .join('&');   
     * }
     */
-   paramsSerializer: 'indices' //[!code ++]
+    paramsSerializer: 'indices' //[!code ++]
 });
 client.addResponseInterceptor(
-   defaultResponseInterceptor({
-      codeField: 'code',
-      dataField: 'data',
-      successCode: 0
-   })
+    defaultResponseInterceptor({
+        codeField: 'code',
+        dataField: 'data',
+        successCode: 0
+    })
 );
 client
-   .get('/', {
-      params: {
-         a: [1, 2, 3]
-      }
-   })
-   .then((res) => {
-      console.log('GET / response:', res);
-   });
+    .get('/', {
+        params: {
+            a: [1, 2, 3]
+        }
+    })
+    .then((res) => {
+        console.log('GET / response:', res);
+    });
 ```
 
 :::
@@ -1150,16 +1154,16 @@ client.post<string>('/test-post',{responseReturn: 'data'})
 ```ts [file-upload.ts]
 //文件上传
 client
-   .upload('/upload', {
-      file: file,
-      name: encodeURIComponent(file.name) //解决中文乱码问题，后端接受要解码[!code warning]
-   })
-   .then((res) => {
-      console.log('File uploaded successfully:', res);
-   })
-   .catch((err) => {
-      console.error('File upload failed:', err);
-   });
+    .upload('/upload', {
+        file: file,
+        name: encodeURIComponent(file.name) //解决中文乱码问题，后端接受要解码[!code warning]
+    })
+    .then((res) => {
+        console.log('File uploaded successfully:', res);
+    })
+    .catch((err) => {
+        console.error('File upload failed:', err);
+    });
 ```
 
 ```ts [file-download.ts]
@@ -1168,7 +1172,7 @@ const fileBlob1 = await client.download(`/download/test.txt`);
 
 //当然也可以配置第二个参数
 const fileBlob2Body = await client.download(`/download/test.txt`, {
-   responseReturn: 'body'
+    responseReturn: 'body'
 });
 ```
 
@@ -1178,9 +1182,9 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 
 ```json
 {
-   "code": 200,
-   "data1": "Hello World!",
-   "message": "success"
+    "code": 200,
+    "data1": "Hello World!",
+    "message": "success"
 }
 ```
 
@@ -1244,7 +1248,7 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 - 避免动态修改元素位置/尺寸
 - 合理设置视口（`ViewPort`）,解决移动端一致性
 - 减少运行时样式修改，避免JS的意外重排
-  :::
+:::
 
 ### Vite优化
 

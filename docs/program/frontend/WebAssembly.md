@@ -144,46 +144,46 @@ EMSCRIPTEN_BINDINGS(bind_unique_group) {
 /// <reference types="emscripten" />
 
 declare namespace RuntimeExports {
-   /**
-    * @param {string|null=} returnType
-    * @param {Array=} argTypes
-    * @param {Array=} args
-    * @param {Object=} opts
-    */
-   function ccall(
-      ident: any,
-      returnType?: (string | null) | undefined,
-      argTypes?: any[] | undefined,
-      args?: any[] | undefined,
-      opts?: any | undefined
-   ): any;
-   /**
-    * @param {string=} returnType
-    * @param {Array=} argTypes
-    * @param {Object=} opts
-    */
-   function cwrap(
-      ident: any,
-      returnType?: string | undefined,
-      argTypes?: any[] | undefined,
-      opts?: any | undefined
-   ): any;
-   /**
-    * @param {number} ptr
-    * @param {string} type
-    */
-   function getValue(ptr: number, type?: string): any;
-   /**
-    * @param {number} ptr
-    * @param {number} value
-    * @param {string} type
-    */
-   function setValue(ptr: number, value: number, type?: string): void;
+    /**
+     * @param {string|null=} returnType
+     * @param {Array=} argTypes
+     * @param {Array=} args
+     * @param {Object=} opts
+     */
+    function ccall(
+        ident: any,
+        returnType?: (string | null) | undefined,
+        argTypes?: any[] | undefined,
+        args?: any[] | undefined,
+        opts?: any | undefined
+    ): any;
+    /**
+     * @param {string=} returnType
+     * @param {Array=} argTypes
+     * @param {Object=} opts
+     */
+    function cwrap(
+        ident: any,
+        returnType?: string | undefined,
+        argTypes?: any[] | undefined,
+        opts?: any | undefined
+    ): any;
+    /**
+     * @param {number} ptr
+     * @param {string} type
+     */
+    function getValue(ptr: number, type?: string): any;
+    /**
+     * @param {number} ptr
+     * @param {number} value
+     * @param {string} type
+     */
+    function setValue(ptr: number, value: number, type?: string): void;
 }
 interface WasmModule extends EmscriptenModule {
-   _add(_0: number, _1: number): number;
-   _malloc(size: number): number;
-   _free(ptr: number): void;
+    _add(_0: number, _1: number): number;
+    _malloc(size: number): number;
+    _free(ptr: number): void;
 }
 
 export type MainModule = WasmModule & typeof RuntimeExports;
@@ -197,49 +197,49 @@ export default function MainModuleFactory(options?: Partial<MainModule>): Promis
 
 //定义路径
 declare module '@/assets/test1.js' {
-   interface RuntimeExports {
-      /**
-       * @param {string|null=} returnType
-       * @param {Array=} argTypes
-       * @param {Array=} args
-       * @param {Object=} opts
-       */
-      ccall(
-         ident: any,
-         returnType?: (string | null) | undefined,
-         argTypes?: any[] | undefined,
-         args?: any[] | undefined,
-         opts?: any | undefined
-      ): any;
-      /**
-       * @param {string=} returnType
-       * @param {Array=} argTypes
-       * @param {Object=} opts
-       */
-      cwrap(
-         ident: any,
-         returnType?: string | undefined,
-         argTypes?: any[] | undefined,
-         opts?: any | undefined
-      ): any;
-      /**
-       * @param {number} ptr
-       * @param {string} type
-       */
-      getValue(ptr: number, type?: string): any;
-      /**
-       * @param {number} ptr
-       * @param {number} value
-       * @param {string} type
-       */
-      setValue(ptr: number, value: number, type?: string): void;
-   }
-   interface WasmModule extends EmscriptenModule {
-      _add(_0: number, _1: number): number;
-   }
+    interface RuntimeExports {
+        /**
+         * @param {string|null=} returnType
+         * @param {Array=} argTypes
+         * @param {Array=} args
+         * @param {Object=} opts
+         */
+        ccall(
+            ident: any,
+            returnType?: (string | null) | undefined,
+            argTypes?: any[] | undefined,
+            args?: any[] | undefined,
+            opts?: any | undefined
+        ): any;
+        /**
+         * @param {string=} returnType
+         * @param {Array=} argTypes
+         * @param {Object=} opts
+         */
+        cwrap(
+            ident: any,
+            returnType?: string | undefined,
+            argTypes?: any[] | undefined,
+            opts?: any | undefined
+        ): any;
+        /**
+         * @param {number} ptr
+         * @param {string} type
+         */
+        getValue(ptr: number, type?: string): any;
+        /**
+         * @param {number} ptr
+         * @param {number} value
+         * @param {string} type
+         */
+        setValue(ptr: number, value: number, type?: string): void;
+    }
+    interface WasmModule extends EmscriptenModule {
+        _add(_0: number, _1: number): number;
+    }
 
-   export type MainModule = WasmModule & RuntimeExports;
-   export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+    export type MainModule = WasmModule & RuntimeExports;
+    export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
 }
 ```
 
@@ -251,24 +251,24 @@ declare module '@/assets/test1.js' {
 interface WasmModule extends EmscriptenModule {}
 
 export interface ClassHandle {
-   isAliasOf(other: ClassHandle): boolean;
-   delete(): void;
-   deleteLater(): this;
-   isDeleted(): boolean;
-   // @ts-ignore - If targeting lower than ESNext, this symbol might not exist.
-   [Symbol.dispose](): void;
-   clone(): this;
+    isAliasOf(other: ClassHandle): boolean;
+    delete(): void;
+    deleteLater(): this;
+    isDeleted(): boolean;
+    // @ts-ignore - If targeting lower than ESNext, this symbol might not exist.
+    [Symbol.dispose](): void;
+    clone(): this;
 }
 export interface MyClass extends ClassHandle {
-   incrementX(): void;
-   getX(): number;
-   showStr(): string;
+    incrementX(): void;
+    getX(): number;
+    showStr(): string;
 }
 
 interface EmbindModule {
-   MyClass: {
-      new (_0: number): MyClass;
-   };
+    MyClass: {
+        new (_0: number): MyClass;
+    };
 }
 
 export type MainModule = WasmModule & EmbindModule;
@@ -281,29 +281,29 @@ export default function MainModuleFactory(options?: Partial<MainModule>): Promis
 /// <reference types="emscripten" />
 
 declare module '@/assets/ClassObj.js' {
-   interface WasmModule extends EmscriptenModule {}
-   export interface ClassHandle {
-      isAliasOf(other: ClassHandle): boolean;
-      delete(): void;
-      deleteLater(): this;
-      isDeleted(): boolean;
-      // @ts-ignore - If targeting lower than ESNext, this symbol might not exist.
-      [Symbol.dispose](): void;
-      clone(): this;
-   }
-   export interface MyClass extends ClassHandle {
-      incrementX(): void;
-      getX(): number;
-      showStr(): string;
-   }
-   interface EmbindModule {
-      MyClass: {
-         new (_0: number): MyClass;
-      };
-   }
+    interface WasmModule extends EmscriptenModule {}
+    export interface ClassHandle {
+        isAliasOf(other: ClassHandle): boolean;
+        delete(): void;
+        deleteLater(): this;
+        isDeleted(): boolean;
+        // @ts-ignore - If targeting lower than ESNext, this symbol might not exist.
+        [Symbol.dispose](): void;
+        clone(): this;
+    }
+    export interface MyClass extends ClassHandle {
+        incrementX(): void;
+        getX(): number;
+        showStr(): string;
+    }
+    interface EmbindModule {
+        MyClass: {
+            new (_0: number): MyClass;
+        };
+    }
 
-   export type MainModule = WasmModule & EmbindModule;
-   export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
+    export type MainModule = WasmModule & EmbindModule;
+    export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
 }
 ```
 
@@ -318,34 +318,34 @@ import type { MainModule } from './types/test1';
 
 const test1Module = ref<MainModule | null>(null);
 onMounted(async () => {
-   const { default: createModule } = await import('@/assets/test1.js');
-   test1Module.value = await createModule();
-   console.log('WASM模块加载完成');
+    const { default: createModule } = await import('@/assets/test1.js');
+    test1Module.value = await createModule();
+    console.log('WASM模块加载完成');
 });
 
 const handleCallBack = () => {
-   if (test1Module.value) {
-      const result = test1Module.value._add(123, 456);
-      //print 679
-      console.log('WASM计算结果：', result);
+    if (test1Module.value) {
+        const result = test1Module.value._add(123, 456);
+        //print 679
+        console.log('WASM计算结果：', result);
 
-      //ccall
-      const addResult: number = test1Module.value.ccall(
-         'add',
-         'number',
-         ['number', 'number'],
-         [10, 20]
-      );
-      //print 30
-      console.log('WASM ccall计算结果：', addResult);
-      //cwrap
-      const addFunc: MainModule['_add'] = test1Module.value.cwrap('add', 'number', [
-         'number',
-         'number'
-      ]);
-      //print 70
-      console.log('WASM cwrap计算结果：', addFunc(30, 40));
-   }
+        //ccall
+        const addResult: number = test1Module.value.ccall(
+            'add',
+            'number',
+            ['number', 'number'],
+            [10, 20]
+        );
+        //print 30
+        console.log('WASM ccall计算结果：', addResult);
+        //cwrap
+        const addFunc: MainModule['_add'] = test1Module.value.cwrap('add', 'number', [
+            'number',
+            'number'
+        ]);
+        //print 70
+        console.log('WASM cwrap计算结果：', addFunc(30, 40));
+    }
 };
 ```
 
@@ -356,23 +356,23 @@ import type { MainModule } from '@/types/classObj';
 const classModule = ref<MainModule | null>(null);
 
 onMounted(async () => {
-   const { default: createModule } = await import('@/assets/ClassObj.js');
-   classModule.value = await createModule();
-   console.log('class WASM模块加载完成');
+    const { default: createModule } = await import('@/assets/ClassObj.js');
+    classModule.value = await createModule();
+    console.log('class WASM模块加载完成');
 });
 
 const handleCallBack = () => {
-   if (classModule.value) {
-      const instance = new classModule.value.MyClass(10);
+    if (classModule.value) {
+        const instance = new classModule.value.MyClass(10);
 
-      //print 10
-      console.log('对象内部私有值', instance.getX());
-      instance.incrementX();
-      //print 11
-      console.log('调用方法后对象内部私有值', instance.getX());
-      //print Hello, this is C++ MyClass
-      console.log('普通方法调用', instance.showStr());
-   }
+        //print 10
+        console.log('对象内部私有值', instance.getX());
+        instance.incrementX();
+        //print 11
+        console.log('调用方法后对象内部私有值', instance.getX());
+        //print Hello, this is C++ MyClass
+        console.log('普通方法调用', instance.showStr());
+    }
 };
 ```
 
@@ -381,19 +381,19 @@ const handleCallBack = () => {
 //需要SIDE_MODULE模式，编译动态链接库(也即纯函数库)
 
 try {
-   //[!code warning]
-   // 注意，这个wasm是二进制文件，因此import写法不行，且比较慢。
-   //可以直接用fetch获取二进制文件，并instantiateStreaming流式编译，这样速度更快
-   const { instance } = await WebAssembly.instantiateStreaming(fetch('/src/assets/111.wasm'));
-   // 调用 add 函数
-   //[!code warning]
-   //下面注意类型安全
-   const add = instance.exports.add as (x: number, y: number) => number;
-   result.value = add(1, 2);
-   //print 3
-   console.log('结果:', result.value);
+    //[!code warning]
+    // 注意，这个wasm是二进制文件，因此import写法不行，且比较慢。
+    //可以直接用fetch获取二进制文件，并instantiateStreaming流式编译，这样速度更快
+    const { instance } = await WebAssembly.instantiateStreaming(fetch('/src/assets/111.wasm'));
+    // 调用 add 函数
+    //[!code warning]
+    //下面注意类型安全
+    const add = instance.exports.add as (x: number, y: number) => number;
+    result.value = add(1, 2);
+    //print 3
+    console.log('结果:', result.value);
 } catch (error) {
-   console.error('加载失败:', error);
+    console.error('加载失败:', error);
 }
 ```
 
@@ -415,7 +415,7 @@ wasm和js两种格式，最后生成的`.d.ts`文件类型都是一样的。
 ```ts
 // TypeScript bindings for emscripten-generated code.  Automatically generated at compile time.
 interface WasmModule {
-   _main(_0: number, _1: number): number;
+    _main(_0: number, _1: number): number;
 }
 
 export type MainModule = WasmModule;
@@ -428,11 +428,11 @@ export default function MainModuleFactory(options?: unknown): Promise<MainModule
 /// <reference types="emscripten" />
 
 interface WasmModule {
-   _main(_0: number, _1: number): number;
+    _main(_0: number, _1: number): number;
 }
 export type MainModule = WasmModule;
 export default function MainModuleFactory(
-   options?: Partial<EmscriptenModule>
+    options?: Partial<EmscriptenModule>
 ): Promise<MainModule & EmscriptenModule>;
 ```
 
@@ -442,7 +442,7 @@ export default function MainModuleFactory(
 /// <reference types="emscripten" />
 
 export interface MainModule extends EmscriptenModule {
-   _main(_0: number, _1: number): number;
+    _main(_0: number, _1: number): number;
 }
 
 export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
@@ -460,7 +460,7 @@ export default function MainModuleFactory(options?: Partial<MainModule>): Promis
  * @return 完整模块实例
  */
 type EmscriptenModuleFactory<T extends EmscriptenModule = EmscriptenModule> = (
-   moduleOverrides?: Partial<T>
+    moduleOverrides?: Partial<T>
 ) => Promise<T>;
 ```
 
@@ -469,8 +469,8 @@ type EmscriptenModuleFactory<T extends EmscriptenModule = EmscriptenModule> = (
 ```ts
 //用途1：作为工厂函数参数配置对象
 const module = await createModule({
-   print: (msg) => console.log(msg)
-   //....
+    print: (msg) => console.log(msg)
+    //....
 });
 
 //用途2：作为模块实例
@@ -500,8 +500,8 @@ module._malloc(100); //运行时生成函数
 /// <reference types="emscripten" />
 
 export interface MyModule extends EmscriptenModule {
-   // 声明你需要使用的导出函数
-   _add: (a: number, b: number) => number;
+    // 声明你需要使用的导出函数
+    _add: (a: number, b: number) => number;
 }
 
 export {};
@@ -588,7 +588,7 @@ extern "C" {
 /// <reference types="emscripten" />
 
 export interface MainModule extends EmscriptenModule {
-   _main(_0: number, _1: number): number;
+    _main(_0: number, _1: number): number;
 }
 
 export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
@@ -599,7 +599,7 @@ export default function MainModuleFactory(options?: Partial<MainModule>): Promis
 //!error2:同时declare module 会创建一个隔离的作用域，因此在作用域内部没有MainModule和MainModuleFactory两个类型
 
 declare module 'path/to/js' {
-   export { MainModuleFactory as default, MainModule };
+    export { MainModuleFactory as default, MainModule };
 }
 ```
 
@@ -612,15 +612,15 @@ declare module 'path/to/js' {
 ```ts
 //[wasm-module].d.ts
 declare module '@/path/to/target.js' {
-   interface WasmModule extends EmscriptenModule {
-      _main(_0: number, _1: number): number;
-   }
+    interface WasmModule extends EmscriptenModule {
+        _main(_0: number, _1: number): number;
+    }
 
-   type MainModule = WasmModule;
+    type MainModule = WasmModule;
 
-   const factory: (options?: Partial<MainModule>) => Promise<MainModule>;
-   export default factory;
-   export type { MainModule, WasmModule };
+    const factory: (options?: Partial<MainModule>) => Promise<MainModule>;
+    export default factory;
+    export type { MainModule, WasmModule };
 }
 ```
 
@@ -629,7 +629,7 @@ declare module '@/path/to/target.js' {
 //[wasm-type].d.ts
 
 export interface WasmModule {
-   _main(_0: number, _1: number): number;
+    _main(_0: number, _1: number): number;
 }
 
 export type MainModule = WasmModule;

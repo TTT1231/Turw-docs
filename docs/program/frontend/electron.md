@@ -17,12 +17,12 @@ outline: deep
 ```ts [window.d.ts]
 //渲染线程类型拓展用
 declare global {
-   interface Window {
-      /**
-       * @description 渲染进程调用主线程提供的api
-       */
-      electronApi: IElectronApi;
-   }
+    interface Window {
+        /**
+         * @description 渲染进程调用主线程提供的api
+         */
+        electronApi: IElectronApi;
+    }
 }
 
 // global默认是模块作用域,需要显式导出才能成为全局声明文件
@@ -36,42 +36,42 @@ export {};
  * 提取对象中所有函数类型的键
  */
 type FuncKeys<T> = {
-   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T] &
-   string;
+    string;
 
 /**
  * 提取对象中所有非函数对象类型的键（用于嵌套）
  */
 type ObjKeys<T> = {
-   [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] extends object ? K : never;
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] extends object ? K : never;
 }[keyof T] &
-   string;
+    string;
 
 /**
  * @description 生成所有可能的路径（最多3层嵌套）
  */
 type Paths<T> =
-   | FuncKeys<T>
-   | {
-        [K1 in ObjKeys<T>]: `${K1}-${FuncKeys<T[K1]>}`;
-     }[ObjKeys<T>]
-   | {
-        [K1 in ObjKeys<T>]: {
-           [K2 in ObjKeys<T[K1]>]: `${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
-        }[ObjKeys<T[K1]>];
-     }[ObjKeys<T>];
+    | FuncKeys<T>
+    | {
+          [K1 in ObjKeys<T>]: `${K1}-${FuncKeys<T[K1]>}`;
+      }[ObjKeys<T>]
+    | {
+          [K1 in ObjKeys<T>]: {
+              [K2 in ObjKeys<T[K1]>]: `${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
+          }[ObjKeys<T[K1]>];
+      }[ObjKeys<T>];
 
 /**
  * @description 根据路径获取函数类型
  */
 type GetFunc<T, P> = P extends `${infer First}-${infer Rest}`
-   ? First extends keyof T
-      ? GetFunc<T[First], Rest>
-      : never
-   : P extends keyof T
-     ? T[P]
-     : never;
+    ? First extends keyof T
+        ? GetFunc<T[First], Rest>
+        : never
+    : P extends keyof T
+      ? T[P]
+      : never;
 
 /**
  * @description 提取函数参数类型
@@ -87,30 +87,30 @@ type FuncReturn<F> = F extends (...args: any[]) => infer R ? R : never;
  * @description 辅助类型 - 用于严格检查返回值类型
  */
 type StrictReturnType<T> =
-   T extends Promise<infer R> ? Promise<R> | R : T extends void ? void | undefined : T;
+    T extends Promise<infer R> ? Promise<R> | R : T extends void ? void | undefined : T;
 
 /**
  * @description IPC 通道定义类型
  * 将路径映射为包含 channel 和对应函数类型的对象
  */
 type IpcChannelMap<T> = {
-   [P in Paths<T>]: {
-      channel: P;
-      args: FuncArgs<GetFunc<T, P>>;
-      return: FuncReturn<GetFunc<T, P>>;
-   };
+    [P in Paths<T>]: {
+        channel: P;
+        args: FuncArgs<GetFunc<T, P>>;
+        return: FuncReturn<GetFunc<T, P>>;
+    };
 };
 ```
 
 ```ts [ipc.d.ts]
 //ipc.d.ts
 declare interface IElectronTest {
-   nihao1: (s: string) => void;
-   nihao2: (s: string) => string;
-   //....
+    nihao1: (s: string) => void;
+    nihao2: (s: string) => string;
+    //....
 }
 declare interface IElectronApi {
-   test: IElectronTest;
+    test: IElectronTest;
 }
 ```
 
@@ -121,66 +121,66 @@ declare interface IElectronApi {
  * 提取对象中所有函数类型的键
  */
 type FuncKeys<T> = {
-   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T] &
-   string;
+    string;
 
 /**
  * 提取对象中所有非函数对象类型的键（用于嵌套）
  */
 type ObjKeys<T> = {
-   [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] extends object ? K : never;
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : T[K] extends object ? K : never;
 }[keyof T] &
-   string;
+    string;
 
 /**
  * @description 生成所有可能的路径（最多3层嵌套，不带命名空间前缀）
  */
 type Paths<T> =
-   | FuncKeys<T>
-   | {
-        [K1 in ObjKeys<T>]: `${K1}-${FuncKeys<T[K1]>}`;
-     }[ObjKeys<T>]
-   | {
-        [K1 in ObjKeys<T>]: {
-           [K2 in ObjKeys<T[K1]>]: `${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
-        }[ObjKeys<T[K1]>];
-     }[ObjKeys<T>];
+    | FuncKeys<T>
+    | {
+          [K1 in ObjKeys<T>]: `${K1}-${FuncKeys<T[K1]>}`;
+      }[ObjKeys<T>]
+    | {
+          [K1 in ObjKeys<T>]: {
+              [K2 in ObjKeys<T[K1]>]: `${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
+          }[ObjKeys<T[K1]>];
+      }[ObjKeys<T>];
 
 /**
  * @description 生成带命名空间前缀的路径
  * @example NamespacedPaths<'IElectronApi', IElectronApi> = 'IElectronApi-windowControl-minimize' | ...
  */
 type NamespacedPaths<NS extends string, T> =
-   | {
-        [K in FuncKeys<T>]: `${NS}-${K}`;
-     }[FuncKeys<T>]
-   | {
-        [K1 in ObjKeys<T>]: `${NS}-${K1}-${FuncKeys<T[K1]>}`;
-     }[ObjKeys<T>]
-   | {
-        [K1 in ObjKeys<T>]: {
-           [K2 in ObjKeys<T[K1]>]: `${NS}-${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
-        }[ObjKeys<T[K1]>];
-     }[ObjKeys<T>];
+    | {
+          [K in FuncKeys<T>]: `${NS}-${K}`;
+      }[FuncKeys<T>]
+    | {
+          [K1 in ObjKeys<T>]: `${NS}-${K1}-${FuncKeys<T[K1]>}`;
+      }[ObjKeys<T>]
+    | {
+          [K1 in ObjKeys<T>]: {
+              [K2 in ObjKeys<T[K1]>]: `${NS}-${K1}-${K2}-${FuncKeys<T[K1][K2]>}`;
+          }[ObjKeys<T[K1]>];
+      }[ObjKeys<T>];
 
 /**
  * @description 根据带命名空间的路径获取函数类型
  */
 type GetFuncFromNamespaced<NS extends string, T, P> = P extends `${NS}-${infer Rest}`
-   ? GetFunc<T, Rest>
-   : never;
+    ? GetFunc<T, Rest>
+    : never;
 
 /**
  * @description 根据路径获取函数类型
  */
 type GetFunc<T, P> = P extends `${infer First}-${infer Rest}`
-   ? First extends keyof T
-      ? GetFunc<T[First], Rest>
-      : never
-   : P extends keyof T
-     ? T[P]
-     : never;
+    ? First extends keyof T
+        ? GetFunc<T[First], Rest>
+        : never
+    : P extends keyof T
+      ? T[P]
+      : never;
 
 /**
  * @description 提取函数参数类型
@@ -196,49 +196,49 @@ type FuncReturn<F> = F extends (...args: any[]) => infer R ? R : never;
  * @description 辅助类型 - 用于严格检查返回值类型
  */
 type StrictReturnType<T> =
-   T extends Promise<infer R> ? Promise<R> | R : T extends void ? void | undefined : T;
+    T extends Promise<infer R> ? Promise<R> | R : T extends void ? void | undefined : T;
 
 /**
  * @description 用于构建 preload API 的类型
  * 将接口转换为可用于 contextBridge.exposeInMainWorld 的结构
  */
 type BuildExposedApi<NS extends string, T> = {
-   [K in keyof T]: T[K] extends (...args: infer Args) => infer R
-      ? {
-           /** IPC 通道名称 */
-           channel: `${NS}-${K & string}`;
-           /** 调用方法 */
-           invoke: (...args: Args) => Promise<Awaited<R>>;
-           send: (...args: Args) => void;
-        }
-      : T[K] extends object
-        ? BuildExposedApiNested<`${NS}-${K & string}`, T[K]>
-        : never;
+    [K in keyof T]: T[K] extends (...args: infer Args) => infer R
+        ? {
+              /** IPC 通道名称 */
+              channel: `${NS}-${K & string}`;
+              /** 调用方法 */
+              invoke: (...args: Args) => Promise<Awaited<R>>;
+              send: (...args: Args) => void;
+          }
+        : T[K] extends object
+          ? BuildExposedApiNested<`${NS}-${K & string}`, T[K]>
+          : never;
 };
 
 type BuildExposedApiNested<Prefix extends string, T> = {
-   [K in keyof T]: T[K] extends (...args: infer Args) => infer R
-      ? {
-           /** IPC 通道名称 */
-           channel: `${Prefix}-${K & string}`;
-           /** 调用方法 */
-           invoke: (...args: Args) => Promise<Awaited<R>>;
-           send: (...args: Args) => void;
-        }
-      : T[K] extends object
-        ? BuildExposedApiNested<`${Prefix}-${K & string}`, T[K]>
-        : never;
+    [K in keyof T]: T[K] extends (...args: infer Args) => infer R
+        ? {
+              /** IPC 通道名称 */
+              channel: `${Prefix}-${K & string}`;
+              /** 调用方法 */
+              invoke: (...args: Args) => Promise<Awaited<R>>;
+              send: (...args: Args) => void;
+          }
+        : T[K] extends object
+          ? BuildExposedApiNested<`${Prefix}-${K & string}`, T[K]>
+          : never;
 };
 
 /**
  * @description IPC 通道定义类型
  */
 type IpcChannelMap<T> = {
-   [P in Paths<T>]: {
-      channel: P;
-      args: FuncArgs<GetFunc<T, P>>;
-      return: FuncReturn<GetFunc<T, P>>;
-   };
+    [P in Paths<T>]: {
+        channel: P;
+        args: FuncArgs<GetFunc<T, P>>;
+        return: FuncReturn<GetFunc<T, P>>;
+    };
 };
 ```
 
@@ -278,83 +278,92 @@ import { ipcMain, type IpcMainInvokeEvent, type IpcMainEvent } from 'electron/ma
  * });
  */
 export function createIpcMain<NS extends string, T extends Record<string, any>>() {
-   type Channel = NamespacedPaths<NS, T>;
+    type Channel = NamespacedPaths<NS, T>;
 
-   return {
-      /**
-       * 注册 handle 处理器（用于 invoke 调用）
-       */
-      handle<P extends Channel>(
-         channel: P,
-         handler: (
-            event: IpcMainInvokeEvent,
-            ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
-         ) => StrictReturnType<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>
-      ): void {
-         ipcMain.handle(channel as string, handler);
-      },
+    return {
+        /**
+         * 注册 handle 处理器（用于 invoke 调用）
+         */
+        handle<P extends Channel>(
+            channel: P,
+            handler: (
+                event: IpcMainInvokeEvent,
+                ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            ) => StrictReturnType<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>
+        ): void {
+            ipcMain.handle(channel as string, handler);
+        },
 
-      /**
-       * 注册一次性 handle 处理器
-       */
-      handleOnce<P extends Channel>(
-         channel: P,
-         handler: (
-            event: IpcMainInvokeEvent,
-            ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
-         ) => StrictReturnType<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>
-      ): void {
-         ipcMain.handleOnce(channel as string, handler);
-      },
+        /**
+         * 注册一次性 handle 处理器
+         */
+        handleOnce<P extends Channel>(
+            channel: P,
+            handler: (
+                event: IpcMainInvokeEvent,
+                ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            ) => StrictReturnType<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>
+        ): void {
+            ipcMain.handleOnce(channel as string, handler);
+        },
 
-      /**
-       * 移除 handle 处理器
-       */
-      removeHandler<P extends Channel>(channel: P): void {
-         ipcMain.removeHandler(channel as string);
-      },
+        /**
+         * 移除 handle 处理器
+         */
+        removeHandler<P extends Channel>(channel: P): void {
+            ipcMain.removeHandler(channel as string);
+        },
 
-      /**
-       * 注册事件监听器（用于 send 调用）
-       */
-      on<P extends Channel>(
-         channel: P,
-         listener: (event: IpcMainEvent, ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>) => void
-      ): void {
-         ipcMain.on(channel as string, listener);
-      },
+        /**
+         * 注册事件监听器（用于 send 调用）
+         */
+        on<P extends Channel>(
+            channel: P,
+            listener: (
+                event: IpcMainEvent,
+                ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            ) => void
+        ): void {
+            ipcMain.on(channel as string, listener);
+        },
 
-      /**
-       * 注册一次性事件监听器
-       */
-      once<P extends Channel>(
-         channel: P,
-         listener: (event: IpcMainEvent, ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>) => void
-      ): void {
-         ipcMain.once(channel as string, listener);
-      },
+        /**
+         * 注册一次性事件监听器
+         */
+        once<P extends Channel>(
+            channel: P,
+            listener: (
+                event: IpcMainEvent,
+                ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            ) => void
+        ): void {
+            ipcMain.once(channel as string, listener);
+        },
 
-      /**
-       * 移除事件监听器
-       */
-      off<P extends Channel>(
-         channel: P,
-         listener: (event: IpcMainEvent, ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>) => void
-      ): void {
-         ipcMain.off(channel as string, listener);
-      },
+        /**
+         * 移除事件监听器
+         */
+        off<P extends Channel>(
+            channel: P,
+            listener: (
+                event: IpcMainEvent,
+                ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+            ) => void
+        ): void {
+            ipcMain.off(channel as string, listener);
+        },
 
-      /**
-       * 移除指定通道的所有监听器
-       */
-      removeAllListeners<P extends Channel>(channel: P): void {
-         ipcMain.removeAllListeners(channel as string);
-      }
-   };
+        /**
+         * 移除指定通道的所有监听器
+         */
+        removeAllListeners<P extends Channel>(channel: P): void {
+            ipcMain.removeAllListeners(channel as string);
+        }
+    };
 }
 
 export const IpcTypeManager = {
-   createIpcMain
+    createIpcMain
 };
 ```
 
@@ -411,88 +420,88 @@ import { ipcRenderer } from 'electron/renderer';
  * });
  */
 export function createPreloadApi<NS extends string, T extends Record<string, any>>() {
-   type Channel = NamespacedPaths<NS, T>;
+    type Channel = NamespacedPaths<NS, T>;
 
-   return {
-      /**
-       * 异步调用主进程的 handle 处理器
-       */
-      invoke<P extends Channel>(
-         channel: P,
-         ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
-            ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
-            : never
-      ): Promise<Awaited<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>> {
-         return ipcRenderer.invoke(channel as string, ...args);
-      },
-
-      /**
-       * 向主进程发送消息（无返回值）
-       */
-      send<P extends Channel>(
-         channel: P,
-         ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
-            ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
-            : never
-      ): void {
-         ipcRenderer.send(channel as string, ...args);
-      },
-
-      /**
-       * 同步调用主进程（阻塞，谨慎使用）
-       */
-      sendSync<P extends Channel>(
-         channel: P,
-         ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
-            ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
-            : never
-      ): FuncReturn<GetFuncFromNamespaced<NS, T, P>> {
-         return ipcRenderer.sendSync(channel as string, ...args);
-      },
-
-      /**
-       * 监听主进程消息
-       */
-      on<P extends Channel>(
-         channel: P,
-         callback: (
+    return {
+        /**
+         * 异步调用主进程的 handle 处理器
+         */
+        invoke<P extends Channel>(
+            channel: P,
             ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
-               ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
-               : never
-         ) => void
-      ): () => void {
-         const listener = (_event: any, ...args: any[]) => {
-            (callback as (...a: any[]) => void)(...args);
-         };
-         ipcRenderer.on(channel as string, listener);
-         return () => {
-            ipcRenderer.off(channel as string, listener);
-         };
-      },
+                ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+                : never
+        ): Promise<Awaited<FuncReturn<GetFuncFromNamespaced<NS, T, P>>>> {
+            return ipcRenderer.invoke(channel as string, ...args);
+        },
 
-      /**
-       * 监听主进程消息（只触发一次）
-       */
-      once<P extends Channel>(
-         channel: P,
-         callback: (
+        /**
+         * 向主进程发送消息（无返回值）
+         */
+        send<P extends Channel>(
+            channel: P,
             ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
-               ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
-               : never
-         ) => void
-      ): void {
-         ipcRenderer.once(channel as string, (_event, ...args) => {
-            (callback as (...a: any[]) => void)(...(args as any));
-         });
-      },
+                ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+                : never
+        ): void {
+            ipcRenderer.send(channel as string, ...args);
+        },
 
-      /**
-       * 获取通道名称的辅助方法（用于类型提示）
-       */
-      channel<P extends Channel>(channel: P): P {
-         return channel;
-      }
-   };
+        /**
+         * 同步调用主进程（阻塞，谨慎使用）
+         */
+        sendSync<P extends Channel>(
+            channel: P,
+            ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+                ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+                : never
+        ): FuncReturn<GetFuncFromNamespaced<NS, T, P>> {
+            return ipcRenderer.sendSync(channel as string, ...args);
+        },
+
+        /**
+         * 监听主进程消息
+         */
+        on<P extends Channel>(
+            channel: P,
+            callback: (
+                ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+                    ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+                    : never
+            ) => void
+        ): () => void {
+            const listener = (_event: any, ...args: any[]) => {
+                (callback as (...a: any[]) => void)(...args);
+            };
+            ipcRenderer.on(channel as string, listener);
+            return () => {
+                ipcRenderer.off(channel as string, listener);
+            };
+        },
+
+        /**
+         * 监听主进程消息（只触发一次）
+         */
+        once<P extends Channel>(
+            channel: P,
+            callback: (
+                ...args: FuncArgs<GetFuncFromNamespaced<NS, T, P>> extends any[]
+                    ? FuncArgs<GetFuncFromNamespaced<NS, T, P>>
+                    : never
+            ) => void
+        ): void {
+            ipcRenderer.once(channel as string, (_event, ...args) => {
+                (callback as (...a: any[]) => void)(...(args as any));
+            });
+        },
+
+        /**
+         * 获取通道名称的辅助方法（用于类型提示）
+         */
+        channel<P extends Channel>(channel: P): P {
+            return channel;
+        }
+    };
 }
 
 /**
@@ -521,11 +530,11 @@ export function createPreloadApi<NS extends string, T extends Record<string, any
  * contextBridge.exposeInMainWorld('electronApi', electronApi);
  */
 export type ExposedApiStructure<T> = {
-   [K in keyof T]: T[K] extends (...args: infer Args) => infer R
-      ? (...args: Args) => R extends Promise<any> ? R : Promise<R> | void
-      : T[K] extends object
-        ? ExposedApiStructure<T[K]>
-        : never;
+    [K in keyof T]: T[K] extends (...args: infer Args) => infer R
+        ? (...args: Args) => R extends Promise<any> ? R : Promise<R> | void
+        : T[K] extends object
+          ? ExposedApiStructure<T[K]>
+          : never;
 };
 
 /**
@@ -535,7 +544,7 @@ export type ExposedApiStructure<T> = {
 export type GetChannels<NS extends string, T extends Record<string, any>> = NamespacedPaths<NS, T>;
 
 export const IpcRendererManager = {
-   createPreloadApi
+    createPreloadApi
 };
 ```
 
@@ -593,12 +602,12 @@ contextBridge.exposeInMainWorld('electronApi', {
  * // }
  */
 type ToFunctionMarker<T> = {
-   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-   [K in keyof T]: T[K] extends (...args: any[]) => any
-      ? true // 如果是函数,转换为 true
-      : T[K] extends object
-        ? ToFunctionMarker<T[K]> // 如果是对象,递归转换
-        : T[K]; // 其他类型保持不变
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [K in keyof T]: T[K] extends (...args: any[]) => any
+        ? true // 如果是函数,转换为 true
+        : T[K] extends object
+          ? ToFunctionMarker<T[K]> // 如果是对象,递归转换
+          : T[K]; // 其他类型保持不变
 };
 
 /**
@@ -648,26 +657,26 @@ import { ipcRenderer } from 'electron/renderer';
  * // }
  */
 export function autoAssembleBridge<T extends Record<string, any>>(
-   config: Record<string, any>,
-   prefix: string = ''
+    config: Record<string, any>,
+    prefix: string = ''
 ): T {
-   const result: any = {};
+    const result: any = {};
 
-   for (const key in config) {
-      const value = config[key];
-      const currentPath = prefix ? `${prefix}-${key}` : key;
+    for (const key in config) {
+        const value = config[key];
+        const currentPath = prefix ? `${prefix}-${key}` : key;
 
-      if (value === true) {
-         // 叶子节点: 函数
-         result[key] = (...args: any[]) => {
-            return ipcRenderer.invoke(currentPath, ...args);
-         };
-      } else if (typeof value === 'object' && value !== null) {
-         // 中间节点: 递归构建
-         result[key] = autoAssembleBridge(value, currentPath);
-      }
-   }
-   return result as T;
+        if (value === true) {
+            // 叶子节点: 函数
+            result[key] = (...args: any[]) => {
+                return ipcRenderer.invoke(currentPath, ...args);
+            };
+        } else if (typeof value === 'object' && value !== null) {
+            // 中间节点: 递归构建
+            result[key] = autoAssembleBridge(value, currentPath);
+        }
+    }
+    return result as T;
 }
 ```
 
@@ -685,16 +694,16 @@ export function autoAssembleBridge<T extends Record<string, any>>(
  */
 //使用示例
 const apiConfig: IElectronApiConfig = {
-   //[!code warning]
-   //如果嫌弃这里编写麻烦，在确认类型全部为函数的前提下，完全可以再次封装，自动映射
-   //[!code warning]
-   //因为不可能为false，那么就不需要额外的判断逻辑，直接置为true即可
-   query: {
-      user: {
-         getUserData: true,
-         nihao: false //这里为false会报错，因为不可能调用一个字段的 [!code error]
-      }
-   }
+    //[!code warning]
+    //如果嫌弃这里编写麻烦，在确认类型全部为函数的前提下，完全可以再次封装，自动映射
+    //[!code warning]
+    //因为不可能为false，那么就不需要额外的判断逻辑，直接置为true即可
+    query: {
+        user: {
+            getUserData: true,
+            nihao: false //这里为false会报错，因为不可能调用一个字段的 [!code error]
+        }
+    }
 };
 contextBridge.exposeInMainWorld('electronApi', autoAssembleBridge<IElectronApi>(apiConfig));
 ```

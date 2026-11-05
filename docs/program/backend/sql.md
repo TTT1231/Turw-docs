@@ -31,6 +31,7 @@ pnpm exec husky init
 ```
 
 **然后编辑.husky的git commit提交之前的hook（pre-commit）**
+
 ::: code-group
 
 ```sh [pre-commit]
@@ -214,16 +215,16 @@ import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity()
 export class User {
-   @PrimaryGeneratedColumn()
-   id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-   @Index({ unique: true })
-   @Column()
-   firstName: string;
+    @Index({ unique: true })
+    @Column()
+    firstName: string;
 
-   @Column()
-   @Index({ unique: true })
-   lastName: string;
+    @Column()
+    @Index({ unique: true })
+    lastName: string;
 }
 ```
 
@@ -237,12 +238,12 @@ cache: boolean | number;
 
 //example
 const selectCache = selectCacheRepo.find({
-   select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      age: true
-   },
-   cache: 1000 //1s
+    select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        age: true
+    },
+    cache: 1000 //1s
 });
 ```

@@ -58,7 +58,7 @@ Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callb
 - Idle、prepare内部阶段
 - Poll 执行新I/O，阻塞等待，处理http请求
 - Check 执行`setImmediate`回调
-  :::
+:::
 
 ::: tip 提示
 `Nodejs`是单线程的，核心就是事件循环，只有一个JS执行线程。然后`Nodejs`执行任务顺序如下，主线程执行同步代码，遇到异步任务，不等待结果，把任务丢给对应处理模块，然后主线程继续执行，同步代码执行完毕，主线程有空了在从任务队列中取出执行。
@@ -179,11 +179,11 @@ const customHeaders = ['my-customer-header'];
 //x-requested-with 标识请求XMLHttpRequest或fetch区别游览发起请求和表单提交或者之间访问url
 const requiredHeaders = ['x-requested-with', 'Content-Type', 'Authorization'];
 const corsOptions = {
-   origin: 'http://example-ip:port', //允许访问的源
-   optionsSuccessStatus: 200,
-   credentials: true,
-   method: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-   allowedHeaders: [...customHeaders, ...requiredHeaders]
+    origin: 'http://example-ip:port', //允许访问的源
+    optionsSuccessStatus: 200,
+    credentials: true,
+    method: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [...customHeaders, ...requiredHeaders]
 };
 
 app.use(cors(corsOptions));
@@ -232,7 +232,7 @@ app.use(express.static('public'));
 
 ```json
 {
-   "typeRoots": ["./node_modules/@types", "./server/types"]
+    "typeRoots": ["./node_modules/@types", "./server/types"]
 }
 ```
 
@@ -244,20 +244,20 @@ app.use(express.static('public'));
 
 ```ts [env.d.ts]
 declare global {
-   namespace Express {
-      interface Request {
-         //customer field
-         user?: {
-            id: string;
-            //other field
-         };
-         cookies: {
-            accessToken?: string;
-            refreshToken?: string;
-            [key: string]: any;
-         };
-      }
-   }
+    namespace Express {
+        interface Request {
+            //customer field
+            user?: {
+                id: string;
+                //other field
+            };
+            cookies: {
+                accessToken?: string;
+                refreshToken?: string;
+                [key: string]: any;
+            };
+        }
+    }
 }
 
 //模块化
@@ -281,10 +281,10 @@ export {};
 
 ```json [package.json]
 {
-   "scripts": {
-      //[!code ++]
-      "dev": "ts-node src/main.ts"
-   }
+    "scripts": {
+        //[!code ++]
+        "dev": "ts-node src/main.ts"
+    }
 }
 ```
 
@@ -320,17 +320,17 @@ import type { Router, Request, Response, NextFunction } from 'express';
 
 // 路由处理器类型 - 使用扩展的Request类型
 export type RouteHandler = (
-   req: Request,
-   res: Response,
-   next: NextFunction
+    req: Request,
+    res: Response,
+    next: NextFunction
 ) => void | Promise<void | any>;
 
 // 路由定义类型
 export interface RouteDefinition {
-   handler: RouteHandler;
-   method: string;
-   path: string;
-   filePath: string;
+    handler: RouteHandler;
+    method: string;
+    path: string;
+    filePath: string;
 }
 
 // 存储所有路由定义 - 使用全局对象确保在打包后能正确共享
@@ -346,14 +346,14 @@ let globalRouter: Router | null = null;
  * @returns 适合当前平台的导入路径
  */
 function convertToImportPath(filePath: string): string {
-   // 对于 .ts 文件（开发环境），直接使用文件路径
-   if (filePath.endsWith('.ts')) {
-      return filePath;
-   }
+    // 对于 .ts 文件（开发环境），直接使用文件路径
+    if (filePath.endsWith('.ts')) {
+        return filePath;
+    }
 
-   // 对于 .js 文件（生产环境），使用 file:// URL
-   // pathToFileURL 会自动处理 Windows 和 macOS 的路径格式
-   return pathToFileURL(filePath).href;
+    // 对于 .js 文件（生产环境），使用 file:// URL
+    // pathToFileURL 会自动处理 Windows 和 macOS 的路径格式
+    return pathToFileURL(filePath).href;
 }
 
 /**
@@ -361,7 +361,7 @@ function convertToImportPath(filePath: string): string {
  * @param router Express Router 实例
  */
 export function setGlobalRouter(router: Router): void {
-   globalRouter = router;
+    globalRouter = router;
 }
 
 /**
@@ -370,50 +370,50 @@ export function setGlobalRouter(router: Router): void {
  * @returns 路由处理函数
  */
 export function defineNodeRoute(handler: RouteHandler): RouteHandler {
-   // 获取调用栈信息来确定文件路径
-   const stack = new Error().stack;
-   if (stack) {
-      const stackLines = stack.split('\n');
-      // 找到调用 defineNodeRoute 的文件
-      for (let i = 1; i < stackLines.length; i++) {
-         const line = stackLines[i];
-         // 支持 .ts 和 .js 文件，但排除 routeScanner 文件本身
-         if ((line.includes('.ts') || line.includes('.js')) && !line.includes('routeScanner')) {
-            // 改进正则表达式以匹配 .ts 或 .js 文件的Windows路径
-            const match = line.match(/\(([A-Za-z]:[^:)]+\.(ts|js))/);
-            if (match) {
-               const filePath = match[1];
+    // 获取调用栈信息来确定文件路径
+    const stack = new Error().stack;
+    if (stack) {
+        const stackLines = stack.split('\n');
+        // 找到调用 defineNodeRoute 的文件
+        for (let i = 1; i < stackLines.length; i++) {
+            const line = stackLines[i];
+            // 支持 .ts 和 .js 文件，但排除 routeScanner 文件本身
+            if ((line.includes('.ts') || line.includes('.js')) && !line.includes('routeScanner')) {
+                // 改进正则表达式以匹配 .ts 或 .js 文件的Windows路径
+                const match = line.match(/\(([A-Za-z]:[^:)]+\.(ts|js))/);
+                if (match) {
+                    const filePath = match[1];
 
-               try {
-                  const { method, path: routePath } = parseRouteFromFilePath(filePath);
+                    try {
+                        const { method, path: routePath } = parseRouteFromFilePath(filePath);
 
-                  const routeDefinition = {
-                     handler,
-                     method,
-                     path: routePath,
-                     filePath
-                  };
+                        const routeDefinition = {
+                            handler,
+                            method,
+                            path: routePath,
+                            filePath
+                        };
 
-                  routeDefinitions.set(filePath, routeDefinition);
+                        routeDefinitions.set(filePath, routeDefinition);
 
-                  // 如果有全局 router，立即注册路由
-                  if (globalRouter) {
-                     registerSingleRoute(globalRouter, routeDefinition);
-                  }
+                        // 如果有全局 router，立即注册路由
+                        if (globalRouter) {
+                            registerSingleRoute(globalRouter, routeDefinition);
+                        }
 
-                  break;
-               } catch (error) {
-                  console.error(
-                     `❌ Error parsing route from ${filePath}:`,
-                     error instanceof Error ? error.message : error
-                  );
-               }
+                        break;
+                    } catch (error) {
+                        console.error(
+                            `❌ Error parsing route from ${filePath}:`,
+                            error instanceof Error ? error.message : error
+                        );
+                    }
+                }
             }
-         }
-      }
-   }
+        }
+    }
 
-   return handler;
+    return handler;
 }
 
 /**
@@ -422,42 +422,42 @@ export function defineNodeRoute(handler: RouteHandler): RouteHandler {
  * @param routeDefinition 路由定义
  */
 function registerSingleRoute(router: Router, routeDefinition: RouteDefinition): void {
-   const { method, path: routePath, handler } = routeDefinition;
+    const { method, path: routePath, handler } = routeDefinition;
 
-   try {
-      // 注册路由到 router
-      switch (method.toLowerCase()) {
-         case 'get':
-            router.get(routePath, handler);
-            break;
-         case 'post':
-            router.post(routePath, handler);
-            break;
-         case 'put':
-            router.put(routePath, handler);
-            break;
-         case 'delete':
-            router.delete(routePath, handler);
-            break;
-         case 'patch':
-            router.patch(routePath, handler);
-            break;
-         case 'head':
-            router.head(routePath, handler);
-            break;
-         case 'options':
-            router.options(routePath, handler);
-            break;
-         default:
-            console.warn(`⚠️ Unsupported HTTP method: ${method} for route ${routePath}`);
-            return;
-      }
-   } catch (error) {
-      console.error(
-         `❌ Failed to register route ${method.toUpperCase()} ${routePath}:`,
-         error instanceof Error ? error.message : error
-      );
-   }
+    try {
+        // 注册路由到 router
+        switch (method.toLowerCase()) {
+            case 'get':
+                router.get(routePath, handler);
+                break;
+            case 'post':
+                router.post(routePath, handler);
+                break;
+            case 'put':
+                router.put(routePath, handler);
+                break;
+            case 'delete':
+                router.delete(routePath, handler);
+                break;
+            case 'patch':
+                router.patch(routePath, handler);
+                break;
+            case 'head':
+                router.head(routePath, handler);
+                break;
+            case 'options':
+                router.options(routePath, handler);
+                break;
+            default:
+                console.warn(`⚠️ Unsupported HTTP method: ${method} for route ${routePath}`);
+                return;
+        }
+    } catch (error) {
+        console.error(
+            `❌ Failed to register route ${method.toUpperCase()} ${routePath}:`,
+            error instanceof Error ? error.message : error
+        );
+    }
 }
 
 /**
@@ -466,112 +466,117 @@ function registerSingleRoute(router: Router, routeDefinition: RouteDefinition): 
  * @returns 解析后的方法和路径
  */
 function parseRouteFromFilePath(filePath: string): { method: string; path: string } {
-   // 输入验证
-   if (!filePath || typeof filePath !== 'string') {
-      throw new Error('Invalid file path provided');
-   }
+    // 输入验证
+    if (!filePath || typeof filePath !== 'string') {
+        throw new Error('Invalid file path provided');
+    }
 
-   // 验证文件是否为 TypeScript 或 JavaScript 文件
-   const fileExtension = path.extname(filePath);
-   if (fileExtension !== '.ts' && fileExtension !== '.js') {
-      throw new Error(`File must be a TypeScript or JavaScript file: ${filePath}`);
-   }
+    // 验证文件是否为 TypeScript 或 JavaScript 文件
+    const fileExtension = path.extname(filePath);
+    if (fileExtension !== '.ts' && fileExtension !== '.js') {
+        throw new Error(`File must be a TypeScript or JavaScript file: ${filePath}`);
+    }
 
-   // 标准化路径分隔符
-   const normalizedPath = filePath.replace(/\\/g, '/');
+    // 标准化路径分隔符
+    const normalizedPath = filePath.replace(/\\/g, '/');
 
-   // 找到 api 目录的位置
-   const apiIndex = normalizedPath.indexOf('/api/');
-   if (apiIndex === -1) {
-      throw new Error(`File is not in the api directory: ${filePath}`);
-   }
+    // 找到 api 目录的位置
+    const apiIndex = normalizedPath.indexOf('/api/');
+    if (apiIndex === -1) {
+        throw new Error(`File is not in the api directory: ${filePath}`);
+    }
 
-   // 获取 api 目录后的相对路径
-   const relativePath = normalizedPath.substring(apiIndex + 5); // 5 = '/api/'.length
+    // 获取 api 目录后的相对路径
+    const relativePath = normalizedPath.substring(apiIndex + 5); // 5 = '/api/'.length
 
-   // 验证相对路径不为空
-   if (!relativePath) {
-      throw new Error(`Invalid api file path: ${filePath}`);
-   }
+    // 验证相对路径不为空
+    if (!relativePath) {
+        throw new Error(`Invalid api file path: ${filePath}`);
+    }
 
-   // 解析文件名（移除扩展名）
-   const fileName = path.basename(relativePath, fileExtension);
-   const directory = path.dirname(relativePath);
+    // 解析文件名（移除扩展名）
+    const fileName = path.basename(relativePath, fileExtension);
+    const directory = path.dirname(relativePath);
 
-   // 验证文件名不为空
-   if (!fileName) {
-      throw new Error(`Invalid file name: ${filePath}`);
-   }
+    // 验证文件名不为空
+    if (!fileName) {
+        throw new Error(`Invalid file name: ${filePath}`);
+    }
 
-   // 解析 HTTP 方法（从文件名中提取，如 hello.get.ts -> get）
-   const fileParts = fileName.split('.');
-   let method = 'get'; // 默认方法
-   let routeName = fileName;
+    // 解析 HTTP 方法（从文件名中提取，如 hello.get.ts -> get）
+    const fileParts = fileName.split('.');
+    let method = 'get'; // 默认方法
+    let routeName = fileName;
 
-   if (fileParts.length >= 2) {
-      const possibleMethod = fileParts[fileParts.length - 1].toLowerCase();
-      const validMethods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'];
+    if (fileParts.length >= 2) {
+        const possibleMethod = fileParts[fileParts.length - 1].toLowerCase();
+        const validMethods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'];
 
-      if (validMethods.includes(possibleMethod)) {
-         method = possibleMethod;
-         routeName = fileParts.slice(0, -1).join('.');
-      }
-   }
+        if (validMethods.includes(possibleMethod)) {
+            method = possibleMethod;
+            routeName = fileParts.slice(0, -1).join('.');
+        }
+    }
 
-   // 验证路由名称
-   if (!routeName && routeName !== 'index') {
-      throw new Error(`Invalid route name derived from file: ${filePath}`);
-   }
+    // 验证路由名称
+    if (!routeName && routeName !== 'index') {
+        throw new Error(`Invalid route name derived from file: ${filePath}`);
+    }
 
-   // 构建路由路径
-   let routePath = '';
+    // 构建路由路径
+    let routePath = '';
 
-   // 处理目录路径（不处理动态参数，只处理静态路径）
-   if (directory && directory !== '.') {
-      // 验证目录路径格式
-      const directorySegments = directory.split('/');
-      for (const segment of directorySegments) {
-         if (!segment || segment.includes('..') || segment.includes('<') || segment.includes('>')) {
-            throw new Error(`Invalid directory segment in path: ${directory}`);
-         }
-      }
-      routePath = '/' + directory;
-   }
+    // 处理目录路径（不处理动态参数，只处理静态路径）
+    if (directory && directory !== '.') {
+        // 验证目录路径格式
+        const directorySegments = directory.split('/');
+        for (const segment of directorySegments) {
+            if (
+                !segment ||
+                segment.includes('..') ||
+                segment.includes('<') ||
+                segment.includes('>')
+            ) {
+                throw new Error(`Invalid directory segment in path: ${directory}`);
+            }
+        }
+        routePath = '/' + directory;
+    }
 
-   // 添加文件名作为路径（除非是 index）
-   if (routeName && routeName !== 'index') {
-      // 处理动态路由参数（只在文件名级别）
-      if (routeName.startsWith('[') && routeName.endsWith(']')) {
-         const paramName = routeName.slice(1, -1);
-         // 验证参数名格式
-         if (!paramName || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(paramName)) {
-            throw new Error(`Invalid dynamic parameter name: ${paramName} in file ${filePath}`);
-         }
-         routePath += '/:' + paramName;
-      } else {
-         // 验证静态路由名称格式
-         if (!/^[a-zA-Z0-9_-]+$/.test(routeName)) {
-            throw new Error(`Invalid route name format: ${routeName} in file ${filePath}`);
-         }
-         routePath += '/' + routeName;
-      }
-   }
+    // 添加文件名作为路径（除非是 index）
+    if (routeName && routeName !== 'index') {
+        // 处理动态路由参数（只在文件名级别）
+        if (routeName.startsWith('[') && routeName.endsWith(']')) {
+            const paramName = routeName.slice(1, -1);
+            // 验证参数名格式
+            if (!paramName || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(paramName)) {
+                throw new Error(`Invalid dynamic parameter name: ${paramName} in file ${filePath}`);
+            }
+            routePath += '/:' + paramName;
+        } else {
+            // 验证静态路由名称格式
+            if (!/^[a-zA-Z0-9_-]+$/.test(routeName)) {
+                throw new Error(`Invalid route name format: ${routeName} in file ${filePath}`);
+            }
+            routePath += '/' + routeName;
+        }
+    }
 
-   // 确保路径以 / 开头
-   if (!routePath) {
-      routePath = '/';
-   } else if (!routePath.startsWith('/')) {
-      routePath = '/' + routePath;
-   }
+    // 确保路径以 / 开头
+    if (!routePath) {
+        routePath = '/';
+    } else if (!routePath.startsWith('/')) {
+        routePath = '/' + routePath;
+    }
 
-   // 验证最终路径格式
-   if (!/^\/[a-zA-Z0-9\/_:-]*$/.test(routePath)) {
-      throw new Error(
-         `Generated route path contains invalid characters: ${routePath} from file ${filePath}`
-      );
-   }
+    // 验证最终路径格式
+    if (!/^\/[a-zA-Z0-9\/_:-]*$/.test(routePath)) {
+        throw new Error(
+            `Generated route path contains invalid characters: ${routePath} from file ${filePath}`
+        );
+    }
 
-   return { method, path: routePath };
+    return { method, path: routePath };
 }
 
 /**
@@ -579,35 +584,35 @@ function parseRouteFromFilePath(filePath: string): { method: string; path: strin
  * @param apiDir api 目录路径
  */
 export async function scanApiDirectory(apiDir: string): Promise<void> {
-   if (!fs.existsSync(apiDir)) {
-      console.warn(`⚠️ API directory ${apiDir} does not exist`);
-      return;
-   }
+    if (!fs.existsSync(apiDir)) {
+        console.warn(`⚠️ API directory ${apiDir} does not exist`);
+        return;
+    }
 
-   try {
-      const files = await getAllRouteFiles(apiDir);
-      console.log(`📂 Found ${files.length} route files in API directory`);
+    try {
+        const files = await getAllRouteFiles(apiDir);
+        console.log(`📂 Found ${files.length} route files in API directory`);
 
-      // 动态导入所有路由文件
-      for (const file of files) {
-         try {
-            // 使用跨平台路径转换函数
-            const importPath = convertToImportPath(file);
+        // 动态导入所有路由文件
+        for (const file of files) {
+            try {
+                // 使用跨平台路径转换函数
+                const importPath = convertToImportPath(file);
 
-            await import(importPath);
-         } catch (error) {
-            console.error(
-               `❌ Error importing route file ${path.basename(file)}:`,
-               error instanceof Error ? error.message : error
-            );
-         }
-      }
-   } catch (error) {
-      console.error(
-         `❌ Error scanning API directory ${apiDir}:`,
-         error instanceof Error ? error.message : error
-      );
-   }
+                await import(importPath);
+            } catch (error) {
+                console.error(
+                    `❌ Error importing route file ${path.basename(file)}:`,
+                    error instanceof Error ? error.message : error
+                );
+            }
+        }
+    } catch (error) {
+        console.error(
+            `❌ Error scanning API directory ${apiDir}:`,
+            error instanceof Error ? error.message : error
+        );
+    }
 }
 
 /**
@@ -616,42 +621,42 @@ export async function scanApiDirectory(apiDir: string): Promise<void> {
  * @returns 路由文件路径数组
  */
 async function getAllRouteFiles(dir: string): Promise<string[]> {
-   const files: string[] = [];
+    const files: string[] = [];
 
-   try {
-      const items = fs.readdirSync(dir);
+    try {
+        const items = fs.readdirSync(dir);
 
-      for (const item of items) {
-         const fullPath = path.join(dir, item);
+        for (const item of items) {
+            const fullPath = path.join(dir, item);
 
-         try {
-            const stat = fs.statSync(fullPath);
+            try {
+                const stat = fs.statSync(fullPath);
 
-            if (stat.isDirectory()) {
-               const subFiles = await getAllRouteFiles(fullPath);
-               files.push(...subFiles);
-            } else {
-               // 支持 .ts 和 .js 文件，但排除 .d.ts 文件
-               const ext = path.extname(item);
-               if ((ext === '.ts' && !item.endsWith('.d.ts')) || ext === '.js') {
-                  files.push(fullPath);
-               }
+                if (stat.isDirectory()) {
+                    const subFiles = await getAllRouteFiles(fullPath);
+                    files.push(...subFiles);
+                } else {
+                    // 支持 .ts 和 .js 文件，但排除 .d.ts 文件
+                    const ext = path.extname(item);
+                    if ((ext === '.ts' && !item.endsWith('.d.ts')) || ext === '.js') {
+                        files.push(fullPath);
+                    }
+                }
+            } catch (error) {
+                console.error(
+                    `❌ Error accessing file ${fullPath}:`,
+                    error instanceof Error ? error.message : error
+                );
             }
-         } catch (error) {
-            console.error(
-               `❌ Error accessing file ${fullPath}:`,
-               error instanceof Error ? error.message : error
-            );
-         }
-      }
-   } catch (error) {
-      console.error(
-         `❌ Error reading directory ${dir}:`,
-         error instanceof Error ? error.message : error
-      );
-   }
+        }
+    } catch (error) {
+        console.error(
+            `❌ Error reading directory ${dir}:`,
+            error instanceof Error ? error.message : error
+        );
+    }
 
-   return files;
+    return files;
 }
 
 /**
@@ -659,45 +664,45 @@ async function getAllRouteFiles(dir: string): Promise<string[]> {
  * @param router Express Router 实例
  */
 export function registerRoutes(router: Router): void {
-   for (const [filePath, routeDefinition] of routeDefinitions) {
-      const { method, path: routePath, handler } = routeDefinition;
+    for (const [filePath, routeDefinition] of routeDefinitions) {
+        const { method, path: routePath, handler } = routeDefinition;
 
-      try {
-         // 注册路由到 router
-         switch (method.toLowerCase()) {
-            case 'get':
-               router.get(routePath, handler);
-               break;
-            case 'post':
-               router.post(routePath, handler);
-               break;
-            case 'put':
-               router.put(routePath, handler);
-               break;
-            case 'delete':
-               router.delete(routePath, handler);
-               break;
-            case 'patch':
-               router.patch(routePath, handler);
-               break;
-            case 'head':
-               router.head(routePath, handler);
-               break;
-            case 'options':
-               router.options(routePath, handler);
-               break;
-            default:
-               console.warn(`⚠️ Unsupported HTTP method: ${method} for route ${routePath}`);
-         }
-      } catch (error) {
-         console.error(
-            `❌ Failed to register route ${method.toUpperCase()} ${routePath}:`,
-            error instanceof Error ? error.message : error
-         );
-      }
-   }
+        try {
+            // 注册路由到 router
+            switch (method.toLowerCase()) {
+                case 'get':
+                    router.get(routePath, handler);
+                    break;
+                case 'post':
+                    router.post(routePath, handler);
+                    break;
+                case 'put':
+                    router.put(routePath, handler);
+                    break;
+                case 'delete':
+                    router.delete(routePath, handler);
+                    break;
+                case 'patch':
+                    router.patch(routePath, handler);
+                    break;
+                case 'head':
+                    router.head(routePath, handler);
+                    break;
+                case 'options':
+                    router.options(routePath, handler);
+                    break;
+                default:
+                    console.warn(`⚠️ Unsupported HTTP method: ${method} for route ${routePath}`);
+            }
+        } catch (error) {
+            console.error(
+                `❌ Failed to register route ${method.toUpperCase()} ${routePath}:`,
+                error instanceof Error ? error.message : error
+            );
+        }
+    }
 
-   console.log(`✅ Total routes registered: ${routeDefinitions.size}`);
+    console.log(`✅ Total routes registered: ${routeDefinitions.size}`);
 }
 ```
 
@@ -719,24 +724,24 @@ import { registerRoutes, scanApiDirectory, setGlobalRouter } from '../../utils/r
  * 异步导入所有路由文件并注册
  */
 async function setupRoutes(router: Router) {
-   // 设置全局 router，这样路由会在导入时立即注册
-   setGlobalRouter(router);
+    // 设置全局 router，这样路由会在导入时立即注册
+    setGlobalRouter(router);
 
-   // 扫描并注册 API 路由（包括根路由）
-   let apiDir: string;
+    // 扫描并注册 API 路由（包括根路由）
+    let apiDir: string;
 
-   if (__dirname.includes('dist')) {
-      // 生产环境：在 dist 目录中，api 目录就在同级
-      apiDir = path.join(__dirname, 'api');
-   } else {
-      // 开发环境：在 server 目录中
-      apiDir = path.join(__dirname, '../../api');
-   }
+    if (__dirname.includes('dist')) {
+        // 生产环境：在 dist 目录中，api 目录就在同级
+        apiDir = path.join(__dirname, 'api');
+    } else {
+        // 开发环境：在 server 目录中
+        apiDir = path.join(__dirname, '../../api');
+    }
 
-   await scanApiDirectory(apiDir);
+    await scanApiDirectory(apiDir);
 
-   // 作为备用，仍然调用传统的注册方法（如果有剩余的路由）
-   registerRoutes(router);
+    // 作为备用，仍然调用传统的注册方法（如果有剩余的路由）
+    registerRoutes(router);
 }
 
 // 02.register-router.server.ts plugin
@@ -744,7 +749,7 @@ async function setupRoutes(router: Router) {
  * @description register router once
  */
 const defineRouterPlugin = async (router: Router) => {
-   await setupRoutes(router);
+    await setupRoutes(router);
 };
 
 export default defineRouterPlugin;
@@ -777,33 +782,33 @@ if (existsSync(outdir)) rmSync(outdir, { recursive: true });
 
 // 获取所有 TypeScript 文件
 function getAllTsFiles(dir, basePath = dir) {
-   const files = [];
-   const items = readdirSync(dir);
+    const files = [];
+    const items = readdirSync(dir);
 
-   for (const item of items) {
-      const fullPath = join(dir, item);
-      const stat = statSync(fullPath);
+    for (const item of items) {
+        const fullPath = join(dir, item);
+        const stat = statSync(fullPath);
 
-      if (stat.isDirectory()) {
-         files.push(...getAllTsFiles(fullPath, basePath));
-      } else if (item.endsWith('.ts') && !item.endsWith('.d.ts')) {
-         files.push(fullPath);
-      }
-   }
+        if (stat.isDirectory()) {
+            files.push(...getAllTsFiles(fullPath, basePath));
+        } else if (item.endsWith('.ts') && !item.endsWith('.d.ts')) {
+            files.push(fullPath);
+        }
+    }
 
-   return files;
+    return files;
 }
 
 // 打包核心入口
 await build({
-   entryPoints: ['server/main.ts'],
-   outdir,
-   bundle: true,
-   platform: 'node',
-   target: 'node18',
-   format: 'cjs', // 改为 CommonJS 格式
-   sourcemap: true,
-   external: ['fs', 'path', 'url'] // Node 内置模块不打包
+    entryPoints: ['server/main.ts'],
+    outdir,
+    bundle: true,
+    platform: 'node',
+    target: 'node18',
+    format: 'cjs', // 改为 CommonJS 格式
+    sourcemap: true,
+    external: ['fs', 'path', 'url'] // Node 内置模块不打包
 });
 
 // 单独编译所有其他 TypeScript 文件（包括 API 文件）
@@ -811,24 +816,24 @@ const allFiles = getAllTsFiles('server');
 const otherFiles = allFiles.filter((file) => !file.endsWith('main.ts'));
 
 if (otherFiles.length > 0) {
-   await build({
-      entryPoints: otherFiles,
-      outdir,
-      bundle: false,
-      platform: 'node',
-      target: 'node18',
-      format: 'cjs',
-      sourcemap: true,
-      outbase: 'server'
-   });
+    await build({
+        entryPoints: otherFiles,
+        outdir,
+        bundle: false,
+        platform: 'node',
+        target: 'node18',
+        format: 'cjs',
+        sourcemap: true,
+        outbase: 'server'
+    });
 }
 
 // 复制静态文件目录（约定大于配置：只有当 server/public/static 存在时才复制整个 public 目录）
 if (existsSync('server/public/static')) {
-   cpSync('server/public', `${outdir}/public`, { recursive: true });
-   console.log('📁 Static files copied to dist/public (triggered by server/public/static)');
+    cpSync('server/public', `${outdir}/public`, { recursive: true });
+    console.log('📁 Static files copied to dist/public (triggered by server/public/static)');
 } else {
-   console.log('ℹ️  No server/public/static directory found, skipping static files copy');
+    console.log('ℹ️  No server/public/static directory found, skipping static files copy');
 }
 
 console.log('✅ Build completed successfully!');
@@ -861,26 +866,27 @@ import { pipeline } from 'node:stream/promises';
 
 //压缩
 async function compressFile(inputPath, outputPath, useGzip = true) {
-   await pipeline(
-      createReadStream(inputPath, { highWaterMark: 16 * 1024 * 1024 }), // 16MB 分块，示例
-      useGzip ? createGzip() : createDeflate(),
-      createWriteStream(outputPath)
-   );
-   console.log('压缩完成:', outputPath);
+    await pipeline(
+        createReadStream(inputPath, { highWaterMark: 16 * 1024 * 1024 }), // 16MB 分块，示例
+        useGzip ? createGzip() : createDeflate(),
+        createWriteStream(outputPath)
+    );
+    console.log('压缩完成:', outputPath);
 }
 
 //解压
 async function decompressFile(inputPath, outputPath, isGzip = true) {
-   await pipeline(
-      createReadStream(inputPath),
-      isGzip ? createGunzip() : createInflate(),
-      createWriteStream(outputPath)
-   );
-   console.log('解压完成:', outputPath);
+    await pipeline(
+        createReadStream(inputPath),
+        isGzip ? createGunzip() : createInflate(),
+        createWriteStream(outputPath)
+    );
+    console.log('解压完成:', outputPath);
 }
 ```
 
 **小文件处理示例**
+
 ::: code-group-fold line-numbers
 
 ```ts [demo-small-file-handle.ts]
@@ -890,38 +896,38 @@ import { createReadStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises'; // 使用 Promise 版本的 pipeline
 
 export const setupDefaultRoute = (router: Router) => {
-   router.get('/', async (req, res) => {
-      try {
-         // 设置响应头
-         res.setHeader('Content-Encoding', 'gzip');
-         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    router.get('/', async (req, res) => {
+        try {
+            // 设置响应头
+            res.setHeader('Content-Encoding', 'gzip');
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
 
-         // 创建读取流和 Gzip 转换流
-         const readStream = createReadStream('./src/test.txt', { encoding: 'utf-8' });
-         const gzipStream = createGzip();
-         const deflateStream = createDeflate();
-         // pipeline 会将 readStream → gzipStream → res
-         await pipeline(
-            readStream, // 源：文件读取流
-            gzipStream, // 转换：Gzip 压缩,gzip
-            res // 目标：HTTP 响应
-         );
+            // 创建读取流和 Gzip 转换流
+            const readStream = createReadStream('./src/test.txt', { encoding: 'utf-8' });
+            const gzipStream = createGzip();
+            const deflateStream = createDeflate();
+            // pipeline 会将 readStream → gzipStream → res
+            await pipeline(
+                readStream, // 源：文件读取流
+                gzipStream, // 转换：Gzip 压缩,gzip
+                res // 目标：HTTP 响应
+            );
 
-         //deflate 压缩
-         // await pipeline(
-         //   readStream,
-         //   deflateStream, // 转换：Deflate 压缩
-         //   res            // 目标：HTTP 响应
-         // )
+            //deflate 压缩
+            // await pipeline(
+            //   readStream,
+            //   deflateStream, // 转换：Deflate 压缩
+            //   res            // 目标：HTTP 响应
+            // )
 
-         console.log('文件已成功压缩并发送');
-      } catch {
-         // 如果响应头还没发送，可以发送错误状态
-         if (!res.headersSent) {
-            res.status(500).send('服务器内部错误');
-         }
-      }
-   });
+            console.log('文件已成功压缩并发送');
+        } catch {
+            // 如果响应头还没发送，可以发送错误状态
+            if (!res.headersSent) {
+                res.status(500).send('服务器内部错误');
+            }
+        }
+    });
 };
 ```
 
@@ -957,21 +963,21 @@ export const setupDefaultRoute = (router: Router) => {
 
 ```json
 {
-   "compilerOptions": {
-      "target": "ES6",
-      /* Modules */
-      "module": "NodeNext" /* 指定生成的模块代码.Node ESM推荐 */,
-      "moduleResolution": "NodeNext" /* 让ts模块解析逻辑完全匹配Nodejs的ESM解析规则*/,
-      "rootDir": ".",
-      "resolveJsonModule": true /* 启用导入.json文件. */,
-      "baseUrl": "./",
-      "outDir": "./dist",
-      "esModuleInterop": true /** commonjs支持 */,
-      "forceConsistentCasingInFileNames": true,
-      "strict": true,
-      "skipLibCheck": true
-   },
-   "exclude": ["node_modules", "dist"]
+    "compilerOptions": {
+        "target": "ES6",
+        /* Modules */
+        "module": "NodeNext" /* 指定生成的模块代码.Node ESM推荐 */,
+        "moduleResolution": "NodeNext" /* 让ts模块解析逻辑完全匹配Nodejs的ESM解析规则*/,
+        "rootDir": ".",
+        "resolveJsonModule": true /* 启用导入.json文件. */,
+        "baseUrl": "./",
+        "outDir": "./dist",
+        "esModuleInterop": true /** commonjs支持 */,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "skipLibCheck": true
+    },
+    "exclude": ["node_modules", "dist"]
 }
 ```
 

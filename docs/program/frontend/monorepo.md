@@ -48,17 +48,17 @@ outline: [2, 3]
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-   entry: ['src/index.ts'], //入口文件
-   splitting: false, //代码分割
-   sourcemap: false, //源码地图
-   clean: true, //构建前清理dist目录
-   dts: true, //dts生成
-   format: ['esm', 'cjs'], //格式
-   publicDir: 'src/assets', //资源目录
-   outExtension: ({ format }) => ({
-      js: format === 'esm' ? '.mjs' : '.cjs',
-      dts: '.d.ts'
-   })
+    entry: ['src/index.ts'], //入口文件
+    splitting: false, //代码分割
+    sourcemap: false, //源码地图
+    clean: true, //构建前清理dist目录
+    dts: true, //dts生成
+    format: ['esm', 'cjs'], //格式
+    publicDir: 'src/assets', //资源目录
+    outExtension: ({ format }) => ({
+        js: format === 'esm' ? '.mjs' : '.cjs',
+        dts: '.d.ts'
+    })
 });
 ```
 
@@ -75,14 +75,14 @@ tsup**不好**的就是热更新HMR，虽然提供了watch，使用`tsup --watch
 
 ```json
 {
-   "exports": {
-      ".": {
-         "types": "./dist/index.d.ts",
-         "development": "./src/index.ts", //[!code ++]
-         "import": "./dist/index.mjs",
-         "require": "./dist/index.cjs"
-      }
-   }
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "development": "./src/index.ts", //[!code ++]
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.cjs"
+        }
+    }
 }
 ```
 
@@ -119,25 +119,25 @@ tsup**不好**的就是热更新HMR，虽然提供了watch，使用`tsup --watch
 import { defineBuildConfig } from 'unbuild';
 
 export default defineBuildConfig({
-   entries: [
-      // 处理 Vue 文件，需要vue-tsc支持
-      {
-         builder: 'mkdist',
-         input: './src',
-         loaders: ['vue'],
-         pattern: ['**/*.vue']
-      },
-      // TS->JS 转换
-      {
-         builder: 'mkdist',
-         input: './src',
-         format: 'esm',
-         loaders: ['js'],
-         pattern: ['**/*.ts']
-      }
-   ],
-   declaration: true,
-   clean: true
+    entries: [
+        // 处理 Vue 文件，需要vue-tsc支持
+        {
+            builder: 'mkdist',
+            input: './src',
+            loaders: ['vue'],
+            pattern: ['**/*.vue']
+        },
+        // TS->JS 转换
+        {
+            builder: 'mkdist',
+            input: './src',
+            format: 'esm',
+            loaders: ['js'],
+            pattern: ['**/*.ts']
+        }
+    ],
+    declaration: true,
+    clean: true
 });
 ```
 
@@ -194,11 +194,11 @@ eslint由于第三方开发者更新的原因，因此版本不一致问题是�
 ```jsonc
 //package.json
 {
-   "pnpm": {
-      "overrides": {
-         "esbuild": "^0.27.0" //间接依赖，锁定最新版本
-      }
-   }
+    "pnpm": {
+        "overrides": {
+            "esbuild": "^0.27.0" //间接依赖，锁定最新版本
+        }
+    }
 }
 ```
 
@@ -231,15 +231,15 @@ turborepo根据锁文件来理解项目中不同包之间的依赖，
 ```jsonc
 //turbo.json
 {
-   "tasks": {
-      //使用 !进行排除，例如排除cache文件，`!cache/***`
-      "build": {
-         //!这个input只会追踪md文件，此时会覆盖掉默认Git规则
-         //TODO 保留默认规则：`"$TURBO_DEFAULT$"`加上这个即可
-         "inputs": ["**/*.md"], //[!code ++]
-         "outputs": ["dist/**"] //[!code ++]
-      }
-   }
+    "tasks": {
+        //使用 !进行排除，例如排除cache文件，`!cache/***`
+        "build": {
+            //!这个input只会追踪md文件，此时会覆盖掉默认Git规则
+            //TODO 保留默认规则：`"$TURBO_DEFAULT$"`加上这个即可
+            "inputs": ["**/*.md"], //[!code ++]
+            "outputs": ["dist/**"] //[!code ++]
+        }
+    }
 }
 ```
 

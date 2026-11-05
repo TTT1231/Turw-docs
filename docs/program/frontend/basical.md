@@ -111,7 +111,7 @@ srcset提供多个图片源，让游览器自行选择（要提供多个图片�
 ```js
 //其中 1x表示DPR的值，要保持上诉公式成立
 <img
-   srcset="
+    srcset="
     example.com/id/img1_1 1x,
     example.com/id/img1_2 2x, 
 "
@@ -125,13 +125,13 @@ img还有一个size属性，目的时在告诉游览器在不同视口（viewpor
 //当视口宽度<= 600px时，图片显示宽度为400ox;
 //其他情况下，图片显示宽度为800px
 <img
-   srcset="
+    srcset="
     example.com/id/img1_400.jpg 400w,
     example.com/id/img1_800.jpg 800w
   "
-   sizes="(max-width: 600px) 400px, 800px"
-   src="example.com/id/img1_800.jpg"
-   alt="示例图片"
+    sizes="(max-width: 600px) 400px, 800px"
+    src="example.com/id/img1_800.jpg"
+    alt="示例图片"
 />
 ```
 
@@ -219,13 +219,13 @@ for (const c of arr){} // for .. of
 ```js [demo.js]
 const GREET = Symbol('Gret');
 class A {
-   constructor() {
-      this.__value = Symbol('value');
-   }
-   //特别注意这里，因为Symbol('Gret')!=Symbol('Gret') 所有必须要其引用，避免无法调用.
-   [GREET]() {
-      console.log('你好啊' + [this.__value]);
-   }
+    constructor() {
+        this.__value = Symbol('value');
+    }
+    //特别注意这里，因为Symbol('Gret')!=Symbol('Gret') 所有必须要其引用，避免无法调用.
+    [GREET]() {
+        console.log('你好啊' + [this.__value]);
+    }
 }
 const a = new A();
 a[GREET]();
@@ -261,22 +261,23 @@ set(target,propertyKey,value,receiver),set拦截器。
 
 //使用示例
 const obj = {
-   _a: 'testVal'
+    _a: 'testVal'
 };
 
 const proxy = new Proxy(obj, {
-   get(target, propertyKey, receiver) {
-      // 保证getter里的this指向proxy
-      return Reflect.get(target, propertyKey, receiver);
-   },
-   set(target, propertyKey, value, receiver) {
-      // 保证setter里的this指向proxy
-      return Reflect.set(target, propertyKey, value, receiver);
-   }
+    get(target, propertyKey, receiver) {
+        // 保证getter里的this指向proxy
+        return Reflect.get(target, propertyKey, receiver);
+    },
+    set(target, propertyKey, value, receiver) {
+        // 保证setter里的this指向proxy
+        return Reflect.set(target, propertyKey, value, receiver);
+    }
 });
 ```
 
 :::
+
 ::: tip 提示
 当代理用完不想用时，或者代理就使用一次，就可以**取消代理**Proxy.revocable revocable:可撤销的，可取消的
 :::
@@ -296,12 +297,12 @@ const p2 = Promise.reject('error');
 const p3 = Promise.resolve(3);
 
 Promise.allSettled([p1, p2, p3]).then((results) => {
-   console.log(results);
-   // [
-   //   { status: 'fulfilled', value: 1 },
-   //   { status: 'rejected', reason: 'error' },
-   //   { status: 'fulfilled', value: 3 }
-   // ]
+    console.log(results);
+    // [
+    //   { status: 'fulfilled', value: 1 },
+    //   { status: 'rejected', reason: 'error' },
+    //   { status: 'fulfilled', value: 3 }
+    // ]
 });
 ```
 
@@ -514,9 +515,9 @@ export function propertyDecorator<T extends Object, Value>() {
 
 如果项目中有`Web`和`H5`情况下，去做移动端适配时，考虑业务方向来进行技术选型。
 
-- 以`Web`为主，`H5`为辅（使用比较低情况下），且不是主要业务方向，那么这里就可以考虑使用`taidwindcss`和`媒体查询@media`进行辅助适配。
+- 以`Web`为主，`H5`为辅（使用比较低情况下），且不是主要业务方向，那么这里就可以考虑使用`tailwindcss`和`媒体查询@media`进行辅助适配。
 
-- 以`Web`为主，`H5`为辅（使用中等情况下），那么这里就可以考虑使用`taidwindcss`和`媒体查询@media`并结合`rem`和`vw/vh`视口进行适配。
+- 以`Web`为主，`H5`为辅（使用中等情况下），那么这里就可以考虑使用`tailwindcss`和`媒体查询@media`并结合`rem`和`vw/vh`视口进行适配。
 
 - 业务复杂，`Web`为主，`H5`为主，此时那么就考虑移动端`H5`和`Web`分成两个组件写且样式进行隔离，不用一套代码进行适配，这样开发成本和维护成本都比较友好，这时候就可以根据平板尺寸`tailwind md`来进行判断是否是移动端，来适配两个不同组件。
 
@@ -531,7 +532,6 @@ export function propertyDecorator<T extends Object, Value>() {
 ::: tip 提示
 `媒体查询@media`写的话去适配不同设备尺寸，可能会面临css代码过多，可以完全抛弃它，选用`tailwindcss`中`sm`、`md`、`lg`、`xl`效果也是一样的，在快速开发下速度也快，维护也好。
 :::
-
 
 ## 安全
 
@@ -644,71 +644,71 @@ line-number：资源出现问题的代码行号。
 ```ts
 import crypto from 'crypto';
 export default defineEventHandler((event) => {
-   const res = event.node.res;
-   const isDev = process.env.NODE_ENV === 'development';
-   const url = event.node.req.url || '';
-   const isApiRoute = url.startsWith('/api/');
+    const res = event.node.res;
+    const isDev = process.env.NODE_ENV === 'development';
+    const url = event.node.req.url || '';
+    const isApiRoute = url.startsWith('/api/');
 
-   // 为本次请求生成 nonce
-   const nonce = crypto.randomBytes(16).toString('base64');
-   event.context.cspNonce = nonce;
+    // 为本次请求生成 nonce
+    const nonce = crypto.randomBytes(16).toString('base64');
+    event.context.cspNonce = nonce;
 
-   const reportUri = 'http://localhost:7001/csp-report';
+    const reportUri = 'http://localhost:7001/csp-report';
 
-   // API 路由简单策略
-   if (isApiRoute) {
-      const apiCsp = [
-         "default-src 'none'",
-         "connect-src 'self' http://localhost:7001",
-         `report-uri ${reportUri}`
-      ].join('; ');
-      res.setHeader('Content-Security-Policy', apiCsp);
-      return;
-   }
+    // API 路由简单策略
+    if (isApiRoute) {
+        const apiCsp = [
+            "default-src 'none'",
+            "connect-src 'self' http://localhost:7001",
+            `report-uri ${reportUri}`
+        ].join('; ');
+        res.setHeader('Content-Security-Policy', apiCsp);
+        return;
+    }
 
-   // 公共指令
-   const commonDirectives = [
-      "img-src 'self' data: blob:",
-      "base-uri 'self'",
-      "form-action 'self'",
-      `report-uri ${reportUri}`
-   ];
+    // 公共指令
+    const commonDirectives = [
+        "img-src 'self' data: blob:",
+        "base-uri 'self'",
+        "form-action 'self'",
+        `report-uri ${reportUri}`
+    ];
 
-   let modeDirectives: string[];
+    let modeDirectives: string[];
 
-   if (isDev) {
-      // 开发模式差异部分
-      modeDirectives = [
-         'default-src * data: blob:',
-         "script-src * 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*",
-         "script-src-elem * 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*",
-         "style-src * 'unsafe-inline'",
-         'connect-src * ws://localhost:* http://localhost:* http://127.0.0.1:*',
-         'font-src * data:',
-         'frame-src *',
-         "object-src 'none'",
-         'frame-ancestors *'
-      ];
-   } else {
-      // 生产模式差异部分
-      modeDirectives = [
-         "default-src 'self'",
-         `script-src 'self' 'nonce-${nonce}'`,
-         `script-src-elem 'self' 'nonce-${nonce}'`,
-         "style-src 'self' 'unsafe-inline'",
-         "connect-src 'self' http://localhost:7001",
-         "font-src 'self' data:",
-         "frame-src 'none'",
-         "object-src 'none'",
-         "frame-ancestors 'none'",
-         'upgrade-insecure-requests',
-         'block-all-mixed-content'
-      ];
-   }
+    if (isDev) {
+        // 开发模式差异部分
+        modeDirectives = [
+            'default-src * data: blob:',
+            "script-src * 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*",
+            "script-src-elem * 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*",
+            "style-src * 'unsafe-inline'",
+            'connect-src * ws://localhost:* http://localhost:* http://127.0.0.1:*',
+            'font-src * data:',
+            'frame-src *',
+            "object-src 'none'",
+            'frame-ancestors *'
+        ];
+    } else {
+        // 生产模式差异部分
+        modeDirectives = [
+            "default-src 'self'",
+            `script-src 'self' 'nonce-${nonce}'`,
+            `script-src-elem 'self' 'nonce-${nonce}'`,
+            "style-src 'self' 'unsafe-inline'",
+            "connect-src 'self' http://localhost:7001",
+            "font-src 'self' data:",
+            "frame-src 'none'",
+            "object-src 'none'",
+            "frame-ancestors 'none'",
+            'upgrade-insecure-requests',
+            'block-all-mixed-content'
+        ];
+    }
 
-   // 合并模式指令和公共指令
-   const csp = [...modeDirectives, ...commonDirectives].join('; ');
-   res.setHeader('Content-Security-Policy', csp);
+    // 合并模式指令和公共指令
+    const csp = [...modeDirectives, ...commonDirectives].join('; ');
+    res.setHeader('Content-Security-Policy', csp);
 });
 ```
 
@@ -719,24 +719,24 @@ export default defineEventHandler((event) => {
 ```ts
 //这个render:response会在渲染html完后，准备向客户端返回触发。
 export default defineNitroPlugin((nitroApp) => {
-   nitroApp.hooks.hook('render:response', (response, { event }) => {
-      const nonce = event.context.cspNonce as string | undefined;
-      if (!nonce) return;
-      if (!response.body || typeof response.body !== 'string') return;
+    nitroApp.hooks.hook('render:response', (response, { event }) => {
+        const nonce = event.context.cspNonce as string | undefined;
+        if (!nonce) return;
+        if (!response.body || typeof response.body !== 'string') return;
 
-      // 只处理 HTML
-      const headers = response.headers || {};
-      const contentType = (headers['content-type'] || headers['Content-Type'] || '') as string;
-      if (!contentType.includes('text/html')) return;
+        // 只处理 HTML
+        const headers = response.headers || {};
+        const contentType = (headers['content-type'] || headers['Content-Type'] || '') as string;
+        if (!contentType.includes('text/html')) return;
 
-      // 给没有 nonce 的 <script> / <style> 标签自动加上 nonce
-      // 注意：避免重复添加（用负向前瞻排除已有 nonce）
-      response.body = response.body
-         // 匹配 <script 开头的标签，排除已带 nonce 的
-         .replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`)
-         // 匹配 <style 开头的标签，排除已带 nonce 的
-         .replace(/<style\b(?![^>]*\bnonce=)/g, `<style nonce="${nonce}"`);
-   });
+        // 给没有 nonce 的 <script> / <style> 标签自动加上 nonce
+        // 注意：避免重复添加（用负向前瞻排除已有 nonce）
+        response.body = response.body
+            // 匹配 <script 开头的标签，排除已带 nonce 的
+            .replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`)
+            // 匹配 <style 开头的标签，排除已带 nonce 的
+            .replace(/<style\b(?![^>]*\bnonce=)/g, `<style nonce="${nonce}"`);
+    });
 });
 ```
 

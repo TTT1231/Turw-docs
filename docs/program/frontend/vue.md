@@ -70,11 +70,11 @@ const targetMap = new WeakMap<object, KeyToDepMap>()              // [!code warn
 ```ts [demo.ts]
 //Promise缓存
 const cache: {
-   status: 'pending' | 'fulfilled' | 'rejected';
-   data: any;
+    status: 'pending' | 'fulfilled' | 'rejected';
+    data: any;
 } = {
-   status: 'pending',
-   data: null
+    status: 'pending',
+    data: null
 };
 
 //当前正在进行的Promise
@@ -82,58 +82,58 @@ let currentPromise: Promise<any> | null = null;
 
 //异步源头，转化同步代码===========主要解决这里========= // [!code warning]
 function asyncToSync() {
-   const targetRequestPromise = () => $fetch('example', { method: '[target]' }); //nuxt
+    const targetRequestPromise = () => $fetch('example', { method: '[target]' }); //nuxt
 
-   if (cache.status === 'fulfilled') {
-      return cache.data;
-   }
+    if (cache.status === 'fulfilled') {
+        return cache.data;
+    }
 
-   if (cache.status === 'pending') {
-      //当前没有promise在进行
-      if (!currentPromise) {
-         currentPromise = targetRequestPromise()
-            .then((res) => {
-               cache.status = 'fulfilled';
-               cache.data = res.data;
-               currentPromise = null;
-            })
-            .cache((error) => {
-               cache.status = 'rejected';
-               cache.data = err ?? new Error('Unknown error');
-               currentPromise = null;
-            });
-      }
+    if (cache.status === 'pending') {
+        //当前没有promise在进行
+        if (!currentPromise) {
+            currentPromise = targetRequestPromise()
+                .then((res) => {
+                    cache.status = 'fulfilled';
+                    cache.data = res.data;
+                    currentPromise = null;
+                })
+                .cache((error) => {
+                    cache.status = 'rejected';
+                    cache.data = err ?? new Error('Unknown error');
+                    currentPromise = null;
+                });
+        }
 
-      //已有promise，直接抛出错误，交给外层cache执行
-      throw currentPromise;
-   }
+        //已有promise，直接抛出错误，交给外层cache执行
+        throw currentPromise;
+    }
 
-   //请求失败了,下次请求失败后续都会抛出这个错误，除非重置cache。
-   // 注：由于这里是同步在这做请求重试会死循环
-   if (cache.status === 'rejected') {
-      throw cache.data;
-   }
+    //请求失败了,下次请求失败后续都会抛出这个错误，除非重置cache。
+    // 注：由于这里是同步在这做请求重试会死循环
+    if (cache.status === 'rejected') {
+        throw cache.data;
+    }
 }
 
 function callSync() {
-   return asyncToSync();
+    return asyncToSync();
 }
 
 function main() {
-   try {
-      console.log('run main');
-      const data = callSync();
-   } catch (error) {
-      if (error instanceof Promise) {
-         error.finally?.(() => {
-            main();
-         });
-      } else {
-         //返回了不是promise错误对象，请求失败
-         //=========可以在这做请求重试===========
-         //if-else判断即可，但是注意重置缓存状态
-      }
-   }
+    try {
+        console.log('run main');
+        const data = callSync();
+    } catch (error) {
+        if (error instanceof Promise) {
+            error.finally?.(() => {
+                main();
+            });
+        } else {
+            //返回了不是promise错误对象，请求失败
+            //=========可以在这做请求重试===========
+            //if-else判断即可，但是注意重置缓存状态
+        }
+    }
 }
 ```
 
@@ -145,21 +145,21 @@ function main() {
 
 ```vue [Qwe.vue]
 <template>
-   <slot greet="hi hello" />
-   <slot reply="yes you too" name="named slot" />
+    <slot greet="hi hello" />
+    <slot reply="yes you too" name="named slot" />
 </template>
 ```
 
 ```vue [Base.vue]
 <template>
-   <Qwe>
-      <template #eric>
-         <h3>这是来自 App 组件的具名插槽内容</h3>
-      </template>
-      <template #default="slotProps">
-         <div>这是默认内容{{ slotProps.greet }}</div>
-      </template>
-   </Qwe>
+    <Qwe>
+        <template #eric>
+            <h3>这是来自 App 组件的具名插槽内容</h3>
+        </template>
+        <template #default="slotProps">
+            <div>这是默认内容{{ slotProps.greet }}</div>
+        </template>
+    </Qwe>
 </template>
 ```
 
@@ -221,16 +221,16 @@ import vue from '@vitejs/plugin-vue';
 
 // https://vite.dev/config/
 export default defineConfig({
-   plugins: [vue()],
-   server: {
-      proxy: {
-         '/javaserver': {
-            target: 'http://127.0.0.1:7002',
-            changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/javaserver/, '')
-         }
-      }
-   }
+    plugins: [vue()],
+    server: {
+        proxy: {
+            '/javaserver': {
+                target: 'http://127.0.0.1:7002',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/javaserver/, '')
+            }
+        }
+    }
 });
 ```
 
@@ -268,33 +268,33 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
-   plugins: [vue()],
-   //[!code ++]
-   server: {
-      proxy: {
-         '/api': {
-            target: 'your-example.ip', // 动态设置代理目标
-            changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
-            // 添加更多配置选项
-            configure: (proxy) => {
-               //目标服务不可用情况
-               proxy.on('error', (err) => {
-                  console.log('❌ 代理错误:', err.message);
-               });
-               //代理请求发出前，一般记录请求日志/修改请求头
-               proxy.on('proxyReq', (proxyReq, req) => {
-                  console.log('📤 代理请求:', req.method, req.url, '→', proxyTarget);
-               });
-               //收到响应后，一般记录响应日志/修改响应数据
-               proxy.on('proxyRes', (proxyRes, req) => {
-                  console.log('📥 代理响应:', proxyRes.statusCode, req.url);
-               });
+    plugins: [vue()],
+    //[!code ++]
+    server: {
+        proxy: {
+            '/api': {
+                target: 'your-example.ip', // 动态设置代理目标
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, ''),
+                // 添加更多配置选项
+                configure: (proxy) => {
+                    //目标服务不可用情况
+                    proxy.on('error', (err) => {
+                        console.log('❌ 代理错误:', err.message);
+                    });
+                    //代理请求发出前，一般记录请求日志/修改请求头
+                    proxy.on('proxyReq', (proxyReq, req) => {
+                        console.log('📤 代理请求:', req.method, req.url, '→', proxyTarget);
+                    });
+                    //收到响应后，一般记录响应日志/修改响应数据
+                    proxy.on('proxyRes', (proxyRes, req) => {
+                        console.log('📥 代理响应:', proxyRes.statusCode, req.url);
+                    });
+                }
             }
-         }
-      }
-      //[!code ++]
-   }
+        }
+        //[!code ++]
+    }
 });
 ```
 
@@ -319,41 +319,41 @@ import Inspect from 'vite-plugin-inspect';
 
 // https://vite.dev/config/
 export default defineConfig({
-   plugins: [
-      vue(),
-      Inspect({
-         enabled: true,
-         build: true,
-         exclude: /node_modules/
-      })
-   ],
-   build: {
-      minify: 'terser', //默认
-      sourcemap: false,
-      cssCodeSplit: true, //css代码分离 // [!code warning]
-      terserOptions: {
-         //具体也可参考 https://terser.org/docs/api-reference/#minify-options
-         /**
-          * compress 压缩选项  // [!code error]
-          * format   格式选项  // [!code error]
-          * mangle   混淆选项  // [!code error]
-          */
-         //@ts-ignore `terser` may not be installed
-         compress: {
-            drop_console: true, // 删除console           // [!code warning]
-            drop_debugger: true, // 删除调试断点         // [!code warning]
-            arguments: true, // 删除未使用的函数参数     // [!code warning]
-            unused: true, // 删除未使用的变量           // [!code warning]
-            dead_code: true // 删除死代码             // [!code warning]
-         },
-         format: {
-            comments: false // 删除注释             // [!code warning]
-         },
-         mangle: {
-            toplevel: true //混淆顶级变量名        // [!code warning]
-         }
-      }
-   }
+    plugins: [
+        vue(),
+        Inspect({
+            enabled: true,
+            build: true,
+            exclude: /node_modules/
+        })
+    ],
+    build: {
+        minify: 'terser', //默认
+        sourcemap: false,
+        cssCodeSplit: true, //css代码分离 // [!code warning]
+        terserOptions: {
+            //具体也可参考 https://terser.org/docs/api-reference/#minify-options
+            /**
+             * compress 压缩选项  // [!code error]
+             * format   格式选项  // [!code error]
+             * mangle   混淆选项  // [!code error]
+             */
+            //@ts-ignore `terser` may not be installed
+            compress: {
+                drop_console: true, // 删除console           // [!code warning]
+                drop_debugger: true, // 删除调试断点         // [!code warning]
+                arguments: true, // 删除未使用的函数参数     // [!code warning]
+                unused: true, // 删除未使用的变量           // [!code warning]
+                dead_code: true // 删除死代码             // [!code warning]
+            },
+            format: {
+                comments: false // 删除注释             // [!code warning]
+            },
+            mangle: {
+                toplevel: true //混淆顶级变量名        // [!code warning]
+            }
+        }
+    }
 });
 ```
 
@@ -368,27 +368,27 @@ export default defineConfig({
 ```ts [demo.ts]
 //options
 ViteImagemin({
-   gifsicle: {
-      optimizationLevel: 3, // 设置 GIF 压缩等级（0-3）      // [!code warning]
-      interlaced: false // 是否进行逐行扫描优化              // [!code warning]
-   },
-   optipng: {
-      optimizationLevel: 5 // 设置 PNG 压缩等级（0-7）      // [!code warning]
-   },
-   mozjpeg: {
-      quality: 75 // 设置 JPEG 压缩质量（0-100）            // [!code warning]
-   },
-   pngquant: {
-      quality: [0.6, 0.8] // 设置 PNG 压缩质量范围          // [!code warning]
-   },
-   svgo: {
-      plugins: [
-         { removeViewBox: false } // 保留视图框            // [!code warning]
-      ]
-   },
-   webp: {
-      quality: 75 // 设置 WebP 图片质量                    // [!code warning]
-   }
+    gifsicle: {
+        optimizationLevel: 3, // 设置 GIF 压缩等级（0-3）      // [!code warning]
+        interlaced: false // 是否进行逐行扫描优化              // [!code warning]
+    },
+    optipng: {
+        optimizationLevel: 5 // 设置 PNG 压缩等级（0-7）      // [!code warning]
+    },
+    mozjpeg: {
+        quality: 75 // 设置 JPEG 压缩质量（0-100）            // [!code warning]
+    },
+    pngquant: {
+        quality: [0.6, 0.8] // 设置 PNG 压缩质量范围          // [!code warning]
+    },
+    svgo: {
+        plugins: [
+            { removeViewBox: false } // 保留视图框            // [!code warning]
+        ]
+    },
+    webp: {
+        quality: 75 // 设置 WebP 图片质量                    // [!code warning]
+    }
 });
 ```
 
@@ -433,38 +433,38 @@ import { createHash } from 'node:crypto';
 
 // 从数据库查询数据
 const getDBQuery = () => {
-   return {
-      data: {
-         message: 'db data'
-      }
-   };
+    return {
+        data: {
+            message: 'db data'
+        }
+    };
 };
 
 // 生成基于数据内容的哈希值，用作 ETag，可以改用更加高效的hash函数
 const generateETag = (data) => {
-   const hash = createHash('sha256');
-   hash.update(JSON.stringify(data)); // 用数据内容生成哈希值
-   return `"${hash.digest('base64')}"`; // 返回哈希值作为 ETag
+    const hash = createHash('sha256');
+    hash.update(JSON.stringify(data)); // 用数据内容生成哈希值
+    return `"${hash.digest('base64')}"`; // 返回哈希值作为 ETag
 };
 
 // API 路由
 app.get('/api/data', (req, res, next) => {
-   // 获取数据库数据
-   const dbData = getDBQuery().data;
-   // 生成 ETag 信息，基于数据内容的哈希
-   const etag = generateETag(dbData);
-   // 设置响应头
-   res.setHeader('ETag', etag);
-   // 获取请求头中的 If-None-Match
-   const ifNoneMatch = req.headers['if-none-match'];
-   // 检查 If-None-Match
-   if (ifNoneMatch === etag) {
-      // 如果数据没有变化，返回 304 Not Modified
-      return res.status(304).end();
-   }
+    // 获取数据库数据
+    const dbData = getDBQuery().data;
+    // 生成 ETag 信息，基于数据内容的哈希
+    const etag = generateETag(dbData);
+    // 设置响应头
+    res.setHeader('ETag', etag);
+    // 获取请求头中的 If-None-Match
+    const ifNoneMatch = req.headers['if-none-match'];
+    // 检查 If-None-Match
+    if (ifNoneMatch === etag) {
+        // 如果数据没有变化，返回 304 Not Modified
+        return res.status(304).end();
+    }
 
-   // 返回数据
-   res.json(dbData);
+    // 返回数据
+    res.json(dbData);
 });
 ```
 
@@ -479,15 +479,15 @@ Cache-Control中，public表示任何服务器都可以缓存，而private只能
 ```ts [cacheControl.ts]
 //注意
 app.get('/api/data', (req, res) => {
-   // 获取数据库数据
-   const dbData = getDBQuery().data;
+    // 获取数据库数据
+    const dbData = getDBQuery().data;
 
-   // 强缓存：设置 Cache-Control 和 Expires
-   res.setHeader('Cache-Control', 'public, max-age=3600'); // 缓存 1 小时（3600 秒）
-   res.setHeader('Expires', new Date(Date.now() + 3600 * 1000).toUTCString()); // 过期时间设置为当前时间 + 1 小时
+    // 强缓存：设置 Cache-Control 和 Expires
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // 缓存 1 小时（3600 秒）
+    res.setHeader('Expires', new Date(Date.now() + 3600 * 1000).toUTCString()); // 过期时间设置为当前时间 + 1 小时
 
-   // 返回数据
-   res.json(dbData);
+    // 返回数据
+    res.json(dbData);
 });
 ```
 
@@ -509,72 +509,72 @@ app.get('/api/data', (req, res) => {
 
 ```json [demo.json]
 [
-   {
-      "path": "/main",
-      "name": "main",
-      "component": "MainForm",
-      "meta": {
-         "ishome": true
-      },
-      "children": [
-         {
-            "path": "home",
-            "name": "home",
-            "children": [
-               {
-                  "path": "analysis",
-                  "name": "analysis",
-                  "component": "sys/home/Analysis"
-               },
-               {
-                  "path": "workbench",
-                  "name": "workbench",
-                  "component": "sys/home/WorkBench",
-                  "meta": {
-                     "ishide": true
-                  }
-               }
-            ]
-         },
-         {
-            "path": "/:patchMatch(.*)",
-            "name": "error",
-            "component": "error/Error"
-         },
-         {
-            "path": "systemanager",
-            "name": "systemanager",
-            "children": [
-               {
-                  "path": "usermanager",
-                  "name": "usermanager",
-                  "component": "sys/systemanager/UserManager"
-               },
-               {
-                  "path": "menumanager",
-                  "name": "menumanager",
-                  "component": "sys/systemanager/MenuManager"
-               }
-            ]
-         },
-         {
-            "path": "fun",
-            "name": "fun",
-            "children": [
-               {
-                  "path": "shotscreen",
-                  "name": "shotscreen",
-                  "component": "sys/fun/ShotScreen"
-               },
-               {
-                  "path": "commontable",
-                  "name": "commontable",
-                  "component": "sys/fun/CommonTable"
-               }
-            ]
-         }
-      ]
-   }
+    {
+        "path": "/main",
+        "name": "main",
+        "component": "MainForm",
+        "meta": {
+            "ishome": true
+        },
+        "children": [
+            {
+                "path": "home",
+                "name": "home",
+                "children": [
+                    {
+                        "path": "analysis",
+                        "name": "analysis",
+                        "component": "sys/home/Analysis"
+                    },
+                    {
+                        "path": "workbench",
+                        "name": "workbench",
+                        "component": "sys/home/WorkBench",
+                        "meta": {
+                            "ishide": true
+                        }
+                    }
+                ]
+            },
+            {
+                "path": "/:patchMatch(.*)",
+                "name": "error",
+                "component": "error/Error"
+            },
+            {
+                "path": "systemanager",
+                "name": "systemanager",
+                "children": [
+                    {
+                        "path": "usermanager",
+                        "name": "usermanager",
+                        "component": "sys/systemanager/UserManager"
+                    },
+                    {
+                        "path": "menumanager",
+                        "name": "menumanager",
+                        "component": "sys/systemanager/MenuManager"
+                    }
+                ]
+            },
+            {
+                "path": "fun",
+                "name": "fun",
+                "children": [
+                    {
+                        "path": "shotscreen",
+                        "name": "shotscreen",
+                        "component": "sys/fun/ShotScreen"
+                    },
+                    {
+                        "path": "commontable",
+                        "name": "commontable",
+                        "component": "sys/fun/CommonTable"
+                    }
+                ]
+            }
+        ]
+    }
 ]
 ```
 
@@ -605,19 +605,19 @@ const components = import.meta.glob('../../views/**/*.vue');
 //[!code highlight]
 // 2. 递归处理路由，将组件字符串替换为导入函数
 function recurseAddRoutes(routes: RoutesType[]) {
-   return routes.map((route) => {
-      // 如果有组件配置，获取对应的导入函数
-      if (route.component && route.component !== '') {
-         route.component = components[`../../views/${route.component}.vue`];
-      }
+    return routes.map((route) => {
+        // 如果有组件配置，获取对应的导入函数
+        if (route.component && route.component !== '') {
+            route.component = components[`../../views/${route.component}.vue`];
+        }
 
-      // 递归处理子路由
-      if (route.children?.length > 0) {
-         route.children = recurseAddRoutes(route.children);
-      }
+        // 递归处理子路由
+        if (route.children?.length > 0) {
+            route.children = recurseAddRoutes(route.children);
+        }
 
-      return route;
-   });
+        return route;
+    });
 }
 ```
 
@@ -635,9 +635,9 @@ pnpm add vite-plugin-vue-devtools -D
 import vueDevTools from 'vite-plugin-vue-devtools'; //[!code ++]
 
 export default defineConfig({
-   plugins: [
-      vueDevTools() //[!code ++]
-   ]
+    plugins: [
+        vueDevTools() //[!code ++]
+    ]
 });
 ```
 
@@ -660,15 +660,15 @@ interface ImportMeta {
 /// <reference types="vite/client" />
 
 interface MyEnvType {
-   qwe: string;
+    qwe: string;
 }
 
 declare global {
-   interface ImportMetaEnv extends MyEnvType {}
+    interface ImportMetaEnv extends MyEnvType {}
 
-   interface ImportMeta {
-      readonly env: ImportMetaEnv;
-   }
+    interface ImportMeta {
+        readonly env: ImportMetaEnv;
+    }
 }
 
 export {};
@@ -684,11 +684,11 @@ export {};
 
 ```ts
 interface ImportMetaEnv extends Record<ImportMetaEnvFallbackKey, any> {
-   BASE_URL: string;
-   MODE: string;
-   DEV: boolean;
-   PROD: boolean;
-   SSR: boolean;
+    BASE_URL: string;
+    MODE: string;
+    DEV: boolean;
+    PROD: boolean;
+    SSR: boolean;
 }
 ```
 
@@ -732,7 +732,7 @@ export default defineConfig(({mode})=>{
 ```ts
 //这是全局类型，这里是局部类型定义
 type RequiredEnv = {
-   VITE_API_BASE_URL: string;
+    VITE_API_BASE_URL: string;
 };
 type ViteEnv = RequiredEnv & Record<string, string>;
 
@@ -754,18 +754,18 @@ import { defineConfig, loadEnv } from 'vite';
 import uni from '@dcloudio/vite-plugin-uni';
 
 export default defineConfig(({ mode }) => {
-   const env = loadEnv(mode, process.cwd());
+    const env = loadEnv(mode, process.cwd());
 
-   return {
-      plugins: [uni()],
-      define: {
-         // 关键：替换整个 import.meta.env 对象
-         'import.meta.env': JSON.stringify({
-            VITE_SUPABASE_URL: env.VITE_SUPABASE_URL,
-            VITE_SUPABASE_PUBLISHABLE_KEY: env.VITE_SUPABASE_PUBLISHABLE_KEY
-            // 添加更多环境变量...
-         })
-      }
-   };
+    return {
+        plugins: [uni()],
+        define: {
+            // 关键：替换整个 import.meta.env 对象
+            'import.meta.env': JSON.stringify({
+                VITE_SUPABASE_URL: env.VITE_SUPABASE_URL,
+                VITE_SUPABASE_PUBLISHABLE_KEY: env.VITE_SUPABASE_PUBLISHABLE_KEY
+                // 添加更多环境变量...
+            })
+        }
+    };
 });
 ```
