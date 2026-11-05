@@ -132,11 +132,9 @@ export default defineConfig({
          {
             text: '快速访问',
             items: [
-               { text: '前端FAQ', link: '/frontdesign/faq' },
-               { text: 'NuxtFAQ', link: '/nuxt/config-solutions' },
-               { text: 'Electron', link: '/frontdesign/electron' },
-               { text: 'Node', link: '/server/Nodejs' },
-               { text: 'Nest', link: '/server/Nestjs' },
+               { text: 'Nuxt', link: '/program/frontend/nuxt' },
+               { text: 'Electron', link: '/program/frontend/electron' },
+               { text: 'Node', link: '/program/backend/Nodejs' },
                { text: 'harness', link: '/harness' },
                { text: 'claude', link: '/claude-use' }
             ]
@@ -153,112 +151,61 @@ export default defineConfig({
 
       sidebar: [
          {
-            text: '前端',
+            text: '程序',
             collapsed: true,
             items: [
                {
-                  text: 'CSS',
-                  link: '/frontdesign/css-layout'
-               },
-               {
-                  text: 'ES6+',
-                  link: '/frontdesign/ES6'
-               },
-               {
-                  text: 'Vite⚡',
-                  link: '/frontdesign/Vite'
-               },
-               {
-                  text: 'Monorepo管理',
-                  link: '/frontdesign/monorepo-management'
-               },
-               {
-                  text: '移动端',
-                  link: '/frontdesign/mobile'
-               },
-               {
-                  text: '前端安全',
-                  link: '/frontdesign/front-security'
-               },
-               {
-                  text: 'electron',
-                  collapsed: true,
-                  link: '/frontdesign/electron'
-               },
-               {
-                  text: 'uniapp',
-                  collapsed: true,
-                  link: '/frontdesign/uniapp'
-               },
-               {
-                  text: 'WebAssembly',
-                  collapsed: true,
-                  link: '/frontdesign/WebAssembly'
-               },
-               {
-                  text: 'VUE3',
+                  text: '前端',
                   collapsed: true,
                   items: [
-                     { text: 'vue-router', link: '/frontdesign/vue3/vue-router' },
-                     { text: '开发环境问题', link: '/frontdesign/vue3/vue-problem' },
-                     { text: '性能优化', link: '/frontdesign/vue3/performance-optimize' },
-                     { text: 'vue核心', link: '/frontdesign/vue3/vue-core' }
+                     {
+                        text: 'Basical',
+                        link: '/program/frontend/basical'
+                     },
+                     {
+                        text: 'Vue',
+                        link: '/program/frontend/vue'
+                     },
+                     {
+                        text: 'Monorepo',
+                        link: '/program/frontend/monorepo'
+                     },
+                     {
+                        text: 'WebAssembly',
+                        collapsed: true,
+                        link: '/program/frontend/WebAssembly'
+                     },
+                     {
+                        text: 'electron',
+                        collapsed: true,
+                        link: '/program/frontend/electron'
+                     },
+                     {
+                        text: 'Nuxt',
+                        collapsed: true,
+                        link: '/program/frontend/nuxt'
+                     },
+                     {
+                        text: 'Nestjs',
+                        collapsed: true,
+                        link: '/program/frontend/Nestjs'
+                     },
+                     {
+                        text: 'FAQ',
+                        collapsed: true,
+                        link: '/program/frontend/faq'
+                     }
                   ]
                },
                {
-                  text: 'FAQ',
-                  link: '/frontdesign/faq'
-               }
-            ]
-         },
-         {
-            text: 'Nuxt全栈',
-            collapsed: true,
-            items: [
-               { text: '目录结构', link: '/nuxt/catalog' },
-               { text: '统一错误处理架构', link: '/nuxt/error-handle' },
-               { text: 'SEO-SSR', link: '/nuxt/seo-ssr' },
-               { text: 'FAQ', link: '/nuxt/config-solutions' }
-            ]
-         },
-         {
-            text: '代码风格和规范',
-            collapsed: true,
-            items: [
-               { text: '格式化代码与检查', link: '/code-style/eslint-format' },
-               { text: 'vscode编译器设置', link: '/code-style/vscode-setting' },
-               {
-                  text: 'WSL2代理',
+                  text: '后端',
                   collapsed: true,
-                  link: '/wsl/wsl'
-               }
-            ]
-         },
-         {
-            text: 'SQL',
-            collapsed: true,
-            items: [
-               { text: 'prisma', link: '/sql/sql-prisma' },
-               { text: 'SQL优化', link: '/sql/sql-optimize' }
-            ]
-         },
-
-         {
-            text: '服务端',
-            collapsed: true,
-            items: [
-               { text: '架构设计思想', link: '/server/architect-design-thought' },
-               {
-                  text: 'Nodejs',
-                  link: '/server/Nodejs'
-               },
-               {
-                  text: 'Nestjs',
-                  link: '/server/Nestjs'
-               },
-               {
-                  text: 'GraphQL',
-                  link: '/server/graphql'
+                  items: [
+                     { text: 'SQL', link: '/program/backend/sql' },
+                     { text: '架构设计思想', link: '/program/backend/architect-design-thought' },
+                     { text: 'Nodejs', link: '/program/backend/Nodejs' },
+                     { text: 'GraphQL', link: '/program/backend/graphql' }
+                  ]
                }
             ]
          },
@@ -270,13 +217,7 @@ export default defineConfig({
          {
             text: 'claude使用',
             collapsed: true,
-            items: [
-               { text: 'claude', link: '/claude-use' },
-               {
-                  text: 'claude env',
-                  link: 'claude-env-vars'
-               }
-            ]
+            items: [{ text: 'claude', link: '/claude-use' }]
          }
       ],
       socialLinks: [{ icon: 'github', link: 'https://github.com/TTT1231' }],

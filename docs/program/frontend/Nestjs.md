@@ -1,6 +1,6 @@
 # Nestjs
 
-## 源码逻辑
+## core
 
 ### 响应Observable流程
 
@@ -106,7 +106,7 @@ return next.handle().pipe(
 
 ### DI思想
 
-[详情见服务端架构设计思想](./architect-design-thought.md#职责、模块分离思想)
+[详情见服务端架构设计思想](../backend/architect-design-thought.md#ioc、di)
 
 ### 装饰器
 
@@ -127,7 +127,7 @@ TS5+版本默认是开启stage3的，因此如果想要使用stage3就需要关�
 
 截止**2025/11**月，nestjs目前还是使用**stage2**
 
-[stage3使用示例](../frontdesign/ES6.md#stage3装饰器)
+[stage3使用示例](./basical.md#stage3)
 :::
 
 ::: danger 危险
@@ -136,7 +136,7 @@ TS5+版本默认是开启stage3的，因此如果想要使用stage3就需要关�
 但是由于违反了职责单一原则，ts5+（**stage3**版本）不再自动添加设计时元数据，
 :::
 
-## 元数据处理实践
+## meta handle
 
 针对**Nestjs**提供的两种元数据处理`Reflector`和`MetadataScanner`两者侧重点不同，虽然都是简化元数据处理，两者在使用场景和侧重点不同。
 

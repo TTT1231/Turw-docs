@@ -1,5 +1,5 @@
 ---
-outline: deep
+outline: 2
 ---
 
 # Nodejs
@@ -64,7 +64,7 @@ Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callb
 `Nodejs`是单线程的，核心就是事件循环，只有一个JS执行线程。然后`Nodejs`执行任务顺序如下，主线程执行同步代码，遇到异步任务，不等待结果，把任务丢给对应处理模块，然后主线程继续执行，同步代码执行完毕，主线程有空了在从任务队列中取出执行。
 :::
 
-## 微任务与宏任务
+## 微任务 & 宏任务
 
 **微任务**：主要就是`promise.then`回调、`queueMicrotask`、`MutationObserver`，在每个阶段后执行。
 
@@ -72,7 +72,7 @@ Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callb
 
 `Nodejs`碰见微任务或者宏任务会直接将它加入对应列中，待主执行JS有空后，按照优先级别顺序执行。
 
-## RESTful框架选择
+## 框架选择
 
 | **Framework** | **Version** | **Router?** | **Requests/sec** |
 | ------------- | ----------- | ----------- | ---------------- |
@@ -97,8 +97,6 @@ Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callb
 - 路由级别中间件（app.get、app.post），匹配方法和路径请求。
 - 错误处理中间件（app.use(err,...)）,处理错误
 - cors中间件 ,处理不同源请求。
-
-## 中间件应用
 
 **错误处理**
 
@@ -191,7 +189,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 ```
 
-## 热更新配置
+## 热更新
 
 import要设置module为ESNext或commonJS（要配置ts），后端api使用commonJS兼容性好。其他的话ESNext，或者需要使用ES6最新语法。  
 开发时可以使用热更新重载，例如**nodemon** ,例如让nodemon监视src下所有文件，一有变动就重启服务（这里加上ts类型安全），重启服务时，然后编译main.ts。
@@ -208,7 +206,7 @@ nodemon --watch \"src/**/*.ts\" --exec \"ts-node\"  main.ts
 app.use(express.static('public'));
 ```
 
-## **ts-node运行时类型问题**
+## 运行类型问题
 
 在使用`ts-node`会出现 “运行时类型未加载” 问题，也就是`.d.ts`文件未纳入加载范围。
 
@@ -302,7 +300,7 @@ export {};
 它核心就是**轻量、即时执行**，因此只适合一些验证场景和简单脚本场景不需要打包工具参与。
 :::
 
-## 约定式路由实现
+## 约定式路由
 
 ::: warning 注意
 路由定义要存储全局，要不然打包就不会共享 这里的约定是文件必须按照Nuxt中api一样配置【约定即配置核心】，这里约定函数为**defineNodeRoute**,可以自行定义。
@@ -838,7 +836,7 @@ console.log('✅ Build completed successfully!');
 
 :::
 
-## 传输数据压缩加速
+## 压缩加速
 
 **以node:zlib**中的两个gzip和deflate为例。
 
@@ -929,7 +927,7 @@ export const setupDefaultRoute = (router: Router) => {
 
 :::
 
-## ESM or Commonjs?
+## ESM & Commonjs
 
 ::: tip 提示
 由于**nodejs**已全面转向了ESM模块作为未来发展方向，因而从最佳实践和现代化做法中，选择ESM。Nodejs和ts编译器职责分离，nodejs只执行js，而ts编译器只编译ts。因而引入ts文件必须要.js拓展名即使是ts。
@@ -1065,7 +1063,7 @@ await build({
 
 :::
 
-## 进程与脚本
+## 进程 & 脚本
 
 `Nodejs`可以针对进程进行管理，实现**进程并发、任务沙箱隔离、脚本编写、聚合层BFF转发、自动化运维和构建、数据处理等**等功能。
 
