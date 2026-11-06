@@ -1,21 +1,21 @@
 # 缓存埋点与监控
 
-这里可以直接使用缓存拦截器设置部分缓存，也可以设置全局缓存，设置全局缓存时对于一些不需要缓存的方法可以使用@NoCache()装饰器进行修饰，对 Controller 修饰时，其所有方法都不会被缓存
+此示例通过缓存拦截器缓存响应，并记录缓存指标。`@NoCache()` 可标记不需要缓存的方法或控制器。
 
 ## 使用
 
-**示例使用：**：
-参考 src/CacheUsage/cacheUsage.controller.ts 用法
+参考 `src/CacheUsage/cacheUsage.controller.ts`：控制器通过 `@UseInterceptors(CacheInterceptor)` 启用拦截器，`@CacheTTL(4000)` 为示例接口设置 4 秒缓存。
 
-如果是要启动全局缓存，注意要设置 setGlobalCacheInterceptor(true)该函数位于 cache/constant.ts 中
-用来标记缓存拦截器是否被全局使用，标记后后面的发现服务中 controller 用这个来过滤掉 controller
+如果改为全局使用拦截器，需要在 `src/cache/constant.ts` 中调用 `setGlobalCacheInterceptor(true)`，让发现服务按全局模式处理控制器。
 
-**实际使用**
+启动后可以访问：
 
-- 你可以访问`/cachetest`用来测试缓存命中还是没有命中
-- 也可以访问`/cachetest/print`用来打印缓存的指标，也可以查看缓存的命中次数用来查看或者优化缓存
-- 你也可以访问`/cachetest/nocache`测试不需要缓存
+| 路径 | 用途 |
+| --- | --- |
+| `/cachetest` | 连续请求，观察缓存命中和过期后的行为 |
+| `/cachetest/print` | 在服务端打印缓存指标；该接口不缓存 |
+| `/cachetest/nocache` | 验证 `@NoCache()` 的效果 |
 
 ## 缓存测试
 
-查看`src/cache/__test__`测试代码运行 jest 测试代码查看具体测试用例
+测试位于 `test/unit` 和 `test/integration`。在示例目录安装依赖后运行 `npm test`；仅运行集成测试可使用 `npm run test:e2e`。

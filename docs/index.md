@@ -4,8 +4,8 @@ layout: home
 
 hero:
     name: '我的文档'
-    text: '日常学习文档'
-    tagline: '学无止境'
+    text: '开发笔记与实践'
+    tagline: '记录概念、方案与实际开发中的问题'
     image:
         src: /assets/homeright.svg
     actions:
@@ -14,12 +14,12 @@ hero:
           link: /harness
 features:
     - icon: 📚
-      title: 学习资源
-      details: 提供丰富的前端学习资料和文档，帮助您快速掌握各种技术
-    - icon: 📝
-      title: 学习笔记
-      details: 记录学习过程中的重要知识点和心得体会
-    - icon: 🚀
-      title: 持续更新
-      details: 紧跟前端技术发展趋势，定期更新最新内容
+      title: 前端开发
+      details: 记录前端基础、Vue、Nuxt 和常见开发问题
+    - icon: 🛠️
+      title: 工程实践
+      details: 涵盖 Monorepo、Electron、WebAssembly 与 NestJS
+    - icon: 🗂️
+      title: 服务端与数据
+      details: 整理 Node.js、GraphQL、SQL 和架构设计
 ---

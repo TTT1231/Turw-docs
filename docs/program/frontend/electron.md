@@ -6,11 +6,13 @@ outline: deep
 
 ## 类型统一与安全
 
-::: info 通知
-主要就是在使用`ipcRenderer.invoke(chunnel,..args)`等的`chunnel`必须要确保`chunnel`一致，不一致时会出现问题还要来回查看，这里使用`TS`进行参与和智能提示，简化繁琐`chunnel`的编写和误写。
-:::
+主进程和预加载脚本通过 IPC 通道通信。如果双方的通道名或参数不一致，调用可能失败。下面的示例用 TypeScript 共享接口，为通道名、参数和返回值提供提示。
+
+类型检查只能发现编译期问题，不能代替运行时验证。通过 `contextBridge` 只暴露渲染进程需要的具体方法，并在主进程检查消息来源和参数。参见 [Electron 安全指南](https://www.electronjs.org/docs/latest/tutorial/security/)。
 
 ### ipc主线程类型提示安全
+
+先定义共享接口和通道类型，再通过工厂创建带类型约束的主进程处理器。工厂在创建时绑定命名空间和接口，后续注册处理器时不必反复填写泛型。
 
 ::: code-group-fold line-numbers
 
@@ -369,15 +371,9 @@ export const IpcTypeManager = {
 
 :::
 
-::: tip 提示
-上诉中使用工厂函数模式在创建实例时一次性绑定，避免每次在调用时指定泛型，TS计算时而有，时而没有的问题。
-:::
-
 ### preload桥接类型提示安全
 
-避免在桥接渲染进程与主进程通信时，这个`chunnel`以及命名空间提示需求。
-
-这里前提也是需要上诉**ipc主线程类型提示安全**前面四个代码，接上。
+预加载脚本使用同一套接口和通道类型封装 `invoke`、`send` 等方法，再通过 `contextBridge` 暴露给渲染进程。下面的代码依赖上一节定义的类型。
 
 ::: code-group-fold line-numbers
 
@@ -552,27 +548,15 @@ export const IpcRendererManager = {
 
 ### preload自动桥接
 
-::: tip 自动装配
-在`contextBridge`方法中的`exposeXXX`，第二个参数api是一个对象，并且preload在electron只是做转发的话，那么完全可以自动装配这个对象
+当预加载脚本只负责把固定 API 转发给主进程时，可以根据显式配置生成桥接对象，减少重复代码和通道拼写错误。配置应只包含允许渲染进程调用的方法；类型安全本身不保证这些操作有权限执行。
 
-- ts类型安全，不用在意chunnel的写错了
-- 避免繁杂的转发方法的编写
-
-:::
-
-::: warning 注意
-由于ipcRenderer.invoke默认是`异步的`，因此完全不用担心在preload中前面加`async`是否有啥影响。
-
-核心就是preload只是负责转发，也是main和render的桥梁，因此它只是返回对应值，然后传递给render即可
+`ipcRenderer.invoke` 返回 Promise；若包装函数只转发结果，可直接返回该 Promise，无需额外加 `async`：
 
 ```ts
 contextBridge.exposeInMainWorld('electronApi', {
-   nihao: async () => ipcRendererInvoke('nihao') //前面加与不加async没区别，因为逻辑处理不在这，自然而然不用await[!code --]
-   nihao: () => ipcRendererInvoke('nihao') //[!code ++]
+    getVersion: () => ipcRenderer.invoke('get-version')
 });
 ```
-
-:::
 
 ::: code-group-fold line-numbers
 
@@ -712,6 +696,6 @@ contextBridge.exposeInMainWorld('electronApi', autoAssembleBridge<IElectronApi>(
 
 ## 打包路径问题
 
-Electron应用在打包后无法解析以`/`开头的绝对路径，即使配置了`publicDir`，这会在开发环境下有用，但是在打包环境中，这种路径引用方式会失效。
+使用 `file://` 加载打包后的页面时，以 `/` 开头的资源路径可能指向文件系统根目录，导致资源加载失败。开发服务器能访问不代表打包后也能访问。
 
-解决思路是**交给Vite处理**，让`Vite`在构建时处理资源路径，从而避免路径问题。例如使用资源加载形式加载`import logo from '/assets/vue.svg'`，这样在开发模式和打包模式下都能正常工作。
+可以把资源作为模块导入，并根据部署方式配置 Vite 的 `base`，让构建结果使用正确的资源地址。例如，在使用相对路径部署的项目中配置 `base: './'`，再通过 `import logo from './assets/logo.svg'` 引用资源。最终仍需在打包后的应用中验证路径；`public` 目录中的文件也要按部署后的地址引用。

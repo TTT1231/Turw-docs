@@ -4,94 +4,36 @@ outline: deep
 
 # WebAssembly
 
-`WebAssembly`用于在跨平台中，游览器/`Nodejs`调用C++/C代码，用来解决`JS`在CPU密集计算任务下的缺点问题。
+WebAssembly（Wasm）是一种可在浏览器、Node.js 等环境中运行的二进制格式。Emscripten 可以把 C/C++ 编译为 Wasm，让现有代码或计算密集任务在这些环境中运行。
 
-如果是在Nodejs环境下，需要考量需不需要支持跨平台，这里指的是**游览器**，同时也需要考量开销问题和沙箱安全问题。由于wasm执行需要wasm VM开销以及内存开销以及调用开销，因此它不适合用于高频调用，只适合低频次高CPU计算场景，同时由于它的特性不能访问`Nodejs`和`DOM`如果需要时只能通过手动授权调用访问，执行沙箱安全。
+适不适合使用 Wasm，应结合实际任务测量：加载、初始化、内存和 JS 与 Wasm 之间的数据传递都有成本。计算量较小或需要频繁跨边界传递数据时，不一定比直接使用 JavaScript 更快。Wasm 本身不能直接访问 DOM 或宿主 API，需要宿主提供相应接口。
 
-`wasm`格式适合简单的高CPU计算也即纯计算，不适合复杂场景，如果涉及一些IO异步和运行时的话就需要`js`格式。这里是讨论`emcc`打包代码为`wasm`和`js`格式场景。
+Web Worker 用于将任务移到后台线程，避免阻塞页面；Wasm 是代码的运行格式。两者解决的问题不同，也可以组合使用：例如在 Worker 中运行耗时的 Wasm 计算。
 
-Emscripten会将`C++`通过`Clang + LLVM`转化中间件IR代码，而后Emscripten复杂将IR代码转化wasm，并打通wasm与游览器和Nodejs(取决对应环境)的交互问题。
-
-::: tip WebAssembly和Web Workers
-`Web Workers`侧重解决并发问题，不阻塞JS执行主线程，而卡顿UI。
-
-`WebAssembly`侧重解决`JS`计算性能问题，来提高`JS`执行高CPU密集型计算任务的提速，类似提高`JS`计算性能。
-
-两者一般一起使用，来最大程度追求性能，当然这是在`Web`场景下。
-:::
-
-::: danger 危险
-c++环境下，在`visual studio`或者`vscode`等，如果在里面写emcc代码获取代码提示等，需要安装`clang`工具或者`LLVM`语言服务器，都可以。
-:::
+Emscripten 使用 Clang/LLVM 编译 C/C++，并可生成 JavaScript 胶水代码，负责加载 Wasm、准备导入项和提供运行时接口。
 
 ## 编译执行差异
 
-`emcc`可以将cpp代码编译成`.wasm`和`.js`格式，这里讨论这两种编译差异和执行差异。
+| 输出              | 组成和用途                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| JavaScript + Wasm | JavaScript 胶水代码加载并初始化 Wasm，适合使用 Emscripten 运行时或 Embind 的场景。通常需要同时部署生成的文件。 |
+| 独立 Wasm         | 直接生成 `.wasm`，由宿主加载、实例化并提供所需导入。是否能独立运行取决于编译选项及程序使用的宿主接口。         |
 
-::: info wasm
-`.wasm`是二进制可执行代码，可以被缓存性能最好无`JS`包裹性能损耗，但是需要手动写JS加载和调用，但是只适合简单高密集型CPU计算，不适合复杂逻辑。
+Wasm 一般经历加载、验证、编译和实例化后才可调用；JavaScript 也有解析、编译和执行成本。具体性能取决于运行环境和负载，不能仅凭输出格式判断。
 
-执行过程：加载 → 验证 → 编译 → 实例化 → 桥接 JS → 执行 /（环境层面WASM资源） 回收。
+可以检查模块需要宿主提供哪些导入项：
 
-`wasm`编译后，包含编译后的函数逻辑（字节码格式），函数签名和导出信息等，不包含有关原始代码信息，例如C++源代码、编译器、标准库（这里除了用到并静态链接）等。
+```ts
+const response = await fetch('/path/to/module.wasm');
+const module = await WebAssembly.compile(await response.arrayBuffer());
+console.log(WebAssembly.Module.imports(module));
+```
 
-在执行阶段的编译阶段，由对应的JIT编译器（取决于环境）中V8（WebAssembly执行引擎）全量直接编译为CPU本地机器码，而后实例化，进行WASM与JS交互。
-
-针对时间开销而言：wasm执行存在加载wasm文件开销，而后就是解析和验证开销，而后就是wasm字节码->V8编译器->本地机器码开销，而后就是JS<->wasm调用开销。
-:::
-
-::: info js
-`.js`是文本格式代码，由`emcc`编译时会包含胶水代码用于加载和初始化 wasm 模块，适合复杂逻辑场景，包含异步IO、运行时交互等。
-
-执行过程：JS加载 → 解析(生成AST) → 字节码生成 → 解释执行(Ignition) → JIT编译优化(TurboFan) → 执行优化后机器码 → 垃圾回收。
-
-在 V8 引擎中，JS 代码首先被解析成抽象语法树（AST），然后通过 Ignition 解释器生成字节码并执行。对于频繁执行的热点代码，TurboFan 优化编译器会将其编译成高度优化的机器码以提升性能。
-
-针对时间开销而言：JS执行存在解析开销（词法/语法分析生成AST），字节码生成开销，解释执行开销，以及热点代码的JIT编译优化开销。相比 wasm 的提前编译（AOT），JS 是边解释边执行的即时编译（JIT）模式。
-:::
-
-> [!IMPORTANT] 重要
-> JS代码实际调用路径：JS → Emscripten包装层 → WebAssembly。
->
-> wasm实际调用路径：JS → WebAssembly。
->
-> 因此在调用耗时方面，wasm直接调用比JS代码执行快，没有其他非必要import检查，但是这样它**没有运行时**，需要手动imports。下面可以进行验证：
->
-> ```ts
-> const response = await fetch('[path/to].wasm');
-> const buffer = await response.arrayBuffer();
-> const module = await WebAssembly.compile(buffer);
->
-> // 打印所有需要的 import，wasm中没有运行时
-> const imports = WebAssembly.Module.imports(module);
-> ```
-
-::: tip 提示
-js提供了完整的`C++`操作，例如类、指针、异常处理、内存管理等，emcc自动完成了这样事。而wasm只能用于简单计算，或者手动实现完成类似emcc的功能，最终效果也是一样的。
-:::
-
-::: danger 危险
-`JS`只是Emscripten帮你手动完成了自动创建内存、设置imports和查找加载wasm文件、全局对象的构造函数初始化以及自动实例化初始化等操作，也就是这个JS是胶水代码和管理器、自动化操作，真正`C++`逻辑在wasm中。
-
-该过程本质上也是Emscripten抽象了手动写的时候管理的混乱问题，最基本核心也是依赖wasm文件的，因此使用`JS`时，这个wasm不能删掉，
-两者是一起用的。
-
-特别是一些标准库和`C++`特性使用时，在纯wasm需要手写js自己实现标准库支持和配置`C++`特性，这个效果是没有Emscripten管理的好，而且手动实现难度较大，而且容易造成内存泄漏和管理等问题。
-:::
+直接加载不等于自动获得 Emscripten 运行时：如果模块需要导入内存、系统调用或其他接口，实例化时仍须提供。生成 `.wasm` 文件与用于动态链接的 `SIDE_MODULE` 也是不同的选项。详见 [Emscripten 输出格式](https://emscripten.org/docs/tools_reference/emcc.html)和[动态链接](https://emscripten.org/docs/compiling/Dynamic-Linking.html)。
 
 ## Emcc GUI工具
 
-主要是为了解决emcc手动编写命令和查找命令的繁琐问题。
-
-[工具下载地址](https://github.com/TTT1231/emccgui/releases)
-
-::: warning 注意
-注意该工具需要[emcc](https://emscripten.org/docs/)和ts(类型导出用)。
-
-注意两者都需要设置为全局变量，要不然命令会执行失败。
-
-或者复制命令手动执行也是可以的，但是前提需要有`emcc`和`tsc`支持。
-:::
+[Emcc GUI](https://github.com/TTT1231/emccgui/releases) 用图形界面生成编译命令，减少查找和手写参数的工作。使用前需要安装 [Emscripten](https://emscripten.org/docs/)；生成 TypeScript 声明时还需要 TypeScript。确保工具能从运行环境找到 `emcc` 和 `tsc`，也可以复制生成的命令自行执行。
 
 ## 使用示例
 
@@ -140,7 +82,7 @@ EMSCRIPTEN_BINDINGS(bind_unique_group) {
 ```ts [test1_V1.d.ts]
 //该文件是类型文件
 //这种是js+wasm格式，此时有dts类型
-//!如果是wasm格式，则没有dts类型，和运行时函数例如ccall等。
+// 直接使用 Wasm 时需另行描述导出类型；ccall 等属于 Emscripten 运行时。
 /// <reference types="emscripten" />
 
 declare namespace RuntimeExports {
@@ -245,7 +187,7 @@ declare module '@/assets/test1.js' {
 
 ```ts [ClassObj_V1.d.ts]
 //该文件是类型文件,这种是js+wasm格式，此时有dts类型.
-//由于类需要绑定，因此这里只能时js+wasm格式
+// 此示例使用 Embind 和 Emscripten 的 JavaScript 胶水代码。
 /// <reference types="emscripten" />
 
 interface WasmModule extends EmscriptenModule {}
@@ -326,7 +268,7 @@ onMounted(async () => {
 const handleCallBack = () => {
     if (test1Module.value) {
         const result = test1Module.value._add(123, 456);
-        //print 679
+        // print 579
         console.log('WASM计算结果：', result);
 
         //ccall
@@ -372,18 +314,18 @@ const handleCallBack = () => {
         console.log('调用方法后对象内部私有值', instance.getX());
         //print Hello, this is C++ MyClass
         console.log('普通方法调用', instance.showStr());
+        instance.delete(); // 释放 Embind 创建的 C++ 对象
     }
 };
 ```
 
 ```ts [test1-wasm-pure.ts]
-//纯的wasm，没有wasm运行时(内存管理、文件系统、异常处理....)
-//需要SIDE_MODULE模式，编译动态链接库(也即纯函数库)
+// 此示例假设模块无需额外导入，且可直接调用导出的 add。
+// 实际模块可能需要提供 imports 和执行初始化函数。
 
 try {
     //[!code warning]
-    // 注意，这个wasm是二进制文件，因此import写法不行，且比较慢。
-    //可以直接用fetch获取二进制文件，并instantiateStreaming流式编译，这样速度更快
+    // 使用流式编译时，服务器需要以 application/wasm 返回文件。
     const { instance } = await WebAssembly.instantiateStreaming(fetch('/src/assets/111.wasm'));
     // 调用 add 函数
     //[!code warning]
@@ -401,16 +343,9 @@ try {
 
 ## 类型安全
 
-这里类型使用**Emscripten自动生成**的最好，这最能精准知道导出什么需要什么，里面有什么，保证了wasm编译器编译和实际使用一致。
+优先使用与当前构建选项匹配的生成声明，并检查它是否覆盖实际导出的函数、运行时方法与初始化参数。`--emit-tsd <文件名>` 可以生成类型声明；浏览器和 Node.js 项目都可使用 `@types/emscripten` 补充 Emscripten 类型。
 
-wasm和js两种格式，最后生成的`.d.ts`文件类型都是一样的。
-
-进行类型安全的时候，要注意[模块导出问题](#导出模块问题)。
-
-::: warning 注意
-`emcc`生成的`.d.ts`类型文件，在工厂函数转化后，类型不安全，会被判断为unknown形式还有wasm运行时类型缺失，例如内存管理、I/O、文件系统、声明周期钩子。因此需要手动进行类型补全，如果需要类型安全前提下。
-
-这是在加上转化为工厂函数前提下`-sMODULARIZE`让初始化变为异步，如果是`emcc`生成的类型文件会如下:
+以下是一个模块化构建的声明示例。不同 Emscripten 版本和编译选项生成的类型可能不同，需要以实际输出为准。
 
 ```ts
 // TypeScript bindings for emscripten-generated code.  Automatically generated at compile time.
@@ -422,7 +357,7 @@ export type MainModule = WasmModule;
 export default function MainModuleFactory(options?: unknown): Promise<MainModule>;
 ```
 
-可以看到类型缺失了，还有wasm运行时类型，这时候需要进行手动补全，如下::: code-group
+如果生成的声明缺少项目实际使用的运行时类型，可以结合 `EmscriptenModule` 补充：
 
 ```ts
 /// <reference types="emscripten" />
@@ -436,7 +371,7 @@ export default function MainModuleFactory(
 ): Promise<MainModule & EmscriptenModule>;
 ```
 
-这样会有点类型略显冗余，可以直接使用TS继承类型即可:
+也可以通过接口继承表达相同关系：
 
 ```ts
 /// <reference types="emscripten" />
@@ -448,11 +383,9 @@ export interface MainModule extends EmscriptenModule {
 export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
 ```
 
-上面这个MainModule只是`emcc`自动生成的一个模块。
-:::
+### 工厂函数类型
 
-::: tip 工厂函数类型为什么是这样的？
-这个类型在官方类型包中就定义了这个工厂函数类型。
+工厂函数接收可选的模块配置，异步返回初始化后的实例：
 
 ```ts
 /**
@@ -464,7 +397,7 @@ type EmscriptenModuleFactory<T extends EmscriptenModule = EmscriptenModule> = (
 ) => Promise<T>;
 ```
 
-`EmscriptenModule`是模块类型，有双重用途。
+`EmscriptenModule` 可用于描述配置和模块实例，具体可用成员取决于构建选项。
 
 ```ts
 //用途1：作为工厂函数参数配置对象
@@ -480,21 +413,11 @@ module._malloc(100); //运行时生成函数
 //....
 ```
 
-:::
-
-::: danger bind模块类型
-`EmbindModule`模块不需要继承任何东西，它只定义了你通过`EMSCRIPTEN_BINDINGS`暴露的类型，这些类型是c++代码特有的，与emcc基础设施无关，最终会与其他接口合并。
-:::
-
-::: tip 使用方法
-
-在`emcc`进行编译时，只需要在命令末尾加上`--emit-tsd`，而后跟文件名和类型即可，例如`qwe.d.ts`。
-
-:::
+通过 `EMSCRIPTEN_BINDINGS` 暴露的 C++ 类型可以单独声明，再与其他模块接口组合。生成声明的具体覆盖范围取决于 Emscripten 版本和绑定方式。
 
 ### 游览器类型安全
 
-由于游览器没有内置了`emscripten`类型需要下载`@types/emscripten`，在使用`JS Module`时可以进行拓展，但是由于`emscripten`是类型文件不是一个模块，因此需要三斜线，然后对类型进行拓展。
+安装 `@types/emscripten` 后，可以引用类型并扩展项目实际使用的导出：
 
 ```ts
 /// <reference types="emscripten" />
@@ -509,7 +432,7 @@ export {};
 
 ### Nodejs环境下类型安全
 
-`Nodejs`中没有内置`emscripten`类型，因此需要手动下载或者定义，然后对需要的代码进行自定义声明和拓展自定义类型，完成类型安全。
+Node.js 项目也可以安装相同的类型包，再按上面的方式补充导出类型：
 
 ::: code-group
 
@@ -523,13 +446,11 @@ npm install --save-dev @types/emscripten
 
 :::
 
-然后类型拓展同游览器类型拓展一样使用即可。
-
 ## 注意事项
 
 ### 方法的\_问题
 
-在标准`c++`代码中，Emscripten会将格式化掉原始方法的参数名，例如：
+C++ 函数名可能因名称修饰（name mangling）发生变化，未使用的函数也可能被链接器移除。例如：
 
 ```cpp
 //这里在没有使用条件下会被Emscripten删除掉，除非手动指定
@@ -542,7 +463,7 @@ int main(){
 }
 ```
 
-可以使用`extern "C"`禁用改名和手动指定不要删除。
+可用 `extern "C"` 指定 C 链接方式，避免 C++ 名称修饰；再用 `EMSCRIPTEN_KEEPALIVE` 或编译选项导出函数。
 
 ```cpp
 #include <emscripten/emscripten.h>
@@ -556,33 +477,13 @@ extern "C" {
 }
 ```
 
-::: warning 注意
-注意，在`extern "C"`的时候，会将函数参数名前面手动加上`_`，上诉就是`_add`，之所以加上就是符合Emscripten的开发C函数命名标准。
-差异就是体现在调用时，例如当加载`JS`或者wasm的时候，调用函数前面会有\_标识，表示这是wasm生成的C函数代码。
-
-`C++`类、类方法等不会自动加，也不能使用`extern "C"`修饰，`extern "C"`只能修饰普通函数，会给普通函数自动添加`_`。
-:::
+Emscripten 的 JavaScript 模块通常通过 `Module._add` 访问导出的 C 函数；直接访问 Wasm 实例时，导出名称取决于构建结果。`extern "C"` 与 JS 包装层的下划线命名是不同的事情。
 
 ### 导出模块问题
 
-`emcc`模块导出模块方式是`UMD`格式，该格式兼容游览器、`Nodejs`、`AMD`多环境，在游览器中会挂载在windows.Module下，在`Nodejs`依赖`module.exports`这种commonJS形式。
+`-sEXPORT_ES6` 控制生成 ES module 格式；`-sMODULARIZE` 将输出封装为可调用的工厂，便于传入配置并创建实例。使用默认异步编译时，等待工厂返回的 Promise 后再调用导出函数。二者经常组合使用，但用途不同，具体行为还取决于其他编译选项。[官方说明](https://emscripten.org/docs/compiling/Modularized-Output.html)
 
-同时默认情况下会立即同步执行。这种格式虽然很兼容但是使用方法很少，因此实际上会将其转化为`ES`形式，完成异步按需加载避免阻塞主线程。
-
-::: warning 注意
-`-sEXPORT_ES6=1`启用`ES`导出的时候，`emcc`只会解决模块导出问题，并不会控制如何进行初始化，此时任然还是同步初始化，会在引入模块时立即完成模块初始化工作。
-
-这返回的是已经初始化的对象，同时不能传递配置参数，还有在webAssembly初始化异步情况下，会无法自定义初始化参数和加载完成前立即调用函数会崩溃情况。
-
-因此它会和`-sMODULARIZE=1`启用工厂函数转化，`emcc`会异步加载wasm文件，此时能够正确处理异步初始化、传递配置参数、不会阻塞页面加载情况。
-:::
-
-::: tip 提示
-上诉可以理解成这样，`-sMODULARIZE=1`让初始化变为异步，`-sEXPORT_ES6=1`转化ES6形式。因而实际中，两者要配合使用，并启用。
-:::
-
-::: danger 危险
-如果按照[类型安全解决](#类型安全)进行类型安全，这里会出现在游览器`import(js)`的时候会找不到这个文件的声明文件，TS断言成any会报类型错误，如果按照下面进行类型声明会出现问题
+动态导入生成文件时，如果 TypeScript 无法找到声明，可为对应模块路径提供声明文件。下面先展示一个容易混淆的写法：顶层 `export` 会使文件成为模块，此时 `declare module` 的含义与独立的环境模块声明不同。
 
 ```ts
 /// <reference types="emscripten" />
@@ -593,21 +494,15 @@ export interface MainModule extends EmscriptenModule {
 
 export default function MainModuleFactory(options?: Partial<MainModule>): Promise<MainModule>;
 
-//[!code error]
-//!error1:这里问题主要出现在内部，MainModuleFactory和MainModule作用域不存在，有顶级export。
-//[!code error]
-//!error2:同时declare module 会创建一个隔离的作用域，因此在作用域内部没有MainModule和MainModuleFactory两个类型
+// 顶层 export 使此文件成为模块，下面会被当作模块增强，
+// 不适合作为尚不存在的模块的独立环境声明。
 
 declare module 'path/to/js' {
     export { MainModuleFactory as default, MainModule };
 }
 ```
 
-**特别注意：** 模块匹配规则，也就是这个`path/to/js`如果是相对路径或者具体包名，declare作用域规则会严格隔离，不能访问外部类型和全局类型，如果是路径别名`@`或者通配符`*`则TS作用域规则较为宽松，可以访问外部类型和全局类型。
-
-这是由于declare的路径从当前路径出发的，外部的`import(js)`从外部初始路径出发，两者会严格对比，此时路径字符串会不一样，但是最终都是指向同一个文件，相对路径和具体包名就报类型错误了。
-
-按照下面方法进行类型安全就可以了，下面之所以分成两个文件，一个就是模块声明文件，另外一个就是供给外部使用类型文件，主要是避免写在一个文件中由于export和declare矛盾，导致`import(js)`失败，报类型错误问题。
+可以将环境模块声明与供其他代码导入的类型分别放在文件中。模块名应与实际导入路径匹配，并结合项目的 TypeScript 模块解析配置检查。
 
 ```ts
 //[wasm-module].d.ts
@@ -637,11 +532,9 @@ export type MainModule = WasmModule;
 export type MainModuleFactory = (options?: Partial<MainModule>) => Promise<MainModule>;
 ```
 
-:::
-
 ### 函数指针问题
 
-该问题报错主要原因就是：编译器对类型比较宽容，强制转换后仍然能运行，但是WebAssembly有严格类型检查，函数签名必须完全匹配才不会报`abort(10)`和`Invalid function pointer called`错误。例如：
+通过不匹配的函数指针类型调用函数属于未定义行为，在 WebAssembly 中可能因签名不匹配而报错。应保证声明、实际函数和调用处的签名一致：
 
 ```cpp
 // 定义一个函数指针类型：void 返回值，接受 const char* 参数
@@ -663,8 +556,7 @@ functionList[1] = (voidReturnType)intReturn;         //  Emscripten 会报错，
 functionList[2] = (voidReturnType)voidReturnNoParam; //  Emscripten 会报错，在调用时签名不同会失败，`functionList[2]()`
 ```
 
-::: tip 解决思路
-模拟一个签名一样的包装函数，去欺骗emcc编译器，然后在内部调用原函数，但是这必须要忽略返回类型。
+使用签名匹配的适配函数调用原函数；如果调用方需要返回值，应调整接口而不是丢弃结果：
 
 ```cpp
 //签名一样
@@ -676,20 +568,13 @@ void intReturnAdapter(const char* message){
 functionList[1] = intReturnAdapter;
 ```
 
-:::
-
-> [!IMPORTANT] 重要
->
-> - `sASSERTIONS`为emcc的运行时断言检查(函数指针、类型匹配等)
-> - `sSAFE_HEAP`为emcc的内存访问边界检查，能看到越界访问、空指针引用等指针问题。
->
-> 开发时可用开启这两个进行检查，`emcc -sSAFE_HEAP -sASSERTIONS test.cpp`
+开发时可用 `emcc -sSAFE_HEAP -sASSERTIONS test.cpp` 开启运行时断言和内存访问检查；这些检查会增加开销。
 
 ## 宏相关
 
 ### 常用宏
 
-::: tip 类绑定相关
+#### 类绑定相关
 
 - `EMSCRIPTEN_BINDINGS`绑定入口点
 - `class_<T>(name)`绑定C++类到JS
@@ -702,59 +587,45 @@ functionList[1] = intReturnAdapter;
 - `class_function(name, &Class::staticMethod)`导出静态方法
 - `class_property(name, &getter, &setter)`类静态属性导出
 
-:::
-
-::: tip 值类型和枚举
+#### 值类型和枚举
 
 - `enum_<T>(name)`绑定枚举类型
 - `value(name, EnumValue)`导出枚举值
 - `value_object<T>(name)`绑定简单结构体
 - `field(name, &T::member)`导出结构体字段
 
-:::
-
-::: tip 内存和智能指针
+#### 内存和智能指针
 
 - `smart_ptr<std::shared_ptr<T>>()`绑定智能指针
 - `EMSCRIPTEN_KEEPALIVE`防止函数被优化掉
 
-:::
-
-::: tip 继承和多态
+#### 继承和多态
 
 - `base<BaseClass>()`声明类继承关系
 - `allow_subclass<Wrapper>(name)`允许 JS 继承 C++ 类
 - `pure_virtual(&Class::method)`标记纯虚函数
 - `optional_override(callback)`可选重写虚函数
 
-:::
-
-::: tip 常量和数组
+#### 常量和数组
 
 - `constant(name, value)`导出编译时常量
 - `value_array<T>(name)`绑定固定大小数组
 - `element(index_func)`自定义数组索引访问
 
-:::
-
-::: tip 异步和主循环
+#### 异步和主循环
 
 - `emscripten_set_main_loop`设置主循环（游戏/动画）
 - `EM_ASYNC_JS(...)`异步 JavaScript 函数
 - `await()`等待 Promise
 
-:::
+#### 其他场景
 
-::: tip 其他场景
-
-|      场景      |               命令                |         描述          |
-| :------------: | :-------------------------------: | :-------------------: |
-|    网络请求    |        `emscripten_fetch`         | C++调用JS发起网络请求 |
-| HTML5 事件回调 | `emscripten_set_keydown_callback` | C++监听键盘鼠标等事件 |
-|   WebGL 相关   |       `emscripten_webgl_*`        | C++调用WebGL渲染图形  |
-|  Worker/线程   |       `emscripten_webgl_*`        |    C++到Web Worker    |
-
-:::
+|      场景      |               命令                |            描述            |
+| :------------: | :-------------------------------: | :------------------------: |
+|    网络请求    |        `emscripten_fetch`         |   C++调用JS发起网络请求    |
+| HTML5 事件回调 | `emscripten_set_keydown_callback` |   C++监听键盘鼠标等事件    |
+|   WebGL 相关   |       `emscripten_webgl_*`        |    C++调用WebGL渲染图形    |
+|  Worker/线程   |       Pthreads / Worker API       | 在支持的环境中运行并发任务 |
 
 ### 完整宏
 
@@ -1006,32 +877,26 @@ functionList[1] = intReturnAdapter;
 
 日常使用频率最高的配置项，完整配置见下方[全量配置](#全量配置)。
 
-|                  选项                   |          默认值          |                                    说明                                     |
-| :-------------------------------------: | :----------------------: | :-------------------------------------------------------------------------: |
-|               `-o <file>`               |            -             |       指定输出文件名（后缀决定输出格式，`.mjs` 隐式启用 EXPORT_ES6）        |
-|             `-sMODULARIZE`              |          false           |               <mark>将 JS 代码转化工厂函数(转化为异步)</mark>               |
-|             `-sEXPORT_ES6`              |          false           |             <mark>生成 ES6 模块格式（需配合MODULARIZE）</mark>              |
-|           `--emit-tsd <file>`           |            ''            |              <mark>生成 TypeScript 类型声明文件，JS生效</mark>              |
-|         `-sEXPORTED_FUNCTIONS`          | `[]`（隐式导出 `_main`） |             <mark>指定导出的 C/C++ 函数（需加 \_ 前缀）</mark>              |
-|      `-sEXPORTED_RUNTIME_METHODS`       |    `[]`（默认不导出）    | <mark>导出 ccall、cwrap 等运行时方法（默认一个都不导出，需显式指定）</mark> |
-|          `-lembind` / `--bind`          |          false           |                <mark>链接 Embind 库（C++ 与 JS 绑定）</mark>                |
-|         `-sALLOW_MEMORY_GROWTH`         |          false           |                        <mark>允许内存动态增长</mark>                        |
-| `-sINITIAL_MEMORY` / `-sMAXIMUM_MEMORY` |         -1 / 2GB         |              初始内存自动计算 / 最大内存限制（须为 64KB 倍数）              |
-|             `-fexceptions`              |          false           |               <mark>启用 C++ 异常（Wasm 原生异常处理）</mark>               |
-|               `-pthread`                |          false           |           <mark>启用 Pthreads 多线程</mark>（需配置响应头，见下）           |
-|             `-sASSERTIONS`              |            1             |          运行时断言检查（0 关闭，1 基础，2 详细；优化构建默认 0）           |
-|              `-sSAFE_HEAP`              |            0             |                内存访问边界检查（性能开销大），生产环境关闭                 |
-|          `-O0` / `-O2` / `-Oz`          |           -O0            |                优化级别：-O2 标准优化，-Oz 极限压缩代码体积                 |
+|                  选项                   |          默认值          |                              说明                              |
+| :-------------------------------------: | :----------------------: | :------------------------------------------------------------: |
+|               `-o <file>`               |            -             | 指定输出文件名（后缀决定输出格式，`.mjs` 隐式启用 EXPORT_ES6） |
+|             `-sMODULARIZE`              |          false           |                    将 JS 输出封装为工厂函数                    |
+|             `-sEXPORT_ES6`              |          false           |                      生成 ES module 格式                       |
+|           `--emit-tsd <file>`           |            ''            |                  生成 TypeScript 类型声明文件                  |
+|         `-sEXPORTED_FUNCTIONS`          | `[]`（隐式导出 `_main`） |             指定导出的 C/C++ 函数（需加 \_ 前缀）              |
+|      `-sEXPORTED_RUNTIME_METHODS`       |    `[]`（默认不导出）    | 导出 ccall、cwrap 等运行时方法（默认一个都不导出，需显式指定） |
+|          `-lembind` / `--bind`          |          false           |                链接 Embind 库（C++ 与 JS 绑定）                |
+|         `-sALLOW_MEMORY_GROWTH`         |          false           |                        允许内存动态增长                        |
+| `-sINITIAL_MEMORY` / `-sMAXIMUM_MEMORY` |         -1 / 2GB         |       初始内存自动计算 / 最大内存限制（须为 64KB 倍数）        |
+|             `-fexceptions`              |          false           |              启用基于 JavaScript 的 C++ 异常处理               |
+|               `-pthread`                |          false           |           启用 Pthreads 多线程（需配置响应头，见下）           |
+|             `-sASSERTIONS`              |            1             |    运行时断言检查（0 关闭，1 基础，2 详细；优化构建默认 0）    |
+|              `-sSAFE_HEAP`              |            0             |          内存访问边界检查（性能开销大），生产环境关闭          |
+|          `-O0` / `-O2` / `-Oz`          |           -O0            |          优化级别：-O2 标准优化，-Oz 极限压缩代码体积          |
 
-::: tip 提示
-注意[模块导出问题](#导出模块问题)：`-sMODULARIZE` 与 `-sEXPORT_ES6` 实际中要配合使用。
+`ccall`、`cwrap`、`getValue`、`setValue` 等运行时方法需按构建配置通过 `-sEXPORTED_RUNTIME_METHODS` 导出。调试选项会增加开销，生产构建应根据排错和性能需求选择。
 
-`ccall`、`cwrap`、`getValue`、`setValue` 等运行时方法默认不导出，需在 `-sEXPORTED_RUNTIME_METHODS` 中按需显式指定。
-
-应用到生产环境前，关闭所有调试选项（`-sASSERTIONS`、`-sSAFE_HEAP`、`-g` 等）。
-:::
-
-::: info 常用运行时方法
+### 常用运行时方法
 
 ```cpp
 int add(int x,int y){
@@ -1046,8 +911,6 @@ int add(int x,int y){
 | `getValue` |          从内存读取值          |                   `Module.getValue(ptr, 'i32')`                   |
 | `setValue` |          向内存写入值          |                `Module.setValue(ptr, 100, 'i32')`                 |
 
-:::
-
 ::: warning 多线程响应头
 `-pthread` 需要配置 HTTP 响应头：`Cross-Origin-Opener-Policy: same-origin` 和 `Cross-Origin-Embedder-Policy: require-corp`。
 
@@ -1058,7 +921,7 @@ int add(int x,int y){
 在 JS 层面创建的 Embind 对象，即使置为 `null`，wasm 内存层面也无法感知 JS 的 GC，对象依然存在。需要在 wasm 层面手动回收，例如调用类析构或自定义 `delete`。
 :::
 
-::: info `--bind` 与 `-lembind` 等价
+### `--bind` 与 `-lembind`
 
 ```bash
 emcc --bind example.cpp -o example.js
@@ -1070,13 +933,9 @@ emcc --bind example.cpp -o example.js
 emcc -lembind example.cpp -o example.js
 ```
 
-:::
+### 异常处理
 
-::: tip 异常处理
-启用 `-fexceptions` 后，在 JS 层面像 `try...catch...finally` 一样使用即可。
-
-不启用时出错会直接崩溃，且无异常信息，无法定位问题。
-:::
+C++ 异常处理的行为和成本取决于编译选项；需要跨 JS 与 Wasm 边界处理异常时，应按所用版本查阅 [Emscripten 异常处理文档](https://emscripten.org/docs/porting/exceptions.html)。
 
 ### 全量配置
 
@@ -1086,26 +945,26 @@ emcc -lembind example.cpp -o example.js
 
 |             选项             |          默认值          |                             说明                              |
 | :--------------------------: | :----------------------: | :-----------------------------------------------------------: |
-|         `-o <file>`          |            -             |                  <mark>指定输出文件名</mark>                  |
-|        `-sMODULARIZE`        |          false           |        <mark>将 JS 代码转化工厂函数(转化为异步)</mark>        |
+|         `-o <file>`          |            -             |                        指定输出文件名                         |
+|        `-sMODULARIZE`        |          false           |                   将 JS 输出封装为工厂函数                    |
 |   `-sMODULARIZE=instance`    |          false           | 实验性 Instance ES Modules：导出单例 ES 模块（需 EXPORT_ES6） |
-|        `-sEXPORT_ES6`        |          false           |      <mark>生成 ES6 模块格式（需配合MODULARIZE）</mark>       |
+|        `-sEXPORT_ES6`        |          false           |                      生成 ES module 格式                      |
 |       `-sEXPORT_NAME`        |          Module          |                      指定导出的模块名称                       |
 |       `-sSINGLE_FILE`        |          false           |              将 wasm 以 base64 内嵌到 JS 文件中               |
-|     `--emit-tsd <file>`      |            ''            |       <mark>生成 TypeScript 类型声明文件，JS生效</mark>       |
+|     `--emit-tsd <file>`      |            ''            |                 生成 TypeScript 类型声明文件                  |
 |       `-sENVIRONMENT`        | web,webview,worker,node  |                   **运行环境(会增加体积)**                    |
-|    `-sEXPORTED_FUNCTIONS`    | `[]`（隐式导出 `_main`） |      <mark>指定导出的 C/C++ 函数（需加 \_ 前缀）</mark>       |
-| `-sEXPORTED_RUNTIME_METHODS` |    `[]`（默认不导出）    |        <mark>导出运行时辅助方法如 ccall, cwrap</mark>         |
+|    `-sEXPORTED_FUNCTIONS`    | `[]`（隐式导出 `_main`） |             指定导出的 C/C++ 函数（需加 \_ 前缀）             |
+| `-sEXPORTED_RUNTIME_METHODS` |    `[]`（默认不导出）    |               导出运行时辅助方法如 ccall, cwrap               |
 
 **调试选项**
 
-|           选项           |  默认值  |                                   说明                                    |
-| :----------------------: | :------: | :-----------------------------------------------------------------------: |
-|           `-g`           | disabled |           <mark>保留调试信息（-g3 更详细，-g4 包含源码）</mark>           |
-|      `-gsource-map`      |  false   |                       <mark>生成 source map </mark>                       |
-|      `-sASSERTIONS`      |    1     | <mark>启用运行时断言检查（0 关闭，1 基础，2 详细；优化构建默认 0）</mark> |
-|      `-sSAFE_HEAP`       |    0     |                      检测内存访问错误（性能开销大）                       |
-| `-sSTACK_OVERFLOW_CHECK` |    0     |                                栈溢出检测                                 |
+|           选项           |  默认值  |                             说明                             |
+| :----------------------: | :------: | :----------------------------------------------------------: |
+|           `-g`           | disabled |           保留调试信息（-g3 更详细，-g4 包含源码）           |
+|      `-gsource-map`      |  false   |                       生成 source map                        |
+|      `-sASSERTIONS`      |    1     | 启用运行时断言检查（0 关闭，1 基础，2 详细；优化构建默认 0） |
+|      `-sSAFE_HEAP`       |    0     |                检测内存访问错误（性能开销大）                |
+| `-sSTACK_OVERFLOW_CHECK` |    0     |                          栈溢出检测                          |
 
 **内存配置**
 
@@ -1113,7 +972,7 @@ emcc -lembind example.cpp -o example.js
 | :---------------------: | :--------------: | :-------------------------------------------------: |
 |   `-sINITIAL_MEMORY`    |        -1        | 初始内存大小（-1 自动计算，否则必须是 64KB 的倍数） |
 |   `-sMAXIMUM_MEMORY`    | 2147483648 (2GB) |                    最大内存限制                     |
-| `-sALLOW_MEMORY_GROWTH` |      false       |            <mark>允许内存动态增长</mark>            |
+| `-sALLOW_MEMORY_GROWTH` |      false       |                  允许内存动态增长                   |
 |     `-sSTACK_SIZE`      |   65536 (64KB)   |                     设置栈大小                      |
 
 > **提示**：由于wasm运行在游览器或者`Nodejs`内存中的，因此这里内存配置主要是配置wasm的沙箱内存。
@@ -1127,62 +986,52 @@ emcc -lembind example.cpp -o example.js
 |   `--preload-file`   |   ''   | 预加载文件到虚拟文件系统 |
 |    `--embed-file`    |   ''   |   嵌入文件到JS/wasm中    |
 
-> **提示**：游览器环境中运行代码无法访问DOM，也无法直接访问本地文件系统，因此可以使用`EMCC`的虚拟文件系统，可以预加载数据或链接到URL，方便懒加载。
->
-> 默认使用`MEMFS`虚拟文件系统，同时本地代码调用文件时，大部分会调用`libc`和`libcxx`同步文件API，会进一步调用底层的文件系统API。
->
-> 文件使用JS使用同步XHR异步加载，编译后的代码只有在异步加载完成且在虚拟文件系统可用时才允许允许，并调用同步API。
->
-> [更详细介绍文档](https://emscripten.org/docs/porting/files/file_systems_overview.html#file-system-overview)
+浏览器中的 Wasm 不能直接访问宿主文件系统。Emscripten 提供虚拟文件系统，默认使用内存中的 MEMFS；可以在运行前预加载或嵌入文件，供 C/C++ 代码通过文件 API 使用。加载方式和可用时机取决于构建选项。[文件系统说明](https://emscripten.org/docs/porting/files/file_systems_overview.html#file-system-overview)
 
 **Embind (C++ 与 JS 绑定)**
 
-|      选项       | 默认值 |                            说明                             |
-| :-------------: | :----: | :---------------------------------------------------------: |
-|   `-lembind`    | false  |        <mark>链接 Embind 库（C++ 与 JS 绑定）</mark>        |
-| `-sWASM_BIGINT` |   1    | <mark>支持 JS BigInt 与 i64 互操作（0 关闭，1 启用）</mark> |
+|      选项       | 默认值 |                      说明                      |
+| :-------------: | :----: | :--------------------------------------------: |
+|   `-lembind`    | false  |        链接 Embind 库（C++ 与 JS 绑定）        |
+| `-sWASM_BIGINT` |   1    | 支持 JS BigInt 与 i64 互操作（0 关闭，1 启用） |
 
 **WebAssembly 特性**
 
-|            选项            | 默认值 |                            说明                             |
-| :------------------------: | :----: | :---------------------------------------------------------: |
-|          `-sWASM`          |   1    | <mark>输出 WebAssembly（0 输出 asm.js，1 输出 wasm）</mark> |
-| `-sWASM_ASYNC_COMPILATION` |   1    |        <mark>异步编译 wasm（0 同步，1 异步）</mark>         |
-|    `-sSTANDALONE_WASM`     | false  |    生成一个尽量独立的 WASM，减少对外部依赖(最小imports)     |
-|     `-sIMPORT_MEMORY`      | false  |                       从外部导入内存                        |
-|       `-sEXPORT_ALL`       | false  |                   导出所有函数（调试用）                    |
+|            选项            | 默认值 |                         说明                         |
+| :------------------------: | :----: | :--------------------------------------------------: |
+|          `-sWASM`          |   1    |    输出 WebAssembly（0 输出 asm.js，1 输出 wasm）    |
+| `-sWASM_ASYNC_COMPILATION` |   1    |           异步编译 wasm（0 同步，1 异步）            |
+|    `-sSTANDALONE_WASM`     | false  | 生成一个尽量独立的 WASM，减少对外部依赖(最小imports) |
+|     `-sIMPORT_MEMORY`      | false  |                    从外部导入内存                    |
+|       `-sEXPORT_ALL`       | false  |    将已包含的 JS 符号挂到 Module；不阻止代码消除     |
 
-> **提示**：如果只是简单的计算，没有用到C++的特性如类、指针等，可以只生成wasm格式，这是占用内存和大小会小好多，而且使用也方便。
->
-> 如果涉及了特性，而且需要用到C++做很多事的时候，就需要将其编译`JS+WASM`层面，注意JS这里只是`emcc`帮你手动完成了自动创建内存、设置imports和查找加载wasm文件、全局对象的构造函数初始化以及自动实例化初始化等操作。
->
-> 此时无需手动在负责WASM与JS的交互，但是这个JS还是依赖wasm的，只是封装了它。
+选择独立 Wasm 还是 JavaScript + Wasm，应根据模块需要的导入和运行时接口决定，而不是仅凭是否使用 C++ 类或指针。Emscripten 胶水代码可以处理加载、实例化和宿主交互；独立输出仍可能需要宿主提供接口。
 
 **多线程支持**
 
-|         选项          | 默认值 |                说明                |
-| :-------------------: | :----: | :--------------------------------: |
-|      `-pthread`       | false  | <mark> 启用 Pthreads 多线程</mark> |
-| `-sPTHREAD_POOL_SIZE` |   0    |    线程池大小（0 表示按需创建）    |
-| `-sPROXY_TO_PTHREAD`  | false  |    主线程执行在 pthread 中运行     |
+|         选项          | 默认值 |             说明             |
+| :-------------------: | :----: | :--------------------------: |
+|      `-pthread`       | false  |     启用 Pthreads 多线程     |
+| `-sPTHREAD_POOL_SIZE` |   0    | 线程池大小（0 表示按需创建） |
+| `-sPROXY_TO_PTHREAD`  | false  | 主线程执行在 pthread 中运行  |
 
 **异常处理**
 
 |              选项              | 默认值 |                        说明                        |
 | :----------------------------: | :----: | :------------------------------------------------: |
-|         `-fexceptions`         | false  |  <mark> 启用 C++ 异常（Wasm 原生异常处理）</mark>  |
+|         `-fexceptions`         | false  |        启用基于 JavaScript 的 C++ 异常处理         |
 | `-sDISABLE_EXCEPTION_CATCHING` |   1    | 禁用异常捕获控制（0 启用 JS 模拟，1 禁用，默认 1） |
 |   `-sEXCEPTION_STACK_TRACES`   | false  |    异常时显示栈跟踪（ASSERTIONS=1 时默认 true）    |
 
 **代码体积优化**
 
-|          选项           |  默认值  |                                       说明                                       |
-| :---------------------: | :------: | :------------------------------------------------------------------------------: |
-|       `--closure`       |    0     | <mark>使用 Closure Compiler 压缩 JS（0 关闭，1 压缩支持代码，2 压缩全部）</mark> |
-| `--closure-args <args>` |    ''    |                           传递参数给 Closure Compiler                            |
-| `-sIGNORE_MISSING_MAIN` |    1     |                         缺少 main 函数时不报错（默认 1）                         |
-|       `-sMALLOC`        | dlmalloc | <mark>内存分配器</mark>（dlmalloc 默认，emmalloc 更小但慢，mimalloc 适合多线程） |
-|     `-sEVAL_CTORS`      |  false   |                       编译时执行构造函数（减少运行时开销）                       |
+|          选项           |  默认值  |                                说明                                 |
+| :---------------------: | :------: | :-----------------------------------------------------------------: |
+|       `--closure`       |    0     | 使用 Closure Compiler 压缩 JS（0 关闭，1 压缩支持代码，2 压缩全部） |
+| `--closure-args <args>` |    ''    |                     传递参数给 Closure Compiler                     |
+| `-sIGNORE_MISSING_MAIN` |    1     |                  缺少 main 函数时不报错（默认 1）                   |
+|       `-sMALLOC`        | dlmalloc | 内存分配器（dlmalloc 默认，emmalloc 更小但慢，mimalloc 适合多线程） |
+|     `-sEVAL_CTORS`      |  false   |                编译时执行构造函数（减少运行时开销）                 |
 
 **优化级别**
 
@@ -1190,7 +1039,7 @@ emcc -lembind example.cpp -o example.js
 | :---: | :----: | :----------------------: |
 | `-O0` |  true  | 无优化，编译最快（默认） |
 | `-O1` | false  |         基础优化         |
-| `-O2` | false  |  <mark>标准优化</mark>   |
+| `-O2` | false  |         标准优化         |
 | `-O3` | false  |         激进优化         |
 | `-Os` | false  |       优化代码体积       |
 | `-Oz` | false  |     极限压缩代码体积     |
@@ -1199,7 +1048,7 @@ emcc -lembind example.cpp -o example.js
 
 |          选项           | 默认值 |               说明               |
 | :---------------------: | :----: | :------------------------------: |
-|        `-sFETCH`        | false  | <mark>启用 Fetch API 支持</mark> |
+|        `-sFETCH`        | false  |       启用 Fetch API 支持        |
 |    `-sWEBSOCKET_URL`    | ws://  |        WebSocket 连接 URL        |
 | `-sPROXY_POSIX_SOCKETS` | false  | 通过 WebSocket 代理 POSIX socket |
 
@@ -1209,26 +1058,26 @@ emcc -lembind example.cpp -o example.js
 
 **库支持**
 
-|         选项          | 默认值 |                 说明                 |
-| :-------------------: | :----: | :----------------------------------: |
-|      `-sUSE_SDL`      |   0    | <mark>使用 SDL</mark>（2 表示 SDL2） |
-|     `-sUSE_ZLIB`      | false  |              使用 zlib               |
-|    `-sUSE_LIBPNG`     | false  |             使用 libpng              |
-|   `-sUSE_FREETYPE`    | false  |            使用 FreeType             |
-| `-sUSE_BOOST_HEADERS` | false  |          使用 Boost 头文件           |
+|         选项          | 默认值 |          说明           |
+| :-------------------: | :----: | :---------------------: |
+|      `-sUSE_SDL`      |   0    | 使用 SDL（2 表示 SDL2） |
+|     `-sUSE_ZLIB`      | false  |        使用 zlib        |
+|    `-sUSE_LIBPNG`     | false  |       使用 libpng       |
+|   `-sUSE_FREETYPE`    | false  |      使用 FreeType      |
+| `-sUSE_BOOST_HEADERS` | false  |    使用 Boost 头文件    |
 
 **运行时行为**
 
 |       选项       | 默认值 |                  说明                   |
 | :--------------: | :----: | :-------------------------------------: |
-|  `-sINVOKE_RUN`  |  true  |      <mark>自动运行 main()</mark>       |
+|  `-sINVOKE_RUN`  |  true  |             自动运行 main()             |
 | `-sEXIT_RUNTIME` | false  | main 结束后清理运行时（调用 atexit 等） |
 
 **其他高级选项**
 
 |            选项            |    默认值    |                           说明                           |
 | :------------------------: | :----------: | :------------------------------------------------------: |
-|         `-sSTRICT`         |    false     |     <mark>严格模式</mark>（检查废弃选项，向前兼容）      |
+|         `-sSTRICT`         |    false     |            严格模式（检查废弃选项，向前兼容）            |
 |        `-sVERBOSE`         |    false     |                     编译过程详细输出                     |
 |   `-sMIN_CHROME_VERSION`   |      85      |          最低 Chrome 版本（85 = 2020-08 发布）           |
 |  `-sMIN_FIREFOX_VERSION`   |      79      |          最低 Firefox 版本（79 = 2020-07 发布）          |

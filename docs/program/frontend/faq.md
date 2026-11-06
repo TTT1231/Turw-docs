@@ -6,16 +6,9 @@ outline: deep
 
 ## 大文件上传
 
-快速概览：分片上传一般分三步 — 前端分片并上传、后端临时存储、完成后合并。
+分片上传将大文件拆成多个请求。服务端暂存并校验分片，全部上传完成后再合并；失败时只需补传缺失分片。
 
-::: tip 提示
-常见要点：断点续传、分片哈希校验、使用 AbortController 终止请求、把耗时计算交给 Web Worker。
-:::
-
-**分片断点终止上传**
-
-主要实现用户可以对大文件请求进行终止和根据文件内容hash去判断在服务端有没有分片  
-对之前上传的分片继续上传，提高上传速率和容错率。
+实现时重点关注分片和文件哈希校验、断点续传、取消请求，以及将耗时计算交给 Web Worker。下面先展示顺序上传和合并的基本流程，再给出断点续传的项目示例。基本流程省略了服务端鉴权、参数校验和路径安全处理，不能直接用于生产。
 
 ::: code-group-fold line-numbers
 
@@ -42,13 +35,13 @@ const handleUpLoadFiles = async (e: Event) => {
         formData.append('fileId', fileId);
         formData.append('chunkIndex', i.toString());
 
-        $fetch('/api/upload', {
+        await $fetch('/api/upload', {
             method: 'POST',
             body: formData
         });
     }
     //合并
-    await $fetch('/api/merage', {
+    await $fetch('/api/merge', {
         method: 'POST',
         body: { fileId, fileName }
     });
@@ -77,12 +70,10 @@ export default defineEventHandler(async (event) => {
 
 ### 要点速览
 
-- 前端：主线程分片、Worker 计算哈希、预检断点续传、使用 AbortController 终止上传
-- 后端：接收分片、校验分片哈希、临时保存并在完成后合并
+- 前端：分片、使用 Worker 计算哈希，预检已上传分片，并用 `AbortController` 取消请求。
+- 后端：接收并校验分片，临时保存；确认分片齐全后合并。
 
-::: warning 注意
-为保证一致性，前后端应使用相同的分片/文件哈希算法；大文件优先传 ArrayBuffer 给 Worker
-:::
+前后端需要约定一致的哈希算法和分片规则。下面的项目示例依赖特定接口和类型；其哈希实现一次读取所有分片，大文件会占用较多内存，实际使用时应改为逐片读取和增量计算。传递 `ArrayBuffer` 时可使用可转移对象减少线程间的数据复制。
 
 ::: code-group-fold line-numbers
 
@@ -96,7 +87,6 @@ const simulateFileUpload = async (file: UploadFile): Promise<void> => {
         console.log(message);
         file.progress = file.progress || 0;
         file.status = 'error';
-        throw new Error(message);
     };
 
     // 监听中止信号，通过AbortController 中abort中止信号
@@ -412,15 +402,17 @@ self.onmessage = function (e) {
 
 ## 响应式对象数据性能问题
 
-问题概述：大量深层响应式对象会触发过多依赖追踪，渲染时会卡顿。
+大量深层响应式数据可能增加依赖追踪和渲染成本。先用性能工具确认瓶颈，再按数据的更新方式处理：
 
-::: tip 解决方案
-使用 shallowReactive / shallowRef、markRaw、Object.freeze 或 readonly 来避免不必要的响应式追踪；列表建议使用虚拟列表按需渲染。
-:::
+- 只需追踪根引用变化时，使用 `shallowRef` 或 `shallowReactive`；更新嵌套数据后需替换根引用或显式触发更新。
+- 不需要响应式转换的对象可用 `markRaw`；不可变数据可考虑 `Object.freeze`。
+- 大列表使用虚拟列表，只渲染可视区域附近的项目。
+
+`readonly` 用于禁止通过该代理修改数据，不应视为取消依赖追踪的通用性能优化。
 
 ## 下拉组件下拉效果不显示及其动画问题
 
-要点：动画类**必须配对**（例如 h 与 h，或 max-h 与 max-h），不能以 `h-auto` 作为过渡目标。常用解决：
+高度过渡需要可插值的起止值；`height: auto` 在许多场景下不能直接作为过渡目标。常用方案：
 
 - 使用 JS 动态计算高度并设置内联 transition（注意触发重排）
 - 或使用 CSS transform scaleY（origin-top）实现无回流的平滑动画
@@ -472,14 +464,7 @@ onMounted(() => {
 
 :::
 
-还有一种方案不使用js使用css中scale实现，对内容进行y轴缩放实现动画效果。  
-效率很高不会触发游览器重排，动画更流畅，性能更好。
-
-::: warning 注意
-由于 scale 是 transform 的子属性（操作的是 transform 变换），所以动画效果要基于 transform 属性实现，而非直接操作 `width/height` 等布局属性
-:::
-
-这里效果是从上到下（默认中间散开）所以需要origin-top`transform-origin: top;`设置动画起点
+另一种方案使用 `transform: scaleY()` 缩放内容，避免动画过程中反复修改布局尺寸。它不会改变元素占据的布局空间；需要从顶部展开时，设置 `transform-origin: top`。
 
 ::: code-group-fold line-numbers
 
@@ -502,20 +487,13 @@ onMounted(() => {
 
 ## 动态数据渲染CLS问题
 
-在初次渲染数据时，如果采用骨架屏去占位，
+数据加载前预留的空间过小，加载后的内容会把页脚等元素推走，造成布局偏移（CLS）。可以根据内容数量和预计尺寸设计骨架屏，或为容器预留合适高度。
 
-> [!WARNING]
-> **如果采用简单宽度占位**，此时如果有footer页脚的话，在数据初始化完后渲染时，footer会被大量内容推下去，产生CLS（cumulative layout shift累计布局偏移）的值会迅速升高。
-
-::: tip 解决方案
-动态预估实际内容数量、或者预留合适空间避免布局偏移。如果是在第一个数据已经知道的情况下，预估第一个数据的布局所占用的长和宽，然后根据总数据的length去动态设置骨架屏的占位
-:::
-
-**还有一种方法就是虚拟滚动**，以vueuse中useVirtualList为例，也差不多，但是要限制容器高度触发滚动。
+长列表还可以使用虚拟滚动，例如 VueUse 的 `useVirtualList`；应同时为滚动容器设置合适的高度。
 
 ## 二次组件封装
 
-注意封装完后，需要将事件通过ref去暴露。
+封装组件时，按需透传属性和事件；需要父组件通过模板 ref 调用的方法，则使用 `defineExpose` 显式暴露。
 
 ::: code-group-fold line-numbers
 
@@ -559,20 +537,14 @@ defineExpose({} as ButtonInstance);
 
 ### 参数序列化
 
-| 格式名   | 示例 URL 查询参数                                   | 预期解析结果:smiley:       |
+| 格式名   | 示例 URL 查询参数                                   | 解析结果示例               |
 | -------- | --------------------------------------------------- | -------------------------- |
 | indices  | `http://localhost:3000/?ids[0]=1&ids[1]=2&ids[2]=3` | `{ ids: ["1", "2", "3"] }` |
 | brackets | `http://localhost:3000/?ids[]=1&ids[]=2&ids[]=3`    | `{ ids: ["1", "2", "3"] }` |
 | comma    | `http://localhost:3000/?ids=1,2,3`                  | `{ ids: "1,2,3" }`         |
 | repeat   | `http://localhost:3000/?ids=1&ids=2&ids=3`          | `{ ids: ["1", "2", "3"] }` |
 
-**框架参数序列化支持**
-
-|         框架/格式         |      brackets      |      indices       |       comma        |       repeat       |
-| :-----------------------: | :----------------: | :----------------: | :----------------: | :----------------: |
-| NestJS（Express+fastify） |        :x:         |        :x:         | :white_check_mark: | :white_check_mark: |
-|       Node Express        | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-|          Fastify          |        :x:         |        :x:         | :white_check_mark: | :white_check_mark: |
+服务端能否将这些格式解析为数组，取决于框架及其查询解析器配置。尤其是 `indices`、`brackets` 和 `comma` 的处理方式可能不同；应以前后端实际约定和测试结果为准。
 
 ### 实现
 
@@ -1178,7 +1150,7 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 
 :::
 
-::: tip 后端返回以下数据类型
+后端返回数据示例：
 
 ```json
 {
@@ -1188,73 +1160,31 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 }
 ```
 
-:::
-
 ## 性能优化
 
 ### 重绘与回流优化
 
-|                 观点                 |                                                                                                       描述                                                                                                       |
-| :----------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|     回流影响布局，性能**损耗大**     |                                                                        回流是“布局重计算”，会触发DOM树重新排版，是性能开销最大的渲染操作                                                                         |
-|    重绘影响外观，性能**损耗不大**    |                                                                                      重绘核心是“非几何属性变化”，例如颜色等                                                                                      |
-| 响应式数据变化都可能会影响回流和重绘 | ① 数据变化但未关联 DOM 更新（比如纯逻辑数据）→ **无回流 / 重绘**；<br> ② 数据变化关联 DOM，但仅修改非几何属性（如color）→ **只重绘，无回流；**<br>③ 数据变化关联 DOM，且修改几何属性（如width）→ **回流 + 重绘** |
+浏览器更新页面时，布局变化可能引发回流（重新计算元素的位置和尺寸）；外观变化可能引发重绘。实际开销取决于受影响的范围和绘制内容，不能简单认为某一种操作总是昂贵或廉价。
 
-> [!IMPORTANT] 优化减少重绘和回流
->
-> - 批量修改dom，`减少`回流
-> - 先脱离文档流，然后修改dom，最后在一次性更新dom，使得回流`降低`2次
-> - 使用游览器内部提供批量操作dom api DocumentFragment，一次性操作dom，`减少`回流
-> - 使用requestAnimationFrame跟随游览器频率，`不掉帧`
+- 数据变化没有导致 DOM 更新时，不会因此产生回流或重绘。
+- 修改颜色等外观属性可能只需重绘；修改宽高等几何属性通常需要重新布局，并可能触发重绘。
+- 批量读取布局、再批量写入样式，避免交替读写导致强制同步布局。可将多个 DOM 更新集中处理。
+- 动画优先考虑 `transform` 和 `opacity`，并通过性能工具验证效果。`requestAnimationFrame` 能把更新安排到浏览器的绘制周期，但不能保证不掉帧。
 
 ### FP/FCP/LCP/CLS优化
 
-::: info FP
+| 指标                            | 含义                                 | 主要优化方向                                                     |
+| ------------------------------- | ------------------------------------ | ---------------------------------------------------------------- |
+| FP（First Paint）               | 页面首次绘制出像素的时间             | 缩短 HTML 请求时间，减少阻塞渲染的资源                           |
+| FCP（First Contentful Paint）   | 首次绘制文本、图片等内容的时间       | 优化关键 CSS，移除未使用样式，减少渲染阻塞                       |
+| LCP（Largest Contentful Paint） | 视口内最大内容元素的渲染时间         | 尽早发现和加载首屏关键资源，压缩图片，减少服务端响应和主线程阻塞 |
+| CLS（Cumulative Layout Shift）  | 页面生命周期中意外布局偏移的累积指标 | 为图片、广告和动态内容预留空间，避免在已有内容上方突然插入元素   |
 
-`First Paint`首次绘制，游览器首次将像素点渲染到屏幕上的时间点。
-
-**优化目标方向**:
-
-- 网络请求耗时（HTML文件下载、解析）
-- 减少阻塞渲染进程执行JS
-
-**FCP**
-
-`First Contentful Paint` 首次绘制文本、图片、canvas等有意义内容的时间
-
-**优化目标方向**：
-
-- 压缩css体积
-- 移除未使用css
-
-**LCP**
-
-`Largest Contentful Paint` 视口最大可见元素的绘制时间
-
-**优化目标方向**：
-
-- 图片懒加载、压缩
-- 减少JS执行时间（主要就是JS阻塞了主渲染进程）
-- 缩短核心环节【渲染树构建->布局->绘制】耗时，让最大元素更快出现在屏幕上
-
-**CLS**
-
-`Cumulative Layout Shift` 累积布局偏移，页面加载期间元素位移的总和。
-
-**优化目标方向**：
-
-- 为图片设置宽和高
-- 预留空间
-- 避免动态修改元素位置/尺寸
-- 合理设置视口（`ViewPort`）,解决移动端一致性
-- 减少运行时样式修改，避免JS的意外重排
-:::
+对于可能成为 LCP 的首屏图片，不要默认使用懒加载；页面外的图片则可以按需懒加载。
 
 ### Vite优化
 
-**vite8**之前，`pnpm run dev`时候，vite主要采用`esbuild`将`ts->js`并配置`.vite`缓存，使得HMR开发热更新能够实时反馈。正式生产时采用`rollup`进行生产构建，将所有源代码和依赖打包成优化的生产文件。
-
-因此这里优化方向主要就是**开发esbuild构建优化**和**生产rollup构建优化**
+优化 Vite 时，分别关注开发启动与热更新速度、生产包大小和浏览器缓存。下面的配置以 Vite 8 之前使用 Rollup 的版本为例；升级时应对照当前版本文档检查构建选项。
 
 ::: code-group-fold line-numbers
 
@@ -1262,25 +1192,25 @@ const fileBlob2Body = await client.download(`/download/test.txt`, {
 // =======================  rollup 构建分包优化 - 依赖预构建===================
 // vite.config.js
 export default defineConfig({
-   build: {
-      rollupOptions: {
-         output: {
-            // 拆分包：将第三方依赖和业务代码分离
-            manualChunks: {
-               vue-vendor: ['vue', 'vue-router'], // vue提供商
-               axios-http:['axios'], //网络请求
-               antd-vue:['ant-design-vue']
-               //other .....
+    build: {
+        rollupOptions: {
+            output: {
+                // 拆分包：将第三方依赖和业务代码分离
+                manualChunks: {
+                    'vue-vendor': ['vue', 'vue-router'], // Vue 相关依赖
+                    'axios-http': ['axios'], // 网络请求
+                    'antd-vue': ['ant-design-vue']
+                    //other .....
+                }
             }
-         }
-      }
-   },
-   //TODO: 依赖预构建优化
-   //主要就是缓存一些常见的，和一些不需要的
-   optimizeDeps:{
-     include: ['vue', 'vue-router', 'pinia'],//预构建依赖
-     exclude: [],//排除预构建依赖
-  }
+        }
+    },
+    //TODO: 依赖预构建优化
+    //主要就是缓存一些常见的，和一些不需要的
+    optimizeDeps: {
+        include: ['vue', 'vue-router', 'pinia'], //预构建依赖
+        exclude: [] //排除预构建依赖
+    }
 });
 ```
 
@@ -1288,91 +1218,53 @@ export default defineConfig({
 // =======================  生产构建压缩优化 - CSS优化 ===================
 // vite.config.js
 export default defineConfig({
-   build: {
-      //[!code warning] 生产关闭
-      sourcemap: false
-      //如果要极致压缩，不考虑时间效率的话可以选用terser
-      minify: 'terser' //默认使用esbuild进行压缩，来平衡性能和压缩效率
-      //配置，可以参考如下：
-      // https://terser.org/docs/api-reference/#minify-options
-      terserOptions: {
-         maxWorkers:4 //cpu工作数
-         //[!code warning]
-         //!如果想要自定义的terserOptions必须要terser依赖
-         //`pnpm add terser -D`
-      },
+    build: {
+        //[!code warning] 生产关闭
+        sourcemap: false,
+        // 根据压缩率和构建速度的权衡选择压缩器
+        minify: 'terser',
+        //配置，可以参考如下：
+        // https://terser.org/docs/api-reference/#minify-options
+        terserOptions: {
+            maxWorkers: 4 //cpu工作数
+            //[!code warning]
+            //!如果想要自定义的terserOptions必须要terser依赖
+            //`pnpm add terser -D`
+        },
 
-      //TODO: CSS分离与优化
-      cssCodeSplit: true, // 启用 CSS 代码拆分
-      cssMinify: true, // 启用 CSS 压缩
-   }
+        //TODO: CSS分离与优化
+        cssCodeSplit: true, // 启用 CSS 代码拆分
+        cssMinify: true // 启用 CSS 压缩
+    }
 });
 ```
 
 :::
 
-::: tip 分包法则
-代码不分包虽然可以运行，但是如果是CDN或者静态资源代理JS的时候，修改一行代码会导致一个大的包全部都要编译，而不是按需编译（也就是改动代码的那一个包）。
+分包可以让更新频率不同的代码分别缓存，减少后续访问需要重新下载的资源；它不等同于开发时的 HMR。分包过细也可能增加请求和管理开销，应结合构建分析结果调整。
 
-也就是分包使得部署也能跟开发一样有HMR热更新功能，改动打包完成之后直接替换改动的包，特别是在用户游览器缓存这些包的时候，下次访问只需要下载改动的包即可完成访问。
-
-这样就大幅度降低了服务器资源消耗，和用户网络资源，对网络条件不好的用户非常友好。
-
-因此分包就是**优化缓存策略**，在进行分包的时候，可以针对一些第三方库单独打包，业务代码按照需求和分析打包结果分包。
-:::
-
-::: danger 危险
-
-**Vite8**发布之后，开发和生产统一使用了**Rolldown**，来避免开发与生产不一致效应，同时其性能提升大约**15倍**，因此`esbuild`和`rollup`构建优化在未来不会适用。
-
-:::
+Vite 8 使用 Rolldown 统一开发和生产构建。版本升级后应重新核对配置，不能直接假设旧版 Rollup 或 esbuild 的所有选项仍然适用。
 
 ### 内存优化
 
-`内存优化核心`降低内存的使用，使得垃圾回收器（GC）充分发挥作用。
+内存优化的重点是释放不再需要的引用，让垃圾回收器能够回收对象。常见排查方向：
 
-内存泄漏常见情况：
+- 全局变量、缓存或闭包仍引用不再使用的数据。
+- 定时器、订阅或手动注册的事件监听器在组件销毁后仍未清理。
+- 已移出文档的 DOM 节点仍被 JavaScript 引用。
+- 异步创建的 Vue watcher 未绑定组件生命周期；必要时保存并调用其停止函数。
 
-- 意外全局变量（挂在`windows`下，没有被释放掉）
-- 没有清理的定时器或者回调（setInterval、setTimeout），没有被`clear`掉
-- 闭包内部维持的局部变量，忘记指向为空，得不到释放（不需要时，还在被引用）
-- DOM节点从DOM树中移除了（removeChild），但是还是被引用，GC无法回收该节点和父节点，**DOM数连通的**
-- 绑定了事件监听器，在元素被移除或组件销毁时，没有手动移除`removeEventListener`，主要发生在手动给dom元素绑定事件（`addEventListener`）
-- `watch/watchEffect`监听外部变量，`vue`中`onUnMounted`不会自动回收该回调，导致内存泄漏（监听组件内部变量不会有该情况）
-- 自定义指令`v-[direct name]`中`onUnMounted`内部引用的定时器等没有清理干净
-
-> [!CAUTION] 特别小心
-> 当使用`windows`去保留引用的时候，例如状态、组件实例的时候，很容易导致内存泄漏，主要就是全局`windows`对象当每个组件都去使用的时候，导致管理混乱。
+在组件的卸载钩子或自定义指令的卸载钩子中，清理对应的定时器、监听器和订阅。同步创建于组件 `setup` 中的 watcher 通常由 Vue 自动停止。
 
 ### 静态资源优化
 
-**图片优化：**
+图片优化需要同时考虑文件大小、显示尺寸和加载时机。可用 [Squoosh](https://squoosh.app/) 比较画质与体积，选择适合浏览器兼容要求的格式，例如 JPEG、PNG、WebP 或 AVIF；压缩效果取决于图片和编码设置。
 
-::: info squoosh图片压缩
-在选择图片时，这里采用外部插件进行优化后，在放到项目当中去。这里选用[squoosh](https://squoosh.app/)进行图片可视化压缩，来权衡画质和图片体积。
+- 首屏关键图片尽早加载；视口外的非关键图片可使用 `loading="lazy"`。
+- 可使用 `decoding="async"` 提示浏览器异步解码，但实际调度由浏览器决定。
+- 使用 `srcset` 提供不同尺寸的图片；搭配宽度描述符 `w` 时，使用 `sizes` 描述图片实际显示宽度。`picture` 的 `media` 可以按媒体条件选择不同图片。
 
-|           场景            |    推荐选项    | 输出格式  |
-| :-----------------------: | :------------: | :-------: |
-|          兼容性           |    MozJPEG     |   .jpg    |
-|    透明背景 + 较小体积    |     OxiPNG     |   .png    |
-|     现代设备 + 小体积     |      WebP      |   .webp   |
-| **现代设备 + 极致小体积** |    **AVIF**    | **.avif** |
-|      无损压缩 + 临时      | JPEG XL (beta) |   .jxl    |
-
-优先选用`AVIF`其比`WebP`小**20%-50%**,而且压缩效率也比`WebP`快。
-:::
-
-由于游览器会在首次请求的时候一次性全部下载和加载所有的图片，哪怕图片在屏幕外，同时等到真正加载的时候会将图片进行解码解码成像素点进行渲染，因此可以从这两个方面入手。
-
-> [!IMPORTANT] 图片性能优化核心
->
-> - **图片加载优化**，例如首屏图片不用立即渲染的，可以使用`H5`的`loading lazy`属性，将图片加载延迟到视口内（也即位于可视化页面中，能够被看的见的）
-> - **图片解码优化**，例如首屏图片不用立即渲染的，可以使用`H5`的`decoding async`控制，来控制图片的解码，将图片的解码去放到后台中进行（类似`Web Worker`），避免解码堵塞了主渲染进程，造成卡顿
-
-::: tip 图片展示
-由于`media`只能用作筛选，不能处理DPR，因此需要这个`size`，如果是只适配手机的话，可以加上`media="(max-width: 640px)"`，去处理手机。
-
-`size`可以针对不同的图片，可以根据不同设备尺寸和分辨率去设置图片源，来展示图片。例如：
+下面的示例按视口选择图片来源：
 
 <!-- prettier-ignore-start -->
 ```vue 
@@ -1409,35 +1301,15 @@ export default defineConfig({
 ```
 <!-- prettier-ignore-end -->
 
-:::
-
-::: warning 注意
-使用`srcset`去定义不同分辨率的图片源的时候，必须要`sizes`去告诉游览器图片显示尺寸，否则游览器默认使用视口的全宽作为图片的显示宽度，会导致选错图片（**错选大图**）
-
-同时这个`srcset`必须要指定描述符`w`去告诉游览器这张图片原始的width是多少像素,
-
-例如`  <source srcset="../public/logo@3x.png 3x">`
-:::
+使用 `w` 描述符时，如果省略 `sizes`，浏览器通常按 `100vw` 选择资源，可能下载比实际显示尺寸更大的图片。使用像素密度描述符（如 `3x`）时不需要 `sizes`。
 
 ### 网络资源压缩
 
-`Web`应用中(js、CSS、HTML)数据打包之后，在网络传输上响应体比较大，在网络不佳情况下，打开应用比较卡顿，同时响应体大意味者服务器网络资源消耗大，因此实际中往往会将该资源打包。
+对 HTML、CSS 和 JavaScript 等文本资源启用 Gzip 或 Brotli，可以减少传输体积。服务器根据客户端支持情况返回相应的 `Content-Encoding`。
 
-常见有`Gzip`和`Brotli`格式，游览器响应体对应`Content-Encoding: gzip/br`。
+| 方式     | 处理时机                 | 取舍                                                 |
+| -------- | ------------------------ | ---------------------------------------------------- |
+| 预压缩   | 构建或部署时生成压缩文件 | 增加构建时间和存储，但请求时可直接发送               |
+| 动态压缩 | 服务器响应请求时压缩     | 部署简单，但会占用运行时 CPU；是否缓存取决于服务配置 |
 
-::: info 预构建与Nginx动态对比
-
-**预构建：**
-
-前端预构建就是，`压缩阶段`工作在前端，前端负责压缩成`gz`和`br`格式，然后Nginx直接使用即可，但是这会耗费很多构建时间，开发不友好，而且dist目录会产生很多`gz`和`br`格式，管理混乱。
-
-**Nginx动态压缩：**
-
-`压缩阶段`工作Nginx负责，效率比前端快，而且对开发特别友好，开发者只负责打包构建即可,dist目录也没有多余的`br`,`gz`格式文件，可以很方便的分析打包构建结果，进行构建优化，剩下工作交给Nginx负责，其有缓存，但是首次请求时会很慢
-:::
-
-::: tip Brotli与Gzip
-由于`brotli`比`gzip`压缩效率更高，但是耗时会很多，实际运行效率却比`gzip`高。
-
-因此实际过程中，如果需要快速上线就直接选用`gzip`，后续如果发现占用太高上线出现了问题直接换`brotli`
-:::
+Brotli 通常能提供更高的压缩率，但具体体积和耗时受内容与压缩级别影响。结合部署环境、CPU 成本和浏览器支持情况选择。

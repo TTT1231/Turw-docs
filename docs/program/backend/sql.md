@@ -4,117 +4,80 @@ outline: deep
 
 # SQL
 
-在后端中，简化SQL语句的编写，和迁移的简单，这里采用prisma。
+Prisma 可以通过类型化客户端访问数据库，并管理数据库 schema 和迁移。
 
 ## prisma
 
-Prisma将表看成一个对象(model)，所有操作都看作对象的操作，将SQL操作表迁移到对象操作，如果考虑**性能优化** 的情况下，使用`prisma`会有性能损失，因为它会将对象操作转化SQL有性能损失，同时如果涉及子查询、复杂SQL编写，其缺点显著。
-
-::: tip 提示
-简单查询用ORM，复杂查询考虑性能的话回退SQL编写的混合策略
-:::
+Prisma 将数据模型映射为客户端 API，适合常规的增删改查和类型安全需求。复杂查询可以结合原生 SQL；是否有性能问题应结合生成的 SQL、索引和实际负载测量，而不是仅凭是否使用 ORM 判断。
 
 ### prisma使用
 
-为了迁移的SQL迁移文件有更好的注释和简化注释操作，这里用husky对迁移文件自动注入**SQL头**注释信息，对于一些自定义注释则使用bash手动编写。
+迁移文件可以记录变更摘要和回滚方案，便于审查。下面用 Husky 在提交前检查暂存区中的迁移文件是否有约定的注释头；检查本身不改写文件，也不会自动暂存其他改动。
 
-**Install husky**
-
-```sh:no-line-numbers
+```sh
 pnpm add --save-dev husky
-```
-
-**husky init**
-
-```sh:no-line-numbers
 pnpm exec husky init
 ```
 
-**然后编辑.husky的git commit提交之前的hook（pre-commit）**
-
-::: code-group
+编辑 `.husky/pre-commit`：
 
 ```sh [pre-commit]
-# .husky/pre-commit
+#!/bin/sh
 
-# Prettier 格式化
-prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
-
-# Prisma 迁移文件添加提交信息头
-find prisma/migrations -name "migration.sql" | while read -r file; do
-  if ! grep -q '^-- ------github commit hooks触发---------' "$file"; then
-
-    # 头信息
-    header="-- ------github commit hooks触发---------
--- 作者: $(git config user.name)
--- 邮箱: $(git config user.email)
--- Git分支: $(git branch --show-current)
--- 关联提交: $(git rev-parse --short HEAD)
--- 提交日期: $(date +'%Y-%m-%d %H:%M:%S')
-"
-    # 插入头
-    echo "$header" | cat - "$file" > temp && mv temp "$file"
-    echo "✅ 已为 $file 添加Git提交头"
-    git add "$file"
+git diff --cached --name-only --diff-filter=ACM -- 'prisma/migrations/**/migration.sql' |
+while IFS= read -r file; do
+  if ! git show ":$file" | grep -q '^-- -----------sh 脚本生成----------------'; then
+    printf '迁移文件缺少注释头：%s\n' "$file" >&2
+    exit 1
   fi
 done
-
-#  更新 Git 索引
-git update-index --again
 ```
 
-:::
+路径和注释格式可按项目约定调整。只检查暂存区并不等于验证 SQL 或回滚方案；提交前仍需审阅迁移内容。
 
-**创建自定义的sh，在生成迁移完后执行自动添加自定义信息**，这里主要就是执行脚本添加头部信息，
-脚本是手动执行，如果要自动执行直接在`package.json`配置命令即可。
-
-> 但是具体的详细信息要手动添加，因为这是不清晰的模糊的。
+生成迁移后，可以对尚未应用的新迁移运行下面的脚本，再手动填写变更摘要和回滚方案。脚本只修改参数指定的文件，不会自动暂存。
 
 ```sh
 #!/bin/bash
+set -eu
 
-# 严格符合以下格式：
-# -- -----------sh 脚本生成----------------
-# -- 迁移ID: [migration文件夹名称]
-# -- 创建日期:[sh脚本创建日期]
-# -- 变更摘要: [变更摘要]
-# -- 回滚方案: [回滚方案]
+file=${1:?请指定需要添加注释的 migration.sql 文件}
+if [ ! -f "$file" ]; then
+  printf '文件不存在：%s\n' "$file" >&2
+  exit 1
+fi
+if grep -q '^-- -----------sh 脚本生成----------------' "$file"; then
+  printf '文件已有注释头：%s\n' "$file"
+  exit 0
+fi
 
-MIGRATIONS_DIR="prisma/migrations"
-
-find "$MIGRATIONS_DIR" -name "migration.sql" | while read -r file; do
-  # 检查是否存在标准头信息
-  if ! grep -q '^-- -----------sh 脚本生成----------------' "$file"; then
-    migration_id=$(basename "$(dirname "$file")")
-    header="-- -----------sh 脚本生成----------------
--- 迁移ID: $migration_id
--- 创建日期: $(date +'%Y-%m-%d %H:%M:%S')
--- 变更摘要:
--- 回滚方案:
-
-"
-    # 插入头信息到文件开头
-    echo "$header" > temp_file
-    cat "$file" >> temp_file
-    mv temp_file "$file"
-
-    echo "✅ 已为 $file 添加标准注释头"
-  fi
-done
+migration_id=$(basename "$(dirname "$file")")
+tmp=$(mktemp "${file}.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+{
+  printf '%s\n' '-- -----------sh 脚本生成----------------'
+  printf '%s\n' "-- 迁移ID: $migration_id"
+  printf '%s\n' "-- 创建日期: $(date +'%Y-%m-%d %H:%M:%S')"
+  printf '%s\n\n' '-- 变更摘要:' '-- 回滚方案:'
+  cat "$file"
+} > "$tmp"
+mv "$tmp" "$file"
 ```
 
-::: warning 注意
-上面两个插入SQL头注释的prisma目录，按照实际目录进行更改，这里是以prisma/migrations（项目根目录下）。
+例如，将脚本保存为 `scripts/add-migration-header.sh` 后，对新迁移运行：
 
-上面配置`sh`目的就是为了在进入prisma迁移文件中，能够一眼就能看到所改动的内容
-:::
+```sh
+bash scripts/add-migration-header.sh prisma/migrations/20260101000000_init/migration.sql
+```
+
+提交检查中的迁移目录以项目根目录的 `prisma/migrations` 为例，使用其他路径时需调整。已经应用或共享的迁移不应随意改写，通常应创建新的迁移记录后续变更。
 
 **安装prisma**
 
 ```bash
 pnpm install prisma -D
 
-<!-- init -->
+# 初始化 MySQL 数据源
 npx prisma init --datasource-provider mysql --output ../generated/prisma
 ```
 
@@ -136,77 +99,43 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
-针对prisma中迁移历史，可以进行更改，但是前提是要保证该更改不会影响其它表，这样做会造成历史混乱，所以直接使用**前驱**修改，也即增加一个前驱历史这个历史删除或者修改之前的表。
+迁移已经应用到共享环境后，通常应新增迁移来修改数据库，而不是改写既有迁移历史。生成客户端、开发迁移和生产部署的命令及连接配置可能随 Prisma 版本变化。
 
-> [!IMPORTANT]
-> 由于prisma7+中output必填，导致**Prisma客户端**被生成到了指定的output目录中，而每次npx prisma generate 的时候会变化，当使用自定义引入类型文件时注意引入的生成路径。该方法解决客户端类型报错问题。
->
-> 例如`import { PrismaClient } from '../generated/prisma/index';`其中后面的from对应output中的路径，此时就是依赖动态生成的客户端。
+Prisma 7 默认使用 `prisma-client` 生成器，需要指定 `output`；生成后应从对应目录导入客户端，而不是假设它总在 `node_modules`。旧的 `prisma-client-js` 生成器行为不同。详见 [Prisma 生成器文档](https://www.prisma.io/docs/orm/prisma-schema/overview/generators)。
 
 ### prisma打包问题
 
-**esbuild打包问题**
+打包时，先确认项目使用的 Prisma 版本、生成器和输出路径。运行时必须能找到生成的客户端及其所需依赖；不要把“放进 `node_modules`”或“将生成目录作为本地包”当作所有版本的通用修复方式。
 
-> [!CAUTION]
-> 如果在prisma手动配置了output位置不是`node_modules`，`@prisma/client`包在运行时动态查找时会导致找不到这个模块，导致直接引入@prisma/client包找不到任何东西，也即类型错误。
+Prisma 7 默认生成器的示例配置：
 
-虽然可以手动引入prisma生成的client但是esbuild进行打包运行就会报错模块找不到问题，一个简单方法**直接默认或者手动生成进node_modules目录**与@prisma/client动态查找包就会生效，esbuild配置也简单。
-
-但是打包后的dist目录不能脱离`node_modules`,因为SQL的执行依赖prisma client，脱离node引入模块时就会失败。
-
-::: code-group
-
-```ts [schema.prisma]
-
+```prisma
 generator client {
-  provider = "prisma-client-js"
-  //这里很重要，也可以默认不填，但是为了更好的排除动态生成的影响还是要配置一些要好，
-  //这样在部署的时候就不用担心版本和迁移问题，每次只需要删除动态生成的客户端，然后执行npx prisma generate即可
-  //然后打包的时候排除这个目录即可
-   output   = "../generated/prisma"
-
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
-
 ```
 
-:::
-
-**import type问题**
-
-`import {PrismaClient} from '@prisma/client'`这里会出错，连接问题，解决方案时在`package.json`中的dependencies中添加:
-
-```json
-"dependencies": {
-   "prisma-client": "file:./generated/prisma" //[!code ++]
-},
-```
-
-然后执行`pnpm i`链接到这个包既可以正常导入了
-
-如果嫌弃手动dependencies过程麻烦，也可以在构建时执行`pnpm add <url>`,这个url指向构建好的PrismaClient，注意地址问题，也就是这个url工作目录也就是当前工作目录是处于`项目根目录的`
+运行 `npx prisma generate` 后，从生成目录导入客户端。打包或部署时还要根据数据库驱动、目标平台和构建方式保留所需文件，具体参见 [Prisma Client 生成说明](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/generating-prisma-client)。
 
 ### 部署
 
-部署的时候将打包好的`dist`文件传递到服务器中，注意这个prisma的配置和历史文件，因为这里的动态生成prisma客户端依赖这个schema.prisma文件，然后执行npx prisma generate生成一下即可
+部署前确认目标环境包含客户端及其运行时依赖，并在合适的构建步骤生成客户端。生产环境使用 `prisma migrate deploy` 应用待执行的迁移；配置数据库连接、迁移文件及权限时应遵循项目部署流程。
 
 ## 索引优化
 
-索引：核心提高数据库的查询速度（空间换时间），**适合频繁需要的查询，但是不能经常更新索引，否则索引需要经常更新得不偿失**
+索引用额外存储空间和写入维护成本换取更快的特定查询。应根据查询条件、排序、数据分布和执行计划选择索引；表频繁更新时尤其需要衡量写入开销。
 
-索引type
+常见索引类型：
 
-- NORMAL 普通索引，只是单纯加快查询速度，基本索引类型。
-- UNIQUE 唯一索引，加快查询速度的同时，强制要求索引列唯一。
-- FULLTEXT 全文索引，与搜索引擎类似，查找文本中关键词等。
-- SPATTAL 空间索引，用于点、线、
-  面等地理位置和空间查询。
+- **普通索引**：辅助查询，不限制列值重复。
+- **唯一索引**：除辅助查询外，还约束列值或组合值的唯一性；只在业务需要唯一时使用。
+- **全文索引**：支持数据库提供的全文检索能力。
+- **空间索引**：用于支持的地理或几何数据查询。
 
-索引method
+常见存储结构包括 B-tree 和 Hash。B-tree 常用于等值、范围及某些前缀查询；Hash 通常用于等值查询。具体支持范围与优化器行为取决于数据库和存储引擎。
 
-- BTREE b树索引方法，**绝大部分通用索引方法**，支持范围和like查询，速度（O(log n)）
-- HASH hash索引，只能支持等值索引，速度非常快（O（1）计算hash），但是更依赖hash表
-
-使用索引一般使用**唯一索引跟B树**就可以了
+下面的 TypeORM 示例为邮箱添加唯一索引，为姓氏添加普通索引：
 
 ```ts
 //typeorm 索引
@@ -220,17 +149,17 @@ export class User {
 
     @Index({ unique: true })
     @Column()
-    firstName: string;
+    email: string;
 
+    @Index()
     @Column()
-    @Index({ unique: true })
     lastName: string;
 }
 ```
 
 ## 高频查询结果缓存
 
-如果以typeorm为例子，只需在对于查询中配置cache即可。
+对于允许短暂读取旧数据的高频查询，可以考虑结果缓存。以下 TypeORM 示例缓存查询结果 1 秒；应用仍需根据数据变化设计缓存失效策略。
 
 ```ts
 // options type (毫秒为单位)

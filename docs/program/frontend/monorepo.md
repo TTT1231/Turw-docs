@@ -4,45 +4,29 @@ outline: [2, 3]
 
 # Monorepo
 
-将多个项目集中化、关联到一个Git仓库，公共模块抽离，自动构建流程优化。
+Monorepo 将多个相关项目放在同一个版本仓库中管理。应用和包可以共享代码、类型及工具配置，并通过工作区工具组织依赖与构建任务。
 
-- 将多个项目代码存储在一个单一版本仓库的架构模式。（**单一仓库**）。
-- 所有项目共享同一个仓库，且所有版本控制都存储在同一个**Git**仓库中。
-- 项目共享相同依赖库，不同项目之间可以共享和重用代码（**通过pnpm软链接**）
-
-`主要就是解决传统分布式单一项目缺点：`
-
-- 项目分散，集中管理困难
-- 每次要运行都要分开运行
-- 打包构建也要分开构建打包部署
-- 最终要一点是**代码逻辑重复**，特别是类型、还有依赖
+它有助于集中维护关联项目，但不会自动解决所有依赖和构建问题：仍需明确包的边界、版本策略及任务依赖。
 
 ## TSConfig
 
-::: warning composite和noEmit
+如果使用 TypeScript 的项目引用（`references`），被引用的项目需要启用 `composite`，并满足声明文件及源码包含范围的要求。项目引用通常依赖被引用项目生成的 `.d.ts`；不要一概设置 `noEmit: true`，否则可能无法提供引用方需要的输出。
 
-在tsconfig被`references`的项目在被引用一方按需配置`composite`，它会生成.tsbuildinfo文件，
-同时输出编译产物，因此此时**noEmit必须要设置true**
-
-同时如果是monorepo管理项目将ts配置单独抽离出来包的话，并且使用`files`进行暴露，那么此时就**必须配置composite**
-
-:::
+单纯把共享 `tsconfig` 作为配置包发布或通过 `extends` 复用，不等同于项目引用，无需因此启用 `composite`。详见 [TypeScript 项目引用](https://www.typescriptlang.org/docs/handbook/project-references.html)。
 
 ## 构建
 
-在`monorepo`中，这里主要讨论**packages打包**，不考虑应用打包，应用打包可以选用[webpack](https://www.webpackjs.com/)，或者[vite](https://cn.vitejs.dev/)，[rolldown](https://rolldown.rs/guide/introduction),[rollup](https://cn.rollupjs.org/introduction/)等即可。
+本节讨论工作区中库包的构建。选择工具时主要考虑：输出的模块格式、类型声明、静态资源、目录结构以及开发时如何看到包的更新。
 
-> 在`package.json`中，可以根据需要**是否兼容老标准**配置`main`和`module`字段，向后兼容。实际上配置`export`就即可。
+`package.json` 的 `exports` 定义包的公开入口和条件导出；是否同时提供 `main`、`module` 等字段取决于需要兼容的工具和运行环境。
 
 ### 选型指南
 
-库打包等非应用打包，这里主要就是将`ts->js`然后生成对应`.d.ts`，`静态资源迁移`，`vue->js`和类型，不过还要考虑就是这个HMR热更新，和开发体验。
-下面主要讨论`tsup` 和 `unbuild`工具用于打包。
+下面以 tsup 和 unbuild 为例：tsup 适合以入口为中心打包；unbuild 还提供保留目录结构的 `mkdist` 和开发用的 stub 模式。具体能力和选项应以所用版本的文档为准。
 
 ### tsup
 
-::: tip tsup
-配置简单，只需要定义`tsup.config.ts`即可，然后进行配置 [tsup](https://tsup.egoist.dev/#usage)。例如：
+使用 [tsup](https://tsup.egoist.dev/#usage) 可以配置入口、模块格式和类型声明。例如：
 
 ```ts
 import { defineConfig } from 'tsup';
@@ -62,31 +46,22 @@ export default defineConfig({
 });
 ```
 
-但是针对静态文件资源处理是以目录为准`publicDir`,也就意味着包中所有的静态资源放在一个目录中。
+示例中的 `publicDir` 将指定目录的静态文件复制到输出目录；如果需要按文件映射并保留目录结构，可评估 unbuild 的 `mkdist`。
 
-相比`unbuild`的`mkdist`构建器专门用于解决文件处理，不过它要配置pattern进行匹配。
-
-:::
-
-::: warning 注意
-tsup**不好**的就是热更新HMR，虽然提供了watch，使用`tsup --watch`可以实现，但是这会单独创建一个终端进行监听，如果有多个包情况下会导致多个终端开发体验不好。如果不采用热更新HMR那么修改完包后必须要重新打包:pensive:
-
-不过可以在`package.json`配置`development`导出可以解决这个问题
+开发时可以使用 `tsup --watch` 持续构建。另一种方式是使用条件导出，让支持该条件和 TypeScript 源码的开发工具直接读取源码；需要在消费端启用对应条件，不能假设所有运行环境都会自动识别。
 
 ```json
 {
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
-            "development": "./src/index.ts", //[!code ++]
+            "development": "./src/index.ts",
             "import": "./dist/index.mjs",
             "require": "./dist/index.cjs"
         }
     }
 }
 ```
-
-:::
 
 #### 配置Options
 
@@ -109,11 +84,7 @@ tsup**不好**的就是热更新HMR，虽然提供了watch，使用`tsup --watch
 
 ### unbuild
 
-::: tip unbuild
-
-内部使用`esbuild`进行转译，而后使用`rollup`进行产物优化，支持`mkdist`映射文件到文件。
-
-`mkdist`优势:**保留源码的目录结构**，如果是ts->js（TS文件->JS文件）且需要保留目录结构，此时`mkdist`就比默认的`rollup`非常适合。例如:（定义`build.config.{js,ts}`即可，然后配置如下）
+unbuild 默认使用 Rollup 构建，也支持通过 `mkdist` 按文件处理并保留目录结构。下面的 `build.config.ts` 展示 Vue 和 TypeScript 入口：
 
 ```ts
 import { defineBuildConfig } from 'unbuild';
@@ -141,18 +112,9 @@ export default defineBuildConfig({
 });
 ```
 
-与**tsup**的区别最大优势是`stub`模式，它会生成一个桩文件直接指向源代码，这个桩文件使用`jiti(得益其即时编译能力，跳过构建执行源码)`直接运行ts文件，无需重新构建就能看得见更新，开发体验很好:relaxed:
+unbuild 的 stub 模式生成指向源码的开发入口，便于在支持的环境中查看源码更新。可在单个包中执行 `unbuild stub`，或在配置相应脚本后使用 `pnpm -r run stub --if-present`。
 
-启用stub模式，只需在项目安装时，执行`pnpm -r run stub --if-present`，避免手动一个一个包去执行stub，如果是单独包热更新只需执行`unbuild stub`即可。
-:::
-
-::: warning 注意
-
-`unbuild` 默认使用**rollup**作为构建器(builder)。
-
-同时stub模式需要区分**开发和生产**模式下的`package.json`导出配置
-
-:::
+发布或生产构建前，确认包的导出指向正式构建产物，不要依赖开发用的 stub。
 
 #### 配置Options
 
@@ -174,83 +136,54 @@ export default defineBuildConfig({
 
 ## 依赖注意
 
-::: danger 特别注意
+工作区内不同工具可能依赖同一个包的不同版本；多版本本身不一定是错误，但对等依赖不兼容或已知漏洞需要排查。
 
-由于第三方包的前置依赖重合的问题，因此实际开发注意锁定版本，以此避免版本不一致问题一。
-
-例如:
-
-- esbuild: `tsup`，`unbuild`，`vite`，`rolldown`等间接依赖**esbuild**
-- eslint: eslint的插件等peer对等依赖
-
-eslint由于第三方开发者更新的原因，因此版本不一致问题是正确的。
-
-:::
-
-::: tip 提示
-
-可以使用`pnpm why esbuild`进行分析。但出现不一致的时候可以强制锁定版本，例如锁定最新版本。
+先用 `pnpm why esbuild` 等命令查看依赖来源，再按兼容范围和实际问题决定是否使用 overrides。强制统一版本可能破坏依赖方的兼容性，修改后应运行相关测试。
 
 ```jsonc
-//package.json
+// package.json：版本仅作示例
 {
     "pnpm": {
         "overrides": {
-            "esbuild": "^0.27.0" //间接依赖，锁定最新版本
+            "esbuild": "^0.27.0"
         }
     }
 }
 ```
-
-:::
 
 ## 速通
 
-turborepo根据锁文件来理解项目中不同包之间的依赖，
+Turborepo 根据工作区包依赖和任务配置安排执行顺序，并根据输入计算缓存。
 
-::: danger 危险
-
-当一个包去引用另外一个包的文件的时候，应该是导入这个包进行访问，而不是使用路径访问，例如`./`，否则会违背`模块块思想`，且不好维护。
-
-:::
+跨包调用优先通过包名及其 `exports` 定义的公开入口，避免直接依赖另一个包的内部文件。这样可以让包边界和依赖关系更清晰。
 
 ### 任务
 
-| 配置   | 作用         | 作用范围       | 执行流程           | 描述                                           |
-| :----- | :----------- | :------------- | :----------------- | :--------------------------------------------- |
-| build  | 全工作区串行 | 全工作区所有包 | 完全串行           | 所有包的 build 都要等待所有其他包的 build 完成 |
-| ^build | 依赖链并行   | 依赖包         | 包间并行，包内串行 | 我要等我的依赖包先构建完                       |
-| #build | 同包任务串行 | 同一个包内     | 包间并行，包内串行 | 我要等我这个包内的其他任务先完成               |
+`dependsOn` 中的写法决定任务依赖：
 
-::: tip
+| 写法       | 含义                              |
+| ---------- | --------------------------------- |
+| `build`    | 当前包中的 `build` 任务           |
+| `^build`   | 当前包所依赖的包中的 `build` 任务 |
+| `ui#build` | 指定包 `ui` 中的 `build` 任务     |
+| `//#build` | 仓库根目录的 `build` 任务         |
 
-**Inputs**作为`turborepo`的缓存输入，内部用哈希算法进行快照，默认是`Git`追踪文件，遵守`.gitignore`规则
-
-**Outputs**作为`turborepo`的缓存密钥，如果不配置它，那么它不会缓存任何文件
+任务按依赖图执行，互不依赖的任务可并行。`inputs` 参与缓存哈希，默认根据包中的文件和 Git 忽略规则确定；配置 `inputs` 会覆盖默认行为，可用 `$TURBO_DEFAULT$` 保留默认输入。`outputs` 指定缓存命中时要恢复的文件；未配置时不会恢复文件产物，日志仍可缓存。
 
 ```jsonc
-//turbo.json
+// turbo.json
 {
     "tasks": {
-        //使用 !进行排除，例如排除cache文件，`!cache/***`
         "build": {
-            //!这个input只会追踪md文件，此时会覆盖掉默认Git规则
-            //TODO 保留默认规则：`"$TURBO_DEFAULT$"`加上这个即可
-            "inputs": ["**/*.md"], //[!code ++]
-            "outputs": ["dist/**"] //[!code ++]
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", "**/*.md"],
+            "outputs": ["dist/**"]
         }
     }
 }
 ```
 
-:::
-
-::: info 注册根任务
-这个根任务就是执行根目录中`package.json`的scripts。
-
-语法规则：`//#<任务名>`，其他用法与`task`类似
-
-:::
+根任务使用 `//#任务名` 注册并引用，例如 `//#build` 对应根目录 `package.json` 中的 `build` 脚本。
 
 ### 依赖关系
 
@@ -259,25 +192,17 @@ turborepo根据锁文件来理解项目中不同包之间的依赖，
 | `turbo build --filter=...ui` | 谁用了ui库 |
 | `turbo build --filter=ui...` | ui库用了谁 |
 
-> [!IMPORTANT] 查看构建依赖关系
->
-> ```sh
-> turbo run build --graph
-> ```
->
-> **svg图片**
->
-> ```sh
-> turbo run build --graph="build-deps.svg"
-> ```
+查看任务依赖图：
+
+```sh
+turbo run build --graph
+# 或输出为 SVG
+turbo run build --graph="build-deps.svg"
+```
 
 ### Options
 
-::: tip globalDependencies
-告诉`Turborepo`，当这里面的文件发生变化时，清空所有缓存，重新构建所有包。
-
-主要用于配置文件发生变化，和锁文件依赖发生变化重新触发构建
-:::
+`globalDependencies` 将指定文件纳入所有任务的全局缓存哈希，适合声明会影响整个工作区的配置文件。文件变化后，相关任务会产生新的缓存键。
 
 ### Commands
 

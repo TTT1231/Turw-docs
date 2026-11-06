@@ -6,11 +6,11 @@ outline: [2, 3]
 
 ## CSS
 
-这个文档是有关于css的示例和详解。
+这里整理布局、图片适配、JavaScript 和前端安全中常用的概念与示例。
 
 ### Flex Layout
 
-flex布局默认方向是水平摆放即`flex-direction:row` 即主轴方向。还有一根交叉轴与主轴垂直。其主要提供一种有效的方式来对容器中的项目进行排列、对齐和分配空间，即使它们的大小是未知或动态的。
+Flex 是一维布局：项目沿主轴排列，并沿交叉轴对齐。默认主轴方向为 `row`；适合处理一行或一列中项目的排列和空间分配。
 
 #### 交互式属性选择器
 
@@ -24,11 +24,9 @@ flex布局默认方向是水平摆放即`flex-direction:row` 即主轴方向。�
 - `justify-content: space-between;` - `justify-between`（两端对齐）
 - `justify-content: space-around;` - `justify-around`（环绕对齐）
 - `justify-content: space-evenly;` - `justify-evenly`（平均分布）
-- `justify-content: stretch;` - `justify-stretch`（把内容拉伸）
+- `justify-content: stretch;` - 在 Flex 主轴上通常按 `flex-start` 处理；伸缩由子项的 `flex` 属性控制
 
-::: tip 提示
-后面有一个`safe`(css)，防止内容溢出容器，在css中直接加入即可`safe`，但是tailwindcss不支持。
-:::
+对齐值可以配合 `safe` 使用，例如 `justify-content: safe center`：空间不足时回退到起始位置，避免内容无法访问。
 
 #### align-items (交叉轴对齐方式) - （tailwindcss写法）
 
@@ -62,7 +60,7 @@ flex布局默认方向是水平摆放即`flex-direction:row` 即主轴方向。�
 
 ### Grid Layout
 
-grid布局是一个二维布局系统，同时处理多行多列。与flex布局(一维布局系统)相比，grid更适合创建复杂的网页布局。一般用来实现多栏布局方便实现自适应和重排布局。因而更适合需要控制行和列的场景。
+Grid 是二维布局，适合同时控制行和列，例如自适应多栏布局；只需沿一个方向排列时，可优先考虑 Flex。
 
 <GridProperty/>
 
@@ -94,19 +92,16 @@ grid布局是一个二维布局系统，同时处理多行多列。与flex布局
 
 ##### repeat() 参数说明
 
-- `auto-fit` - 尽量多放置网格项，多余空间收缩为 0
-- `auto-fill` - 尽量多放置网格项，多余空间不会收缩
+- `auto-fit` - 尽量创建轨道，并折叠没有网格项的轨道
+- `auto-fill` - 尽量创建轨道，保留没有网格项的轨道
 
 #### grid-template-rows (定义行和行的宽度，与上诉的grid-template-cols类似)
 
-::: tip 提示
-repeat(重复次数, 列宽度)，表示在列中重复多少次，简化重复列或者行的写法。例如repeat(4,1fr)表示4列，每列宽度都是1fr。
-:::
+`repeat()` 用来简化重复的行列定义。例如 `repeat(4, 1fr)` 定义四个等比例的轨道。
 
 ### 图片清晰度问题
 
-原始尺寸 = 样式尺寸（原始图片的长和宽） \* DPR（devicePixelRatio）  
-srcset提供多个图片源，让游览器自行选择（要提供多个图片不同尺寸大小）示例
+为高密度屏幕准备图片时，可参考：图片像素尺寸 ≈ 显示的 CSS 尺寸 × 设备像素比（DPR）。使用 `srcset` 提供不同尺寸的图片，由浏览器选择合适的资源。
 
 ```js
 //其中 1x表示DPR的值，要保持上诉公式成立
@@ -118,7 +113,7 @@ srcset提供多个图片源，让游览器自行选择（要提供多个图片�
 />
 ```
 
-img还有一个size属性，目的时在告诉游览器在不同视口（viewport）或布局条件下，图片实际会显示的宽度是多少，从而让游览器选择最合适的图片。例如
+使用宽度描述符（如 `400w`）时，`sizes` 告诉浏览器不同视口下的预计显示宽度：
 
 ```js
 //size后面表示
@@ -135,19 +130,11 @@ img还有一个size属性，目的时在告诉游览器在不同视口（viewpor
 />
 ```
 
-::: tip 提示
-如果是根据设备尺寸加载不同格式、和不同内容的图片场景。例如手机端加载`png`、游览器端加载`webp`，这时候就需要结合`picture`去选择对应对应的图片了。
-
-它使用`source`进行选择，该用法和img用法一样。
-:::
+如果不同屏幕需要不同裁剪，或需要按支持情况选择图片格式，可以使用 `<picture>` 和其中的 `<source>`。
 
 ### tailwind 写法
 
-::: warning 注意
-
-**&** 在tailwind中表父级
-
-:::
+Tailwind 的任意变体中，`&` 代表当前选择器，可用来组合子元素和兄弟元素选择器。
 
 ```css {3,7,11,15}
 /* 特定[target-element][attribute] 指定元素指定属性 */
@@ -169,48 +156,45 @@ father-ele ~ all-child-ele
 
 ## ES6
 
-js下一代标准，使得js可以编写复杂系统.
+这里记录 JavaScript 的常用语言特性。
 
 ### Symbol
 
-Symbol() 会生成**全新且唯一**的值，核心作用是避免对象属性名冲突，默认无法通过 `for...in`、`Object.keys()` 等常规方式枚举，若需遍历需定义 `Symbol.iterator` 方法（支持 `for...of`、解构赋值等）。
+`Symbol()` 创建唯一的值，常用于避免对象属性名冲突。即使描述相同，两个新建的 Symbol 也不相等；Symbol 属性不会出现在 `Object.keys()` 和 `for...in` 中。
 
-::: tip 提示
-其唯一性体现在即使传入相同描述字符串，生成的 Symbol 也不相等（例：`Symbol('a') !== Symbol('a')`），字符串参数仅用于区分标识，不影响唯一性。
-:::
+要让对象支持 `for...of` 和解构，可以实现 `Symbol.iterator`。
 
 #### Symbol.iterator 实现可迭代对象或者数组
 
 ::: code-group-fold line-numbers
 
 ```js [demo.js]
-//可迭代对象
+// 可迭代对象
 const myObj = {
-    let targetIndex = 0;
-    const data = this.data;
-    return {
-        next(){
-            return targetIndex<data.length?{
-                value:data[targetIndex++],
-                done:false
-            }:{
-                value:undefined,done:true
+    data: ['a', 'b'],
+    [Symbol.iterator]() {
+        let index = 0;
+        const data = this.data;
+        return {
+            next() {
+                return index < data.length
+                    ? { value: data[index++], done: false }
+                    : { value: undefined, done: true };
             }
-        }
+        };
     }
-}
+};
 
 //可迭代symbol数组,和普通数组一样不需要手动实现迭代器Symbol.iterator方法
 const arr = [Symbol('a'), Symbol('b')];
-let [a,b] = arr; //解构赋值
-for (const c of arr){} // for .. of
+let [a, b] = arr; //解构赋值
+for (const c of arr) {
+} // for .. of
 ```
 
 :::
 
-::: tip 提示
-迭代器对象必须实现next方法，迭代协议要求。
-:::
+迭代器对象的 `next()` 返回包含 `value` 和 `done` 的结果。
 
 ##### Symbol属性或方法
 
@@ -235,7 +219,7 @@ a[GREET]();
 
 ### Proxy
 
-一般用作对象代理，拦截对象的属性等。
+`Proxy` 可以拦截对象的属性读取、赋值等操作；`Reflect` 提供对应的默认操作。
 
 #### get
 
@@ -243,7 +227,7 @@ get(target,propertyKey,receiver),get拦截器。
 
 - target:被代理的对象。
 - propertyKey:被访问的属性名,也可以是Symbol。
-- receiver: 代理本身也即Proxy本身,避免原型链问题导致this指向windows。
+- receiver: 通常是代理对象；传给 `Reflect.get` 可保留 getter 的接收者语义。
 
 #### set
 
@@ -252,7 +236,7 @@ set(target,propertyKey,value,receiver),set拦截器。
 - target: 被代理的对象。
 - propertyKey: 被访问的属性名,也可以是Symbol。
 - value 要赋值给属性的值
-- receiver: 代理本身也即Proxy本身,避免原型链问题导致this指向windows。
+- receiver: 通常是代理对象；传给 `Reflect.set` 可保留赋值时的接收者语义。
 
 ::: code-group-fold line-numbers
 
@@ -278,18 +262,15 @@ const proxy = new Proxy(obj, {
 
 :::
 
-::: tip 提示
-当代理用完不想用时，或者代理就使用一次，就可以**取消代理**Proxy.revocable revocable:可撤销的，可取消的
-:::
+需要撤销代理时，可用 `Proxy.revocable()` 创建代理并在结束后调用 `revoke()`。
 
 ### Promise并发处理
 
-当有多个网络请求promise或者多个异步promise时，一个一个获取或异步等待速度慢时，就可以将多个请求promise封装成一个数组或队列，然后借助es6中allSettled进行同时处理。最后进行统一处理错误或者成功的结果。  
-当然了业务不同具体用的方法也不同，但是本质都是差不多的，只是**发生错误的逻辑不同**
+多个独立任务可以先启动，再根据失败处理方式选择组合方法：
 
-- Promise.all 当业务包含原子性、一致性等，就可以使用它，只要一个失败整个Promise并发数组都会失败
-- Promise.allSettled 不关心单个失败，只关心具体成功的结果或者失败的结果
-- Promise.race 竞争promise，谁快，谁就最先返回，其他的promise继续执行但是结果不返回，只返回最快的promise结果
+- `Promise.all`：全部成功才返回结果；任一任务失败即拒绝。它不会撤销已启动的任务。
+- `Promise.allSettled`：等待全部任务结束，分别返回成功或失败状态。
+- `Promise.race`：采用最先结束的任务结果，其他任务仍会继续执行。
 
 ```js
 const p1 = Promise.resolve(1);
@@ -308,246 +289,116 @@ Promise.allSettled([p1, p2, p3]).then((results) => {
 
 ### Module & Commonjs
 
-module
+ES Modules（ESM）和 CommonJS 都用于组织模块，主要区别在加载方式和导出绑定：
 
-- 静态加载，编译时就确定了依赖关系和导出内容(由于其静态加载功能，因而可以使用静态分析并移除未使用代码优化技术也即treeShaking)。
-- 只读引用，可以实时绑定。
-
-commonjs
-
-- 动态加载，只在需要时才会加载(由于动态加载，因而静态treeShaking不支持)。
-- 基于nodejs，导入内容不会同步变化。
+| 维度     | ES Modules                                    | CommonJS                                                       |
+| -------- | --------------------------------------------- | -------------------------------------------------------------- |
+| 语法     | `import` / `export`                           | `require()` / `module.exports`                                 |
+| 加载     | 静态导入可在执行前分析；也支持动态 `import()` | `require()` 在运行时调用，可按条件加载                         |
+| 导出     | 导入是只读的实时绑定                          | `require()` 返回导出的值；对象属性变化可通过同一对象引用观察到 |
+| 构建优化 | 静态导入导出便于工具进行 tree shaking         | 动态用法通常更难静态分析                                       |
 
 ### WeakMap & Map
 
-**Map**强引用，`Map`一直会持有这个对象的引用，即使外部没有变量引用这个对象，垃圾回收（GC）不会回收它，**会占用内存**，除非手动置空。
+两者都保存键值关系，区别在于对键的引用和能否遍历：
 
-**WeakMap**弱引用，外部没有变量引用这个`WeakMap`的时候，垃圾回收（GC）自动回收，避免了忘记手动置空，导致的内存泄漏。
+| 维度     | Map                        | WeakMap                                     |
+| -------- | -------------------------- | ------------------------------------------- |
+| 键       | 可使用任意值               | 对象或未注册的 Symbol                       |
+| 垃圾回收 | Map 存活时会强引用其键和值 | 不会仅因键存在于 WeakMap 中而阻止该键被回收 |
+| 遍历     | 可遍历，有 `size`          | 不可遍历，也没有 `size`                     |
+
+需要遍历或统计条目时用 Map；为对象附加不应延长其生命周期的数据时，可以用 WeakMap。垃圾回收的具体时间不可预测。
 
 ### stage3
 
+TypeScript 5 支持新的装饰器语义：装饰器接收被装饰的值和上下文，可以使用 `context.addInitializer()` 安排初始化逻辑。它与传统装饰器的参数和元数据机制不同。
+
+下面使用 `reflect-metadata` 演示手动写入元数据；需先安装并引入该库。新标准不会自动提供传统 `emitDecoratorMetadata` 生成的参数类型信息。
+
 ::: code-group-fold line-numbers
 
-<!-- prettier-ignore-start -->
 ```ts [class-decorator.ts]
-/**
- * @description 类装饰器 - 新标准 (Stage 3 Decorators)
- * @returns 返回一个类装饰器函数
- * @template T - 传递给装饰器的泛型参数，解决this类型问题
- * @returns @param target - 被装饰的类构造函数
- * @returns @param context - 类装饰器上下文，包含类的元数据和初始化器
- */
-export function classDecorator(token?: string) {
-   return function <T extends abstract new (...args: any[]) => any>(
-      target: T,
-      context: ClassDecoratorContext<T>
-   ): T | void {
-      /**
-       * !获取不了参数名称，这里是编译时，运行时会被删除所以获取不到
-       * @description 获取构造函数参数类型数组
-       * @deprecated 这里ts编译器在新的版本中，由于违反了职责单一原则，不再自动添加设计时元数据
-       */
-      // Reflect.getMetadata('design:paramtypes', target) || [];
+import 'reflect-metadata';
 
-      /**
-       * TODO: 设置类修饰器自定义元数据
-       * !特别注意，context.addInitializer在类装饰器和方法装饰器还有属性装饰器中的行为不同，体现在
-       *    - 类装饰器中，addInitializer的回调在类定义完成时执行，this指向类的构造函数（类本身）
-       *    - 方法装饰器中，addInitializer的回调在类实例化时执行，this指向类的实例对象
-       *    - 属性装饰器中，同方法装饰器类似，其必须要初始化类实例才能执行
-       * @example @usage
-       * ```ts
-       * @classDecorator()
-       * class A {}
-       * const class_value = Reflect.getMetadata('custom:class', A);
-       * //打印：类元数据，不用实例化类
-       * console.log('类元数据：', class_value);
-       * ```ts
-       */
-      context.addInitializer(function (this: T) {
-         Reflect.defineMetadata('custom:class', '类元数据，不用实例化类', target);
-      });
-
-      //不对类进行修改，返回undefined
-      return undefined;
-   };
+function classDecorator<T extends abstract new (...args: any[]) => any>(
+    target: T,
+    context: ClassDecoratorContext<T>
+) {
+    // 类装饰器的初始化回调在类定义完成时运行
+    context.addInitializer(function () {
+        Reflect.defineMetadata('label', 'service', this);
+    });
 }
-```
-<!-- prettier-ignore-end -->
 
-<!-- prettier-ignore-start -->
+@classDecorator
+class Service {}
+
+console.log(Reflect.getMetadata('label', Service)); // service
+```
+
 ```ts [method-decorator.ts]
-/**
- * @description 方法装饰器 - 新标准 (Stage 3 Decorators)
- * @returns 返回一个方法装饰器函数
- * @template T - 传递给装饰器的泛型参数，解决this类型问题
- * @template This - 方法的this类型
- * @template Args - 方法参数类型元组
- * @template Return - 方法返回值类型
- * @returns @param target - 被装饰的方法，指向原方法
- * @returns @param context - 方法装饰器上下文，包含方法的元数据
- */
-export function methodDecorator<T>() {
-   return function <This extends Object, Args extends any[], Return>(
-      target: (this: This, ...args: Args) => Return,
-      context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>
-   ) {
-      /**
-       * @description 类定义时执行，直接在target（原方法）上设置元数据，将元数据附加到原方法中,
-       *              可以通过 A.prototype.[methodName] 访问，然后获取元数据
-       * @usage       用于不用实例化类就能获取元数据
-       * !注意: 如果是在context.addInitializer中定义元数据，则在类实例化时执行,
-       *              !该方法中的回调是在类实例化阶段执行的，不是在定义阶段
-       * @usage       然后如果想要在实例化时获取元数据可以将元数据绑定到类实例上，必须在context.addInitializer中定义
-       *
-       * @example
-       * ```ts
-       * class A {
-       *   @methodDecorator()
-       *   say() {console.log('say'); }
-       * }
-       * const method_value = Reflect.getMetadata('custom:method:noInit', A.prototype.say, 'say');
-       * //打印：类不用初始化就能获取元数据
-       * console.log('方法元数据：', method_value);
-       * ```ts
-       */
-      Reflect.defineMetadata(
-         'custom:method:noInit',
-         '类不用初始化就能获取元数据',
-         target,
-         context.name
-      );
+import 'reflect-metadata';
 
-      /**
-       * @description 在运行阶段获取元数据，编译时必须要写在context.addInitializer回调中
-       * @note 注意this 指向问题
-       * @example @usage
-       * ```ts
-       * class A {
-       *   @methodDecorator()
-       *   say() {console.log('say'); }
-       * }
-       * const a = new A();
-       * const method_value = Reflect.getMetadata('custom:method:mustInit', a, 'say');
-       * //打印：类必须要初始化才能获取元数据
-       * console.log('方法元数据：', method_value);
-       * ```ts
-       */
-      context.addInitializer(function (this: This) {
-         Reflect.defineMetadata(
-            'custom:method:mustInit',
-            '类必须要初始化才能获取元数据',
-            this.constructor.prototype,
-            context.name
-         );
-      });
-
-      // 在新标准中,方法装饰器返回新的方法实现或 undefined，同类装饰器返回类似
-      //TODO 不修改方法实现，返回undefined
-      return undefined;
-
-      //TODO 修改方法实现
-      // return function (this: This, ...args: Args): Return {
-      //     console.log(`Calling method: ${String(context.name)}`);
-      //     return target.apply(this, args);
-      // };
-   };
+function methodDecorator<This, Args extends unknown[], Result>(
+    target: (this: This, ...args: Args) => Result,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Result>
+) {
+    // 将元数据附加到原方法，不必先创建实例
+    Reflect.defineMetadata('label', String(context.name), target);
 }
-```
-<!-- prettier-ignore-end -->
 
-<!-- prettier-ignore-start -->
+class Service {
+    @methodDecorator
+    run() {}
+}
+
+console.log(Reflect.getMetadata('label', Service.prototype.run)); // run
+```
+
 ```ts [property-decorator.ts]
-/**
- * @description 属性装饰器 - 新标准 (Stage 3 Decorators)
- * @template T - 指向类类型
- * @template Value - 属性值类型，也就是属性的类型
- * @returns @param target - 被装饰的属性，新标准值为undefined
- * @returns @param context - 属性装饰器上下文，包含属性的元数据
- * @returns @returns @param this - 指向类实例
- */
-export function propertyDecorator<T extends Object, Value>() {
+import 'reflect-metadata';
 
-    //!第一个参数由于target是undefined，所以无法直接定义元数据，可以直接省略
-    return function (
-        context: ClassFieldDecoratorContext<T, Value>
-    ): (initialValue: Value) => Value {
-
-        /**
-         * !十分注意的是： 这里的this指向类实例，但是在addInitializer回调中，this指向类的构造函数。也就是说这里的addInitializer每次实例化时执行
-         * TODO 在类实例化时定义元数据
-         * @example @usage
-         * ```ts
-         * class A {
-         *   @propertyDecorator()
-         *   name: string = '你好啊';
-         * }
-         * const a = new A();
-         * const property_value = Reflect.getMetadata('custom:property', a, 'name');
-         * //打印：类必须要初始化才能获取元数据
-         * console.log('属性元数据：', property_value);
-         * ```ts
-         */
-
-        context.addInitializer(function (this: T) {
-            Reflect.defineMetadata(
-                "custom:property",
-                "property_value",
-                this,
-                context.name
-            );
-        });
-
-        //TODO 修改属性的初始值 ,这里不修改直接原样返回
-        //!注意类型
-        return function (this: T, initialValue: Value): Value {
-            return initialValue;
-        };
-    };
+function propertyDecorator<This, Value>(
+    _value: undefined,
+    context: ClassFieldDecoratorContext<This, Value>
+) {
+    // 实例字段的初始化回调会在每次创建实例时运行
+    context.addInitializer(function (this: This) {
+        Reflect.defineMetadata('label', String(context.name), this as object, context.name);
+    });
 }
 
+class Service {
+    @propertyDecorator
+    name = 'example';
+}
+
+const service = new Service();
+console.log(Reflect.getMetadata('label', service, 'name')); // name
 ```
-<!-- prettier-ignore-end -->
 
 :::
 
 ## Mobile
 
-如果项目中有`Web`和`H5`情况下，去做移动端适配时，考虑业务方向来进行技术选型。
+移动端适配先看布局和交互是否可以共用，再选择适配方式：
 
-- 以`Web`为主，`H5`为辅（使用比较低情况下），且不是主要业务方向，那么这里就可以考虑使用`tailwindcss`和`媒体查询@media`进行辅助适配。
+- **布局差异较小**：使用弹性布局、Grid 和媒体查询调整断点。
+- **尺寸需要随视口变化**：按需结合 `rem`、`vw`、`vh` 等单位，并检查文字缩放、横屏和不同高度下的表现。
+- **交互或业务差异较大**：考虑拆分移动端和桌面端组件，共享数据和业务逻辑；不要仅凭设备宽度判断设备能力。
 
-- 以`Web`为主，`H5`为辅（使用中等情况下），那么这里就可以考虑使用`tailwindcss`和`媒体查询@media`并结合`rem`和`vw/vh`视口进行适配。
-
-- 业务复杂，`Web`为主，`H5`为主，此时那么就考虑移动端`H5`和`Web`分成两个组件写且样式进行隔离，不用一套代码进行适配，这样开发成本和维护成本都比较友好，这时候就可以根据平板尺寸`tailwind md`来进行判断是否是移动端，来适配两个不同组件。
-
-::: danger 危险
-`rem`做适配的时候，其只能根据`font-size`进行适配，并且只能通过动态设置这个值，来设置rem大小，这是会有多余`JS`，同时还要考虑动态扩展，去适配动态width
-
-但是这有个缺点，它是一个**正方形**，只有一个边可以设置，当监听width时候，Height就是没适配了。
-
-因此实际使用的时候很少考虑使用`rem`进行适配。
-:::
-
-::: tip 提示
-`媒体查询@media`写的话去适配不同设备尺寸，可能会面临css代码过多，可以完全抛弃它，选用`tailwindcss`中`sm`、`md`、`lg`、`xl`效果也是一样的，在快速开发下速度也快，维护也好。
-:::
+`rem` 相对根元素字号，适合统一调整尺寸，但不会自动适配所有方向。Tailwind 的 `sm`、`md` 等响应式前缀本质上也使用媒体查询。
 
 ## 安全
 
-前端安全包括csp内容安全，防止xss攻击和脚本注入，和防止跨站请求伪造  
-CSRF和配置生产反向代理隐藏真实服务器ip防范ddos攻击。
+前端安全需要组合多种措施：CSP 限制页面可加载的资源，输出转义和输入处理有助于防范 XSS，CSRF 则需要结合 Cookie 策略和服务端校验处理。反向代理可以隐藏源站地址，但不能单独防御 DDoS。
 
-通过配置 CSP，可以有效阻止恶意 JavaScript 执行和跨站资源注入。  
-部署时应注意：
-
-- **防御恶意用户篡改响应头**（拦截并修改 HTTP Header）
-- **强制使用 HTTPS 加密传输**，防止中间人攻击
-- **严格限制资源来源**，避免策略过宽
+CSP 应根据实际资源来源逐步收紧，并通过 HTTPS 传输。以下指令是配置参考，不是所有应用都必须使用的固定清单。
 
 ---
 
-### 核心安全指令（必须强制启用）
+### 核心安全指令（按需配置） {#核心安全指令必须强制启用}
 
 | 指令                               | 作用                                   | 示例               |
 | ---------------------------------- | -------------------------------------- | ------------------ |
@@ -580,7 +431,7 @@ CSRF和配置生产反向代理隐藏真实服务器ip防范ddos攻击。
 ### 安全建议
 
 1. **尽量不要使用 `unsafe-inline`**，改用 **`nonce`** 或 **`hash`** 验证内联脚本。
-2. 开启 **`upgrade-insecure-requests`** 与 **`block-all-mixed-content`**，确保统一加密请求。
+2. 使用 HTTPS，并按兼容性需要考虑 `upgrade-insecure-requests`；它不能代替服务端正确配置 HTTPS。
 3. 配置 **`report-to`**，便于及时发现并修复策略违规。
 
 ```js{1,5-8}
@@ -607,7 +458,7 @@ line-number：资源出现问题的代码行号。
 ### Nuxt 开发模式 CSP 配置
 
 > [!WARNING]
-> 开发模式下，Nuxt/Vite/Webpack 需要动态脚本支持，必须允许以下行为：
+> 下表是某些开发环境可能需要的宽松配置示例，具体应按工具和报错收紧；不要用于生产环境。
 
 | 指令              | 配置                                                                  | 原因                                              |
 | ----------------- | --------------------------------------------------------------------- | ------------------------------------------------- |
@@ -618,10 +469,10 @@ line-number：资源出现问题的代码行号。
 
 #### 注入方式选择
 
-| 方式                 | 优点                                 | 缺点                           | 推荐 |
-| -------------------- | ------------------------------------ | ------------------------------ | ---- |
-| **HTTP Response 头** | 客户端无法修改，精准控制，优先级最高 | -                              | ✅   |
-| **`<meta>` 标签**    | 可动态修改                           | 客户端可修改，优先级低于响应头 | ❌   |
+| 方式          | 优点                                     | 缺点                                 | 推荐 |
+| ------------- | ---------------------------------------- | ------------------------------------ | ---- |
+| HTTP 响应头   | 支持完整的策略能力，适合由服务器统一配置 | 需要控制响应头                       | 推荐 |
+| `<meta>` 标签 | 适用于无法配置响应头的静态页面           | 部分指令不可用，只约束标签之后的内容 | 备选 |
 
 #### 配置方式对比
 
@@ -630,114 +481,26 @@ line-number：资源出现问题的代码行号。
 | **nuxt.config**       | ⭐⭐⭐ 高 | ⭐ 低     | ⭐ 简单   | 全局统一策略      |
 | **server middleware** | ⭐⭐ 中   | ⭐⭐⭐ 高 | ⭐⭐ 中等 | 页面级/权限级策略 |
 
-::: tip 提示
-**推荐方案**：在 server middleware 中动态生成 nonce 和基础 CSP，结合 render hook 为脚本标签注入 nonce，代码最少、最好维护。
-:::
+使用 nonce 时，每次响应生成不可预测的新值，并只为可信脚本添加该值。不要对最终 HTML 中所有脚本统一追加 nonce，否则注入的恶意脚本也可能得到许可。
 
 ### 演示代码（Nuxt为例）
 
-这里服务端中间件只需完成csp指令的设置，和动态生成唯一的**nonce**即可。  
-最后在向服务端返回对应html之前，为\<script\>增加nonce即可
-
-::: details 服务端中间件，完成csp指令的设置和生成nonce
+服务端可以为每次响应生成随机 nonce，并通过响应头下发策略。示例仅演示 nonce 的生成和传递；具体的脚本注入方式取决于应用使用的 Nuxt/Nitro 版本。
 
 ```ts
-import crypto from 'crypto';
+// server/middleware/csp.ts
+import { randomBytes } from 'node:crypto';
+
 export default defineEventHandler((event) => {
-    const res = event.node.res;
-    const isDev = process.env.NODE_ENV === 'development';
-    const url = event.node.req.url || '';
-    const isApiRoute = url.startsWith('/api/');
-
-    // 为本次请求生成 nonce
-    const nonce = crypto.randomBytes(16).toString('base64');
+    const nonce = randomBytes(16).toString('base64');
     event.context.cspNonce = nonce;
-
-    const reportUri = 'http://localhost:7001/csp-report';
-
-    // API 路由简单策略
-    if (isApiRoute) {
-        const apiCsp = [
-            "default-src 'none'",
-            "connect-src 'self' http://localhost:7001",
-            `report-uri ${reportUri}`
-        ].join('; ');
-        res.setHeader('Content-Security-Policy', apiCsp);
-        return;
-    }
-
-    // 公共指令
-    const commonDirectives = [
-        "img-src 'self' data: blob:",
-        "base-uri 'self'",
-        "form-action 'self'",
-        `report-uri ${reportUri}`
-    ];
-
-    let modeDirectives: string[];
-
-    if (isDev) {
-        // 开发模式差异部分
-        modeDirectives = [
-            'default-src * data: blob:',
-            "script-src * 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*",
-            "script-src-elem * 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*",
-            "style-src * 'unsafe-inline'",
-            'connect-src * ws://localhost:* http://localhost:* http://127.0.0.1:*',
-            'font-src * data:',
-            'frame-src *',
-            "object-src 'none'",
-            'frame-ancestors *'
-        ];
-    } else {
-        // 生产模式差异部分
-        modeDirectives = [
-            "default-src 'self'",
-            `script-src 'self' 'nonce-${nonce}'`,
-            `script-src-elem 'self' 'nonce-${nonce}'`,
-            "style-src 'self' 'unsafe-inline'",
-            "connect-src 'self' http://localhost:7001",
-            "font-src 'self' data:",
-            "frame-src 'none'",
-            "object-src 'none'",
-            "frame-ancestors 'none'",
-            'upgrade-insecure-requests',
-            'block-all-mixed-content'
-        ];
-    }
-
-    // 合并模式指令和公共指令
-    const csp = [...modeDirectives, ...commonDirectives].join('; ');
-    res.setHeader('Content-Security-Policy', csp);
+    event.node.res.setHeader(
+        'Content-Security-Policy',
+        `default-src 'self'; script-src 'self' 'nonce-${nonce}'; object-src 'none'; base-uri 'self'`
+    );
 });
 ```
 
-:::
+将同一个 nonce 通过框架支持的渲染机制传给可信脚本，并根据实际样式、连接和图片来源补充策略。上线前可先使用 `Content-Security-Policy-Report-Only` 观察违规报告，再启用强制策略。含 nonce 的 HTML 还需正确处理缓存，避免不同响应复用同一个 nonce。
 
-::: details 服务端插件，为script添加nonce
-
-```ts
-//这个render:response会在渲染html完后，准备向客户端返回触发。
-export default defineNitroPlugin((nitroApp) => {
-    nitroApp.hooks.hook('render:response', (response, { event }) => {
-        const nonce = event.context.cspNonce as string | undefined;
-        if (!nonce) return;
-        if (!response.body || typeof response.body !== 'string') return;
-
-        // 只处理 HTML
-        const headers = response.headers || {};
-        const contentType = (headers['content-type'] || headers['Content-Type'] || '') as string;
-        if (!contentType.includes('text/html')) return;
-
-        // 给没有 nonce 的 <script> / <style> 标签自动加上 nonce
-        // 注意：避免重复添加（用负向前瞻排除已有 nonce）
-        response.body = response.body
-            // 匹配 <script 开头的标签，排除已带 nonce 的
-            .replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`)
-            // 匹配 <style 开头的标签，排除已带 nonce 的
-            .replace(/<style\b(?![^>]*\bnonce=)/g, `<style nonce="${nonce}"`);
-    });
-});
-```
-
-:::
+参考 [MDN 的 CSP 实施指南](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSP)。

@@ -6,56 +6,38 @@ outline: deep
 
 ## 服务、功能模块解耦
 
-**服务解耦**将单体应用拆分成一组**微小、可拓展、自治**的服务，`该服务`围绕业务进行划分服务边界，使的该服务专注于某一业务，使其专注本身的业务。例如：
+解耦的目标是让每部分有清晰的职责和依赖边界，修改一个功能时尽量减少对其他功能的影响。
 
-```
-📁 services/
-     📂 user/                      #用户服务（登录、注册、更新管理）
-         📂 controller/            # Controller 层
-         📂 service/               # 业务逻辑层
-         📂 modal/                 # 数据库表模型层（如果是使用了orm的话，那么这里的操作可以直接放入到service中，service直接用对应操作数据库的client去操作数据库即可）
-         📂 dto/                   # 数据传输对象（DTO）
-     📂 infrastructure/            #基础设施服务
-         📂 log/                   #日志服务（包含日志处理和收集，记录什么时间发送了什么）
-           📂 monitor/               #监控服务（整个系统有关CPU使用率、容错率、故障率、恢复率等指标）
-           📂 config/                #配置服务（动态配置，统一管理系统中有关所有的配置）
-           📂 service-discovery/     #服务发现
-        ...
+- **服务解耦**：按业务边界划分可独立部署的服务，例如用户服务、通知服务和网关。独立部署带来发布灵活性，也会增加网络通信、运维和数据一致性成本；并非所有系统都需要微服务。
+- **模块解耦**：在同一个应用内按功能划分模块，例如用户、认证和通知。模块通过明确接口协作，适合尚不需要独立部署的场景。
 
-     📂 core/                      #核心业务
-            📂 auth/               #认证授权（包含jwt，OAuth2等）
-            📂 common/             #公共逻辑、共享组件、DTO、工具类等
-            📂 a-core              #业务模块 A
-            ....
+下面是服务划分的示意；目录结构不代表每个目录都必须成为独立服务：
 
-     📂 notify/                    #通知服务
-
-     📂 gateway/                   #API流量入口服务（所有流量的入口）
-
-   📂 test/                      #系统测试（可进一步划分成单元测试、系统集成测试等）
-
+```text
+services/
+├── user/                 # 用户业务
+│   ├── controller/       # 请求入口
+│   ├── service/          # 业务逻辑
+│   ├── model/            # 数据模型
+│   └── dto/              # 数据传输对象
+├── infrastructure/       # 日志、监控、配置、服务发现等基础能力
+├── core/                 # 认证、公共组件和其他业务
+├── notify/               # 通知
+├── gateway/              # API 入口
+└── test/                 # 单元与集成测试
 ```
 
-**功能模块解耦**对功能模块进行划分类似
-
-```
-  📂 user/                      #用户服务（登录、注册、更新管理）
-          📂 controller/            # Controller 层
-          📂 service/               # 业务逻辑层
-          📂 modal/                 # 数据库表模型层（如果是使用了orm的话，那么这里的操作可以直接放入到service中，service直接用对应操作数据库的client去操作数据库即可）
-          📂 dto/                   # 数据传输对象（DTO）
-          ...
-```
+单体应用也可以按类似方式组织 `user` 等功能模块；数据库访问是否单独分层，应根据复杂度决定。
 
 ## IOC、DI
 
-IOC控制反转将程序控制权反转到外部容器中，交由外部容器负责。
+控制反转（IoC）是将对象创建或流程控制等职责从业务代码交给外部。依赖注入（DI）是实现 IoC 的一种方式：对象所需的依赖由外部提供，而不是在对象内部自行创建。
 
 ```java
 public class A {}
 public class TestService {
    private A a;
-   //di
+   // 通过构造函数接收依赖
    public TestService(A a){
       this.a = a;
    }
@@ -63,29 +45,28 @@ public class TestService {
 }
 ```
 
-DI指外部容器在运行时动态将依赖关系注入进去，包含setter注入、字段注入、函数注入函数注入一般就是通过构造函数注入。
+依赖也可以通过 setter 或字段注入；构造函数注入能明确表达必需依赖。字段注入的例子：
 
 ```java
-//字段注入,这样做封装性不好，同时依赖关系不显式可见
 @Autowired
 private A a;
 ```
 
 ## AOP设计思想
 
-在切入方法之前动态将功能**嵌入**到指定位置，而不需要修改原有的业务类代码，实现**开-闭原则**，也即不修改业务，但是对拓展进行开发。**日后想修改或者拓展时，只需对切面进行操作即可**。
+面向切面编程（AOP）将日志、权限校验等横跨多个业务的逻辑集中处理，让业务代码专注于自身职责。
 
-**实现步骤：**也即在方法执行之前或者之后，执行**副作用函数**（是切入函数，执行时不会破坏原有结构，等于是在业务函数执行前后执行这个副作用函数），这个函数可以是记录日志函数等。
-
-::: tip 提示
-只要实现类似上诉AOP设计思想都可以称为APO设计，例如对象代理、拦截器（包括全局拦截、局部拦截）、装饰器，不过它们的思想都差不多，都是为了**在方法执行前或者后，执行这个副作用函数**。
-:::
+例如，多个方法都需要记录执行时间时，可以通过拦截器在调用前开始计时、调用后记录结果，避免在每个方法中重复编写。代理、拦截器和装饰器都可以用于实现类似思路；具体执行时机和能否修改参数、返回值取决于实现。
 
 ## nestjs架构设计思想
 
-其应用注解**修饰器**只负责向**Function**注入元数据信息，而后IOC（container）容器负责根据这些元数据信息存储`providers` Function，**这里的providers包含providers和controllers**，同时懒注入`providers`当容器发现需要使用`providers`容器会自动注入实例，并存储该实例，进行实例的全生命周期管理。
+NestJS 使用模块组织控制器和提供者，并通过依赖注入容器管理它们之间的依赖：
 
-而它的工厂函数思想**将类对象的创建封装起来**使得使用者不关心其内部实现，只关心其向外部暴露的方法进行调用。
+1. 装饰器为类或方法附加元数据，供框架识别模块、路由等信息。
+2. 容器根据模块注册的信息解析依赖，创建并注入所需实例。提供者的共享范围由作用域决定，默认作用域通常在应用中共享实例。
+3. `NestFactory.create()` 封装应用创建过程；调用方拿到应用实例后配置并启动服务。
+
+下面的代码是帮助理解这些概念的简化模拟，并非 NestJS 内部实现。它只覆盖部分功能，例如缺失依赖时传入 `null` 的行为不应照搬到生产环境。若要尝试示例，请按标签拆分文件、安装 `reflect-metadata`，并在 TypeScript 配置中启用 `experimentalDecorators` 和 `emitDecoratorMetadata`。
 
 ::: code-group-fold line-numbers
 
@@ -109,7 +90,7 @@ export const Injectable = (): ClassDecorator => {
 
 //GET装饰器
 export const Get = (path?: string): MethodDecorator => {
-    return (target: Object, propertyKey: string | Symbol, descriptor: PropertyDescriptor) => {
+    return (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
         //propertyKey：被修饰的方法名
         Reflect.defineMetadata('http:method', 'GET', descriptor.value!);
         Reflect.defineMetadata('http:method:path', path, descriptor.value!);
@@ -318,6 +299,8 @@ export class Container {
 ```
 
 ```ts [Factory.ts]
+import { NestApplication } from './Application';
+
 /**
  * NestJS 工厂类 - 模拟 NestJS 的应用创建过程
  */
@@ -671,7 +654,10 @@ export class RouteScanner {
 ```
 
 ```ts [Usage.ts]
-//app.server.ts
+import { Controller, Get, Injectable, Module } from './Decorator';
+import { NestFactory } from './Factory';
+
+//app.service.ts
 @Injectable()
 export class AppService {
     getHello(): string {
@@ -687,18 +673,7 @@ export class AppController {
         return this.appService.getHello();
     }
 }
-//===================================根模块=======================
-//app.module.ts
-//模块划分
-@Module({
-    controllers: [AppController, UserController],
-    providers: [AppService, UserService],
-    imports: [],
-    exports: []
-})
-export class AppModule {}
-
-//user.server.ts
+//user.service.ts
 @Injectable()
 export class UserService {
     getAllUsers() {
@@ -719,6 +694,17 @@ export class UserController {
     }
 }
 
+//===================================根模块=======================
+//app.module.ts
+//模块划分
+@Module({
+    controllers: [AppController, UserController],
+    providers: [AppService, UserService],
+    imports: [],
+    exports: []
+})
+export class AppModule {}
+
 //=================================启动入口==========================
 //main.ts
 /**
@@ -732,7 +718,9 @@ async function bootstrap() {
         // 启动服务器
         const port = 3000;
         await app.listen(port);
-    } catch {}
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 // 启动应用

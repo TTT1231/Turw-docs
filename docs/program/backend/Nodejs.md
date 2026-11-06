@@ -4,75 +4,34 @@ outline: 2
 
 # Nodejs
 
-高性能IO、BBF、跨平台开发工具、cli、SSR、SSG、小工具脚本等
+Node.js 适合处理大量 I/O 请求，也常用于 BFF、服务端渲染、命令行工具和自动化脚本。
 
 ## core
 
-> [!IMPORTANT] Nodejs代码处理过程
->
-> ```md:no-line-numbers
-> 同步代码
->  ↓
-> Process.nextTick 队列（清空）
->  ↓
-> Promise(then回调)/queueMicrotask 微任务队列（清空）
->  ↓
-> 进入事件循环某个阶段 (Timers/Poll/Check...)
->  ↓
-> 执行该阶段的回调队列
->  ↓
-> 检查并清空 process.nextTick
->  ↓
-> 检查并清空微任务队列
->  ↓
-> 进入下一个事件循环阶段（重复上述流程）
-> ```
-
-::: warning 注意
-`process.nextTick`独立微任务队列，最高任务优先级，在所有微任务执行前执行，也就是每个事件循环阶段之前检查和清空，因而仍然归属事件循环。
-
-`setImmediate`回调，在事件循环中的poll阶段完成后执行，也即在check阶段执行，执行完后会开启下一轮事件回调（会完成本轮循环，然后才开启下一轮循环，从timers阶段开始）。
-:::
-
 ### libuv
 
-`Nodejs`主要用它来实现高性能处理I/O和跨平台兼容两大核心问题。同时也是借用它的`c++`线程池处理密集CPU任务（默认4个线程）。
+Node.js 使用 libuv 提供事件循环、异步 I/O 和跨平台能力。JavaScript 回调通常在所属线程的事件循环上执行；文件操作、部分加密和压缩等工作可交给 libuv 线程池。网络 I/O 通常依赖操作系统提供的异步机制。线程池默认有 4 个线程，可按需求配置。
 
-例如子进程管理`child_process`、进程管理`process`、定时器`setTimeout/Interval`、事件发射器`EventEmitter`以及文件操作`fs`等。
+事件循环持续处理就绪的回调。常见阶段包括：
 
-内部依赖事件循环阶段。
+- **timers**：处理到期的 `setTimeout` 和 `setInterval` 回调。
+- **pending callbacks**：处理部分推迟到后续循环的系统回调。
+- **poll**：获取并处理 I/O 事件，必要时等待新的事件。
+- **check**：执行 `setImmediate` 回调。
+- **close callbacks**：处理部分关闭事件。
 
-> [!IMPORTANT] 为什么需要线程池
-> 大部分操作系统没有异步操作文件API，且完善不好。之所以需要异步操作API主要就是避免阻塞主线程执行(CPU密集型，造成迫切任务等待长，性能不好)
->
-> 该线程池主要就是在一些文件I/O和加密/压缩等CPU密集场景使用多，提高并行处理吞吐量
-
-::: info 事件循环EventLoop
-
-```md:no-line-numbers
-Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callbacks
-```
-
-- Timer定时器，执行setTimeout和setInterval回调。
-- Pending callbacks待处理回调，主要处理一些错误和延迟到下一个循环迭代的I/O回调，例如TCP错误。
-- Idle、prepare内部阶段
-- Poll 执行新I/O，阻塞等待，处理http请求
-- Check 执行`setImmediate`回调
-:::
-
-::: tip 提示
-`Nodejs`是单线程的，核心就是事件循环，只有一个JS执行线程。然后`Nodejs`执行任务顺序如下，主线程执行同步代码，遇到异步任务，不等待结果，把任务丢给对应处理模块，然后主线程继续执行，同步代码执行完毕，主线程有空了在从任务队列中取出执行。
-:::
+同步代码先在当前调用栈执行。Node.js 在适当时机处理 `process.nextTick` 队列及 Promise、`queueMicrotask` 的微任务队列；不要依赖一个适用于所有上下文的固定输出顺序。`setTimeout` 与 `setImmediate` 的先后也受调用上下文影响。详见 [Node.js 事件循环文档](https://nodejs.org/learn/asynchronous-work/event-loop-timers-and-nexttick)。
 
 ## 微任务 & 宏任务
 
-**微任务**：主要就是`promise.then`回调、`queueMicrotask`、`MutationObserver`，在每个阶段后执行。
+- **微任务**：例如 Promise 回调和 `queueMicrotask`，在当前执行上下文结束后的检查点运行。
+- **事件循环阶段中的回调**：例如定时器、I/O 和 `setImmediate` 回调，在各自阶段等待执行。常用的“宏任务”一词描述调度类别，与任务耗时长短无关。
 
-**宏任务**：异步执行大任务（较于微任务耗时长，执行时间久），微任务执行完后才会执行宏任务。主要就是一些`I/O`和`setTimeout`、`setInterval`、`setImmediate`。
-
-`Nodejs`碰见微任务或者宏任务会直接将它加入对应列中，待主执行JS有空后，按照优先级别顺序执行。
+`process.nextTick` 使用 Node.js 自己的队列。连续递归安排微任务或 `nextTick` 会延迟 I/O，因此应避免无界调度。
 
 ## 框架选择
+
+下表是不同版本的一组历史性能数据，缺少测试环境和负载细节，不能用于判断当前版本的实际性能。选择框架还应考虑生态、维护成本及项目需求，并在自己的负载下测试。
 
 | **Framework** | **Version** | **Router?** | **Requests/sec** |
 | ------------- | ----------- | ----------- | ---------------- |
@@ -83,107 +42,43 @@ Timers → Pending callbacks → Idle/prepare → Poll → Check → Close callb
 | **Fastify**   | **4.0.0**   | ✅          | **77,193**       |
 | `http.Server` | 16.14.2     | ❌          | 74,513           |
 
-**express生态丰富，使用简单**
+Express 生态较丰富；Fastify 等框架也可以根据项目需求考虑。
 
 ## 中间件
 
-请求 → 中间件1 → 中间件2 → 中间件3 → 路由处理 → 中间件3 → 中间件2 → 中间件1 → 响应
+中间件按注册顺序处理请求。Express 中间件调用 `next()` 后交给后续处理；能否在响应阶段继续执行取决于具体实现。
 
-::: warning 注意
-需要注意定义**顺序**
-:::
-
-- 应用级别中间件（app.use），为应用或路由添加通用功能。
-- 路由级别中间件（app.get、app.post），匹配方法和路径请求。
-- 错误处理中间件（app.use(err,...)）,处理错误
-- cors中间件 ,处理不同源请求。
+- 应用级中间件：通过 `app.use()` 为应用或指定路径添加通用功能。
+- 路由处理：通过 `app.get()`、`app.post()` 等匹配方法和路径。
+- 错误处理中间件：使用四个参数 `(err, req, res, next)` 接收错误。
+- CORS 中间件：设置浏览器跨域访问所需的响应头。
 
 **错误处理**
 
-::: code-group-fold line-numbers
+路由和中间件之后注册错误处理器；对于已发送响应头的情况，应交给后续错误处理器。错误类型和状态码需结合应用实际定义，不能把普通编程错误一律视为客户端错误。
 
-```js [demo.js]
-//语法错误处理
-const handleSyntaxError=(app:Express)=>{
-    app.use((err: any, req: any, res: any, next: NextFunction) => {
-        if(err instanceof SyntaxError){
-            res.status(400).send('存在语法错误');
-        }else{
-            next();
-        }
-    })
-}
+```ts
+import type { ErrorRequestHandler } from 'express';
 
-//类型错误处理
-const handleTypeError=(app:Express)=>{
-    app.use((err: any, req: any, res: any, next: NextFunction) => {
-        if(err instanceof TypeError){
-            res.status(400).send('存在类型错误');
-        }else{
-            next();
-        }
-    })
-}
+const handleError: ErrorRequestHandler = (err, req, res, next) => {
+    if (res.headersSent) return next(err);
+    console.error(err);
+    res.status(500).send('服务器内部错误');
+};
 
-//引用错误处理
-const handleReferenceError=(app:Express)=>{
-    app.use((err: any, req: any, res: any, next: NextFunction) => {
-        if(err instanceof ReferenceError){
-            res.status(400).send('存在引用错误');
-        }else{
-            next();
-        }
-    })
-}
-
-//网络错误处理
-const handleNetworkError=(app:Express)=>{
-    app.use((err: any, req: any, res: any, next: NextFunction) => {
-        if(err instanceof URIError){
-            res.status(400).send('存在网络错误');
-        }else{
-            next();
-        }
-    })
-}
-
-//数据库错误处理
-const handleDatabaseError=(app:Express)=>{
-    app.use((err: any, req: any, res: any, next: NextFunction) => {
-        if(err instanceof EvalError){
-            res.status(400).send('存在数据库错误');
-        }else{
-            next();
-        }
-    })
-}
-
-//未知错误处理
-const handleUnknownError=(app:Express)=>{
-    app.use((err: any, req: any, res: any, next: NextFunction) => {
-        res.status(500).send('未知错误');
-    })
-}
+app.use(handleError);
 ```
-
-:::
 
 **CORS**
 
-这里如果要让ajax(XMLHttpRequest)或者fetch区别游览发起请求和表单之间访问url
-则需要`x-requested-with`用于标识，**Content-Type**和**Authorization**用于认证，
-也可以使用自定义允许的请求头**customHeaders**。示例：
+CORS 响应头控制浏览器是否允许网页读取跨源响应。`allowedHeaders` 应包含客户端实际发送且需要预检许可的请求头；`Authorization` 可携带认证信息，`Content-Type` 描述请求体类型。`X-Requested-With` 并非所有请求都需要，也不能作为认证凭据。
 
 ```js
-const customHeaders = ['my-customer-header'];
-//x-requested-with 标识请求XMLHttpRequest或fetch区别游览发起请求和表单提交或者之间访问url
-const requiredHeaders = ['x-requested-with', 'Content-Type', 'Authorization'];
 const corsOptions = {
-    origin: 'http://example-ip:port', //允许访问的源
-    optionsSuccessStatus: 200,
+    origin: 'http://example-ip:port',
     credentials: true,
-    method: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [...customHeaders, ...requiredHeaders]
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'my-custom-header']
 };
 
 app.use(cors(corsOptions));
@@ -191,16 +86,15 @@ app.use(cors(corsOptions));
 
 ## 热更新
 
-import要设置module为ESNext或commonJS（要配置ts），后端api使用commonJS兼容性好。其他的话ESNext，或者需要使用ES6最新语法。  
-开发时可以使用热更新重载，例如**nodemon** ,例如让nodemon监视src下所有文件，一有变动就重启服务（这里加上ts类型安全），重启服务时，然后编译main.ts。
+开发时可用 nodemon 监听文件变化并重启服务。模块格式和 TypeScript 配置应与实际运行环境一致。
 
-```js:no-line-numbers
-nodemon --watch \"src/**/*.ts\" --exec \"ts-node\"  main.ts
+```sh:no-line-numbers
+nodemon --watch "src/**/*.ts" --exec "ts-node src/main.ts"
 ```
 
 ## 静态资源代理
 
-静态资源代理直接使用express.static中间件即可，例如将所有public目录暴露出去（当然也可以自定义别的目录。
+使用 Express 的 `express.static` 可以提供指定目录下的静态文件：
 
 ```js:no-line-numbers
 app.use(express.static('public'));
@@ -208,37 +102,11 @@ app.use(express.static('public'));
 
 ## 运行类型问题
 
-在使用`ts-node`会出现 “运行时类型未加载” 问题，也就是`.d.ts`文件未纳入加载范围。
+如果 ts-node 报找不到项目中的全局类型声明，先检查声明文件是否属于 TypeScript 项目。ts-node 默认不会在启动时加载 `files`、`include` 和 `exclude` 中的所有文件；可通过 `files: true` 让它加载项目文件。
 
-::: tip 问题原因
-此问题出现在使用`ts-node`去运行`ts`文件并在`tsconfig`中配置了`ts-node`中`transpileOnly`属性启用了类型检查，由于启用了检查，但是没有配置`files`去加载文件，那么此时就会出现运行时类型问题。
+`transpileOnly: true` 跳过类型检查，不等于加载了类型声明。需要类型检查时可以关闭该选项，或另行运行 `tsc --noEmit`。`typeRoots` 用于配置类型包目录，显式设置后会覆盖默认搜索位置；普通声明文件可通过 `include` 纳入项目。
 
-其中files只会加载项目文件，此时必须通过`include`显示指定哪些文件属于项目中的一部分 。（启用类型检查条件下`transpileOnly`）
-
-该问题只是一个类型问题，关闭`transpileOnly`也是可以运行的，如果非要`ts-node`检查的话，就必须要配置`files`和`transpileOnly`两种属性。
-
-当然了，在开发中也是需要针对一些类型文件编译器也是要识别到的，使得开发更加类型安全。
-:::
-
-::: warning 注意
-在配置包含类型文件中，有两种方案，一种是`include`和`typeRoots`方案。
-
-:grinning: :`include`是文件级别精确匹配，针对每个文件可控，结构也更加清晰。因此实际中推荐使用这种。
-:disappointed_relieved: : `typeRoots`会扫描整个目录，同时会覆盖默认，需要显示声明，实际使用容易造成误配。因此大多数不推荐。
-:::
-
-::: tip 提示
-**对于类型声明文件来讲** `typeRoots`告诉ts去哪里找全局类型声明，默认"typeRoots" ,这里可以拓展自定义.d.ts声明文件,例如（**第一个是默认，后面一个是自定义的**）：
-
-```json
-{
-    "typeRoots": ["./node_modules/@types", "./server/types"]
-}
-```
-
-:::
-
-> 首先需要保证**类型安全**，这里以环境类型为例
+例如扩展 Express 的 Request 类型：
 
 ::: code-group
 
@@ -266,20 +134,15 @@ export {};
 
 ```jsonc [tsconfig.json]
 {
-   "ts-node": {
-      //[!code warning]
-      // 关闭它时，不会出现这个问题，需要解决类型问题，使用ts-node需要明确指定需不需要它
-      //[!code warning]
-      //使用ts-node类型检查，不推荐，检查多余且不适配耗时长
-
-      "transpileOnly": false //[!code ++] 启用类型检查 ,
-      "files": true //[!code ++] 加载 include 中的所有文件
-   },
-   "include": ["env.d.ts"] //[!code ++] 包含类型
+    "ts-node": {
+        "transpileOnly": false,
+        "files": true
+    },
+    "include": ["src/**/*.ts", "env.d.ts"]
 }
 ```
 
-```json [package.json]
+```jsonc [package.json]
 {
     "scripts": {
         //[!code ++]
@@ -290,578 +153,136 @@ export {};
 
 :::
 
-::: details
-**ts-node是为了让 Node.js 能够直接运行 TypeScript 文件（.ts），而无需先手动编译成 JavaScript。**
-
-同时由于`esm`格式目前还是不支持，只能使用加载器格式进行加载`esm`格式，而且加载器未来会抛弃选用`import`格式。
-
-因此实际`ts-node`运行中会将项目的`esm`格式转化为`commonJS`格式。
-
-它核心就是**轻量、即时执行**，因此只适合一些验证场景和简单脚本场景不需要打包工具参与。
-:::
+ts-node 可在开发中直接运行 TypeScript。CommonJS 与原生 ESM 的运行方式不同，应按项目模块配置和 ts-node 版本选择对应方式。
 
 ## 约定式路由
 
-::: warning 注意
-路由定义要存储全局，要不然打包就不会共享 这里的约定是文件必须按照Nuxt中api一样配置【约定即配置核心】，这里约定函数为**defineNodeRoute**,可以自行定义。
-:::
+约定式路由根据文件路径生成路由。例如 `api/users/index.get.ts` 对应 `GET /users`，`api/users/[id].get.ts` 对应 `GET /users/:id`。这样新增接口时可以直接创建文件，但也需要明确命名规则和加载方式。
 
-**实现**
-
-> routerScanner（路由扫描函数，在插件中引入即可快速完成路由定义）
+下面是一个简化的 Express 示例：扫描时根据文件名注册默认导出的处理函数，静态路径排在动态路径前。示例仅处理 GET、POST、PUT、PATCH 和 DELETE，不包含热重载、冲突检测和权限校验。
 
 ::: code-group-fold line-numbers
 
-```ts [demo-achieve]
-import fs from 'fs';
-import path from 'path';
-import { pathToFileURL } from 'url';
-import type { Router, Request, Response, NextFunction } from 'express';
+```ts [routeScanner.ts]
+import { readdir } from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import type { RequestHandler, Router } from 'express';
 
-// 路由处理器类型 - 使用扩展的Request类型
-export type RouteHandler = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => void | Promise<void | any>;
+type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
+const methods = new Set<Method>(['get', 'post', 'put', 'patch', 'delete']);
 
-// 路由定义类型
-export interface RouteDefinition {
-    handler: RouteHandler;
-    method: string;
-    path: string;
-    filePath: string;
-}
-
-// 存储所有路由定义 - 使用全局对象确保在打包后能正确共享
-global.routeDefinitions = global.routeDefinitions || new Map();
-const routeDefinitions = global.routeDefinitions;
-
-// 存储全局 router 引用，这样可以立即注册路由
-let globalRouter: Router | null = null;
-
-/**
- * 跨平台文件路径转换为导入路径
- * @param filePath 文件的绝对路径
- * @returns 适合当前平台的导入路径
- */
-function convertToImportPath(filePath: string): string {
-    // 对于 .ts 文件（开发环境），直接使用文件路径
-    if (filePath.endsWith('.ts')) {
-        return filePath;
-    }
-
-    // 对于 .js 文件（生产环境），使用 file:// URL
-    // pathToFileURL 会自动处理 Windows 和 macOS 的路径格式
-    return pathToFileURL(filePath).href;
-}
-
-/**
- * 设置全局 router 引用
- * @param router Express Router 实例
- */
-export function setGlobalRouter(router: Router): void {
-    globalRouter = router;
-}
-
-/**
- * 全局 defineNodeRoute 函数
- * @param handler 路由处理函数
- * @returns 路由处理函数
- */
-export function defineNodeRoute(handler: RouteHandler): RouteHandler {
-    // 获取调用栈信息来确定文件路径
-    const stack = new Error().stack;
-    if (stack) {
-        const stackLines = stack.split('\n');
-        // 找到调用 defineNodeRoute 的文件
-        for (let i = 1; i < stackLines.length; i++) {
-            const line = stackLines[i];
-            // 支持 .ts 和 .js 文件，但排除 routeScanner 文件本身
-            if ((line.includes('.ts') || line.includes('.js')) && !line.includes('routeScanner')) {
-                // 改进正则表达式以匹配 .ts 或 .js 文件的Windows路径
-                const match = line.match(/\(([A-Za-z]:[^:)]+\.(ts|js))/);
-                if (match) {
-                    const filePath = match[1];
-
-                    try {
-                        const { method, path: routePath } = parseRouteFromFilePath(filePath);
-
-                        const routeDefinition = {
-                            handler,
-                            method,
-                            path: routePath,
-                            filePath
-                        };
-
-                        routeDefinitions.set(filePath, routeDefinition);
-
-                        // 如果有全局 router，立即注册路由
-                        if (globalRouter) {
-                            registerSingleRoute(globalRouter, routeDefinition);
-                        }
-
-                        break;
-                    } catch (error) {
-                        console.error(
-                            `❌ Error parsing route from ${filePath}:`,
-                            error instanceof Error ? error.message : error
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    return handler;
-}
-
-/**
- * 注册单个路由到 Express Router
- * @param router Express Router 实例
- * @param routeDefinition 路由定义
- */
-function registerSingleRoute(router: Router, routeDefinition: RouteDefinition): void {
-    const { method, path: routePath, handler } = routeDefinition;
-
-    try {
-        // 注册路由到 router
-        switch (method.toLowerCase()) {
-            case 'get':
-                router.get(routePath, handler);
-                break;
-            case 'post':
-                router.post(routePath, handler);
-                break;
-            case 'put':
-                router.put(routePath, handler);
-                break;
-            case 'delete':
-                router.delete(routePath, handler);
-                break;
-            case 'patch':
-                router.patch(routePath, handler);
-                break;
-            case 'head':
-                router.head(routePath, handler);
-                break;
-            case 'options':
-                router.options(routePath, handler);
-                break;
-            default:
-                console.warn(`⚠️ Unsupported HTTP method: ${method} for route ${routePath}`);
-                return;
-        }
-    } catch (error) {
-        console.error(
-            `❌ Failed to register route ${method.toUpperCase()} ${routePath}:`,
-            error instanceof Error ? error.message : error
-        );
-    }
-}
-
-/**
- * 从文件路径解析路由信息
- * @param filePath 文件路径
- * @returns 解析后的方法和路径
- */
-function parseRouteFromFilePath(filePath: string): { method: string; path: string } {
-    // 输入验证
-    if (!filePath || typeof filePath !== 'string') {
-        throw new Error('Invalid file path provided');
-    }
-
-    // 验证文件是否为 TypeScript 或 JavaScript 文件
-    const fileExtension = path.extname(filePath);
-    if (fileExtension !== '.ts' && fileExtension !== '.js') {
-        throw new Error(`File must be a TypeScript or JavaScript file: ${filePath}`);
-    }
-
-    // 标准化路径分隔符
-    const normalizedPath = filePath.replace(/\\/g, '/');
-
-    // 找到 api 目录的位置
-    const apiIndex = normalizedPath.indexOf('/api/');
-    if (apiIndex === -1) {
-        throw new Error(`File is not in the api directory: ${filePath}`);
-    }
-
-    // 获取 api 目录后的相对路径
-    const relativePath = normalizedPath.substring(apiIndex + 5); // 5 = '/api/'.length
-
-    // 验证相对路径不为空
-    if (!relativePath) {
-        throw new Error(`Invalid api file path: ${filePath}`);
-    }
-
-    // 解析文件名（移除扩展名）
-    const fileName = path.basename(relativePath, fileExtension);
-    const directory = path.dirname(relativePath);
-
-    // 验证文件名不为空
-    if (!fileName) {
-        throw new Error(`Invalid file name: ${filePath}`);
-    }
-
-    // 解析 HTTP 方法（从文件名中提取，如 hello.get.ts -> get）
-    const fileParts = fileName.split('.');
-    let method = 'get'; // 默认方法
-    let routeName = fileName;
-
-    if (fileParts.length >= 2) {
-        const possibleMethod = fileParts[fileParts.length - 1].toLowerCase();
-        const validMethods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'];
-
-        if (validMethods.includes(possibleMethod)) {
-            method = possibleMethod;
-            routeName = fileParts.slice(0, -1).join('.');
-        }
-    }
-
-    // 验证路由名称
-    if (!routeName && routeName !== 'index') {
-        throw new Error(`Invalid route name derived from file: ${filePath}`);
-    }
-
-    // 构建路由路径
-    let routePath = '';
-
-    // 处理目录路径（不处理动态参数，只处理静态路径）
-    if (directory && directory !== '.') {
-        // 验证目录路径格式
-        const directorySegments = directory.split('/');
-        for (const segment of directorySegments) {
-            if (
-                !segment ||
-                segment.includes('..') ||
-                segment.includes('<') ||
-                segment.includes('>')
-            ) {
-                throw new Error(`Invalid directory segment in path: ${directory}`);
-            }
-        }
-        routePath = '/' + directory;
-    }
-
-    // 添加文件名作为路径（除非是 index）
-    if (routeName && routeName !== 'index') {
-        // 处理动态路由参数（只在文件名级别）
-        if (routeName.startsWith('[') && routeName.endsWith(']')) {
-            const paramName = routeName.slice(1, -1);
-            // 验证参数名格式
-            if (!paramName || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(paramName)) {
-                throw new Error(`Invalid dynamic parameter name: ${paramName} in file ${filePath}`);
-            }
-            routePath += '/:' + paramName;
-        } else {
-            // 验证静态路由名称格式
-            if (!/^[a-zA-Z0-9_-]+$/.test(routeName)) {
-                throw new Error(`Invalid route name format: ${routeName} in file ${filePath}`);
-            }
-            routePath += '/' + routeName;
-        }
-    }
-
-    // 确保路径以 / 开头
-    if (!routePath) {
-        routePath = '/';
-    } else if (!routePath.startsWith('/')) {
-        routePath = '/' + routePath;
-    }
-
-    // 验证最终路径格式
-    if (!/^\/[a-zA-Z0-9\/_:-]*$/.test(routePath)) {
-        throw new Error(
-            `Generated route path contains invalid characters: ${routePath} from file ${filePath}`
-        );
-    }
-
-    return { method, path: routePath };
-}
-
-/**
- * 扫描 api 目录并加载所有路由文件
- * @param apiDir api 目录路径
- */
-export async function scanApiDirectory(apiDir: string): Promise<void> {
-    if (!fs.existsSync(apiDir)) {
-        console.warn(`⚠️ API directory ${apiDir} does not exist`);
-        return;
-    }
-
-    try {
-        const files = await getAllRouteFiles(apiDir);
-        console.log(`📂 Found ${files.length} route files in API directory`);
-
-        // 动态导入所有路由文件
-        for (const file of files) {
-            try {
-                // 使用跨平台路径转换函数
-                const importPath = convertToImportPath(file);
-
-                await import(importPath);
-            } catch (error) {
-                console.error(
-                    `❌ Error importing route file ${path.basename(file)}:`,
-                    error instanceof Error ? error.message : error
-                );
-            }
-        }
-    } catch (error) {
-        console.error(
-            `❌ Error scanning API directory ${apiDir}:`,
-            error instanceof Error ? error.message : error
-        );
-    }
-}
-
-/**
- * 递归获取目录下的所有路由文件（.ts 或 .js）
- * @param dir 目录路径
- * @returns 路由文件路径数组
- */
-async function getAllRouteFiles(dir: string): Promise<string[]> {
+async function findFiles(dir: string): Promise<string[]> {
+    const entries = await readdir(dir, { withFileTypes: true });
     const files: string[] = [];
-
-    try {
-        const items = fs.readdirSync(dir);
-
-        for (const item of items) {
-            const fullPath = path.join(dir, item);
-
-            try {
-                const stat = fs.statSync(fullPath);
-
-                if (stat.isDirectory()) {
-                    const subFiles = await getAllRouteFiles(fullPath);
-                    files.push(...subFiles);
-                } else {
-                    // 支持 .ts 和 .js 文件，但排除 .d.ts 文件
-                    const ext = path.extname(item);
-                    if ((ext === '.ts' && !item.endsWith('.d.ts')) || ext === '.js') {
-                        files.push(fullPath);
-                    }
-                }
-            } catch (error) {
-                console.error(
-                    `❌ Error accessing file ${fullPath}:`,
-                    error instanceof Error ? error.message : error
-                );
-            }
-        }
-    } catch (error) {
-        console.error(
-            `❌ Error reading directory ${dir}:`,
-            error instanceof Error ? error.message : error
-        );
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) files.push(...(await findFiles(fullPath)));
+        else if (/\.(ts|js)$/.test(entry.name) && !entry.name.endsWith('.d.ts'))
+            files.push(fullPath);
     }
-
     return files;
 }
 
-/**
- * 将所有扫描到的路由注册到 Express Router
- * @param router Express Router 实例
- */
-export function registerRoutes(router: Router): void {
-    for (const [filePath, routeDefinition] of routeDefinitions) {
-        const { method, path: routePath, handler } = routeDefinition;
-
-        try {
-            // 注册路由到 router
-            switch (method.toLowerCase()) {
-                case 'get':
-                    router.get(routePath, handler);
-                    break;
-                case 'post':
-                    router.post(routePath, handler);
-                    break;
-                case 'put':
-                    router.put(routePath, handler);
-                    break;
-                case 'delete':
-                    router.delete(routePath, handler);
-                    break;
-                case 'patch':
-                    router.patch(routePath, handler);
-                    break;
-                case 'head':
-                    router.head(routePath, handler);
-                    break;
-                case 'options':
-                    router.options(routePath, handler);
-                    break;
-                default:
-                    console.warn(`⚠️ Unsupported HTTP method: ${method} for route ${routePath}`);
-            }
-        } catch (error) {
-            console.error(
-                `❌ Failed to register route ${method.toUpperCase()} ${routePath}:`,
-                error instanceof Error ? error.message : error
-            );
-        }
+function parseRoute(root: string, file: string): { method: Method; route: string } {
+    const parts = path.relative(root, file).split(path.sep);
+    const fileName = parts.pop()!.replace(/\.(ts|js)$/, '');
+    const match = fileName.match(/^(.+)\.(get|post|put|patch|delete)$/);
+    if (!match || !methods.has(match[2] as Method)) {
+        throw new Error(`Invalid route file: ${file}`);
     }
+    if (match[1] !== 'index') parts.push(match[1]);
+    const segments = parts.map((segment) => {
+        const param = segment.match(/^\[([a-zA-Z_][a-zA-Z0-9_]*)\]$/);
+        if (param) return `:${param[1]}`;
+        if (!/^[a-zA-Z0-9_-]+$/.test(segment)) throw new Error(`Invalid segment: ${segment}`);
+        return segment;
+    });
+    return { method: match[2] as Method, route: '/' + segments.join('/') };
+}
 
-    console.log(`✅ Total routes registered: ${routeDefinitions.size}`);
+export async function registerRoutes(router: Router, root: string): Promise<void> {
+    const files = await findFiles(root);
+    const routes = files.map((file) => ({ file, ...parseRoute(root, file) }));
+    routes.sort((a, b) => (a.route.match(/:/g)?.length ?? 0) - (b.route.match(/:/g)?.length ?? 0));
+
+    for (const { file, method, route } of routes) {
+        const module = await import(pathToFileURL(file).href);
+        if (typeof module.default !== 'function') throw new Error(`Missing handler: ${file}`);
+        router[method](route, module.default as RequestHandler);
+    }
 }
 ```
 
-:::
+```ts [api/users/[id].get.ts]
+import type { RequestHandler } from 'express';
 
-**插件注册**
-
-> register-router.server.ts（完成动态引入路由）
-
-::: code-group-fold line-numbers
-
-```ts [demo-plugin-register.ts]
-import path from 'path';
-import type { Router } from 'express';
-import { registerRoutes, scanApiDirectory, setGlobalRouter } from '../../utils/routeScanner';
-
-/**
- * 设置所有路由，约定大于配置自动导入设置
- * 异步导入所有路由文件并注册
- */
-async function setupRoutes(router: Router) {
-    // 设置全局 router，这样路由会在导入时立即注册
-    setGlobalRouter(router);
-
-    // 扫描并注册 API 路由（包括根路由）
-    let apiDir: string;
-
-    if (__dirname.includes('dist')) {
-        // 生产环境：在 dist 目录中，api 目录就在同级
-        apiDir = path.join(__dirname, 'api');
-    } else {
-        // 开发环境：在 server 目录中
-        apiDir = path.join(__dirname, '../../api');
-    }
-
-    await scanApiDirectory(apiDir);
-
-    // 作为备用，仍然调用传统的注册方法（如果有剩余的路由）
-    registerRoutes(router);
-}
-
-// 02.register-router.server.ts plugin
-/**
- * @description register router once
- */
-const defineRouterPlugin = async (router: Router) => {
-    await setupRoutes(router);
+const handler: RequestHandler = (req, res) => {
+    res.json({ id: req.params.id });
 };
 
-export default defineRouterPlugin;
+export default handler;
+```
+
+```ts [main.ts]
+import express from 'express';
+import path from 'node:path';
+import { registerRoutes } from './routeScanner.js';
+
+const app = express();
+const router = express.Router();
+// 指向实际的 api 目录：开发时是源码目录，部署后是编译输出目录
+await registerRoutes(router, path.resolve('dist/api'));
+app.use('/api', router);
+app.listen(3000);
 ```
 
 :::
+
+示例使用 ESM，运行 TypeScript 源文件时需要支持 `.ts` 导入的运行器；生产环境应扫描编译后的 `.js` 文件，并确保运行时能访问它们。`dist/api` 只是输出目录示例，需与实际构建配置一致。
 
 **打包**
 
-::: tip 提示
-这里以esbuild打包为例，因为esbuild非常适合**中小型RESTful API**项目打包  
-其速度快、简洁，符合实际实践
-:::
+以下脚本使用 esbuild 将 `server` 中的 TypeScript 文件分别转译到 `dist`，保留目录结构，以便运行时扫描 `dist/api`。项目的 `package.json` 需设置 `"type": "module"`，本地相对导入应与输出文件扩展名一致。
 
-> esbuild（esbuild.config.ts）
-
-::: code-group-fold line-numbers
-
-```ts [demo-build.mjs]
-// esbuild.config.mjs
+```js [build.mjs]
 import { build } from 'esbuild';
-import { rmSync, existsSync, cpSync } from 'fs';
-import { readdirSync, statSync } from 'fs';
-import { join } from 'path';
+import { readdir } from 'node:fs/promises';
+import path from 'node:path';
 
-const outdir = 'dist';
-
-// 先清空 dist 目录
-if (existsSync(outdir)) rmSync(outdir, { recursive: true });
-
-// 获取所有 TypeScript 文件
-function getAllTsFiles(dir, basePath = dir) {
+async function findSources(dir) {
+    const entries = await readdir(dir, { withFileTypes: true });
     const files = [];
-    const items = readdirSync(dir);
-
-    for (const item of items) {
-        const fullPath = join(dir, item);
-        const stat = statSync(fullPath);
-
-        if (stat.isDirectory()) {
-            files.push(...getAllTsFiles(fullPath, basePath));
-        } else if (item.endsWith('.ts') && !item.endsWith('.d.ts')) {
-            files.push(fullPath);
-        }
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) files.push(...(await findSources(fullPath)));
+        else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts')) files.push(fullPath);
     }
-
     return files;
 }
 
-// 打包核心入口
 await build({
-    entryPoints: ['server/main.ts'],
-    outdir,
-    bundle: true,
+    entryPoints: await findSources('server'),
+    outbase: 'server',
+    outdir: 'dist',
     platform: 'node',
-    target: 'node18',
-    format: 'cjs', // 改为 CommonJS 格式
-    sourcemap: true,
-    external: ['fs', 'path', 'url'] // Node 内置模块不打包
+    format: 'esm',
+    sourcemap: true
 });
-
-// 单独编译所有其他 TypeScript 文件（包括 API 文件）
-const allFiles = getAllTsFiles('server');
-const otherFiles = allFiles.filter((file) => !file.endsWith('main.ts'));
-
-if (otherFiles.length > 0) {
-    await build({
-        entryPoints: otherFiles,
-        outdir,
-        bundle: false,
-        platform: 'node',
-        target: 'node18',
-        format: 'cjs',
-        sourcemap: true,
-        outbase: 'server'
-    });
-}
-
-// 复制静态文件目录（约定大于配置：只有当 server/public/static 存在时才复制整个 public 目录）
-if (existsSync('server/public/static')) {
-    cpSync('server/public', `${outdir}/public`, { recursive: true });
-    console.log('📁 Static files copied to dist/public (triggered by server/public/static)');
-} else {
-    console.log('ℹ️  No server/public/static directory found, skipping static files copy');
-}
-
-console.log('✅ Build completed successfully!');
 ```
 
-:::
+该示例只转译源文件，不会自动复制静态资源或安装运行时依赖；按部署环境另行处理，并在构建前执行类型检查。
 
 ## 压缩加速
 
-**以node:zlib**中的两个gzip和deflate为例。
+Node.js 的 `node:zlib` 支持 gzip、deflate 等压缩格式。HTTP 响应应根据客户端支持的编码选择格式，并设置对应响应头；实际压缩效果和耗时取决于数据和配置。
 
-- gip适合http传输，**游览器兼容**
-- deflate适合嵌入式设备、低延迟通信（**大文件下1gb以上，比gzip压缩时间快15%**）
-
-::: warning 注意
-大文件下，为了避免文件一次性加载要使用流失处理（Stream + Pipeline）
-:::
-
-::: tip 提示
-**为了保证生产者和消费者的平衡，也即内存安全，所以使用流失处理最好（pipe管道不会处理错误，会导致读或者写流永远挂起，因而这里使用pipeline最好）**
-
-pipeline相比pipe，引入了错误处理机制，当错误发生时会销毁管道中的所有流，其位于**stream**包下，node内部包
-:::
+大文件可使用流处理，避免一次性读入全部内容。`pipeline` 处理背压并在出错时清理相关流，适合连接文件、压缩流和目标流。
 
 ```ts
-//大文件流失处理，返回前端
+// 使用流压缩和解压文件
 import { createReadStream, createWriteStream } from 'node:fs';
-import { createGzip, createDeflate } from 'node:zlib';
+import { createGzip, createDeflate, createGunzip, createInflate } from 'node:zlib';
 import { pipeline } from 'node:stream/promises';
 
 //压缩
@@ -885,7 +306,9 @@ async function decompressFile(inputPath, outputPath, isGzip = true) {
 }
 ```
 
-**小文件处理示例**
+**通过 HTTP 返回压缩内容**
+
+示例假设客户端支持 gzip；实际服务应先检查 `Accept-Encoding` 并设置适当的 `Vary` 响应头。
 
 ::: code-group-fold line-numbers
 
@@ -935,33 +358,13 @@ export const setupDefaultRoute = (router: Router) => {
 
 ## ESM & Commonjs
 
-::: tip 提示
-由于**nodejs**已全面转向了ESM模块作为未来发展方向，因而从最佳实践和现代化做法中，选择ESM。Nodejs和ts编译器职责分离，nodejs只执行js，而ts编译器只编译ts。因而引入ts文件必须要.js拓展名即使是ts。
+Node.js 同时支持 ESM 和 CommonJS。选择模块格式时，应让 `package.json`、TypeScript 配置和运行方式保持一致。
 
-原因：**但esm模块解析时，nodejs不会像commonjs自动查找.js、.json扩展名，省略.js就node找不到该模块**。
+对于编译为 JavaScript 后直接交给 Node.js 的 ESM 项目，相对导入通常需要写运行时的 `.js` 扩展名，即使源文件是 `.ts`。使用打包器或直接运行 TypeScript 时，解析规则可能不同，应以所用工具的配置为准。
 
-之所以必须是`.js`而不是`.ts`因为node是运行时，而ts是编译时类似源文件，所以在nodejs引入或者使用模块就必须引入编译后的`.js`文件
+例如，在 `package.json` 中设置 `"type": "module"`，并使用以下 TypeScript 配置：
 
-在vue官方脚手架项目中`vite`编译器自动处理了ts文件，隐藏了编译过程，从而导入文件时不用关心拓展名。
-:::
-
-**配置：**  
-在`package.json`显示声明`"type":"module"`即可，然后就是配置`tsconfig.json`让ts如何解析该模块
-
-::: warning 注意
-实际上不会这样子做，这样开发体验不好，每次都要输入文件后缀`js`，即使是`ts`。
-
-在node环境下的时候，当设置它的时候，node会强制要求文件后缀，如果是`ts`写的，那么特别是本地引入文件的时候会是`js`后缀，这样不直观，因此开发的时候一般不用，保持默认即可。
-
-同时如果确认需要显式的`esm`的时候，此时就需要，但是不推荐`ts`，因为`ts`会被视为`js`处理，此时可以使用`mjs`。
-
-:::
-
-::: tip 提示
-大部分情况下，`type`保持默认即可，避免在开发中`ts`本地文件引入时，要保持文件后缀`js`，**JS**文件选用`mjs`格式即可。
-:::
-
-```json
+```jsonc
 {
     "compilerOptions": {
         "target": "ES6",
@@ -981,37 +384,13 @@ export const setupDefaultRoute = (router: Router) => {
 }
 ```
 
-然后就是`package.json`启动命令的配置，这里使用更加现代的ts编译器`tsx`。其他的也可以，根据实际情况使用即可。
-
-::: danger 危险
-`tsc`由于是单线程，构建速度慢，没有tree-shaking、模块打包等情况，因此实际上很少会选用它。
-
-但是由于它是`ts`的官方打包工具，而且它非常适合类型检查，在快速验证的场景下可以选用它。
-:::
+开发时可用 `tsx` 等工具运行 TypeScript。生产环境可以使用 `tsc` 编译，也可以根据部署需求选择打包器；`tsc` 本身不提供打包和 tree shaking，但可用于类型检查及生成 JavaScript。
 
 ## 打包
 
-::: tip 提示
-如果是CLI、npm库、API服务，可以选用`tsup`。
+服务端是否需要打包取决于部署方式、依赖和启动环境。esbuild、tsup、Rollup 等工具提供不同的构建能力；SWC 常用于快速转译。选择时应检查目标模块格式、原生依赖和工具的维护状态。
 
-如果是库开发，需要tree-shaking效果好、输出可读性好，此时可以选用`rollup`，但是速度会稍微比较慢较`tsup`、以及HMR不支持。
-
-由于`rollup`受限JS单线程，打包耗时就会长，可以考虑`rolldown`也就是`rollup`重置版本，**未来发展趋势**，未来也会慢慢支持HMR功能，目前主要部分插件支持首先开发者一小部分会不支持，但是大部分是支持的。
-
-如果需要HMR热更新，可以选用`swc`，但是它仅转义不支持类型检查，因此在选用它时注意考虑**类型安全**
-:::
-
-::: warning 注意
-以上打包工具，`tsup`、`rollup`、`rolldown`、`swc`都不支持类型检查，因此打包前需要注意类型安全，或者执行一次类型安全检查，也是可以的。
-:::
-
-::: info 通知
-`nestjs`中在使用`swc`进行转译`ts`->`js`然后在`build`阶段会先执行`tsc`类型检查，检查完后就是`swc`转译代码了。
-
-`vite8`打包构建也是选用的`rolldown`。
-:::
-
-在进行快速场景验证的时候，可以选用`esbuild`进行转译，但是正常项目不推荐，只适合很少场景，追求简单的话，选用`tsup`也是可以的。
+转译或打包不一定包含 TypeScript 类型检查，可在构建流程中单独执行 `tsc --noEmit`。下面以 esbuild 为例：
 
 ::: code-group-fold line-numbers
 
@@ -1071,34 +450,13 @@ await build({
 
 ## 进程 & 脚本
 
-`Nodejs`可以针对进程进行管理，实现**进程并发、任务沙箱隔离、脚本编写、聚合层BFF转发、自动化运维和构建、数据处理等**等功能。
+Node.js 的 `child_process` 模块可启动其他进程，用于调用外部程序、运行脚本或隔离任务。例如，通过子进程执行 Python 脚本，或将 CPU 密集计算交给其他进程，避免长时间阻塞当前 JavaScript 线程。
 
-主要就是一些CPU密集任务型处理，因为`Nodejs`是高性能I/O处理，因此对这方面特别擅长，其核心就是**将I/O操作迁移到后台，避免阻塞主进程**。
-
-大部分场景如下：数据加密、数据计算、图片处理等。也是通过Nodejs中`fork`创建子进程，然后进行处理（类似CPU并行），使得主进程继续处理其他请求，返回最终处理结果而后主进程进行处理。
-
-还一种就是一些定时任务和流式长期运行任务，例如**日志监控、数据备份、爬虫任务、跨语言集成等**。
-
-::: tip 提示
-跨语言集成能力，也是借助`Nodejs`环境，类似`Nodejs`脚本使用对应的环境启动对应的代码，例如使用`python`启用`.py`完成模型推理工作等。
-:::
-
-::: danger 危险
-`fork`创建子进程会消耗资源，因此实际中不能创建太多，会有性能损耗
-:::
-
-> [!IMPORTANT] 重要
-> 上诉中的能力，是借助`Nodejs`中`child_process`模块的，翻译过来就是子进程模块。
-
-::: tip 为什么是`child_process`
-
-|       库       |              优点              |       缺点       |     适用场景      |
-| :------------: | :----------------------------: | :--------------: | :---------------: |
-| child_process  | 进程隔离、进程并行、跨语言集成 |  创建进程有开销  | CPU密集、需要沙箱 |
-| Worker Threads |        共享内存，开销小        |     ipc通信      |    进程间通信     |
-|    Redis/MQ    |         分布式、持久化         | 必须要中间件集成 |    分布式系统     |
-
-:::
+| 方式           | 适用场景                             | 注意事项                                                 |
+| -------------- | ------------------------------------ | -------------------------------------------------------- |
+| 子进程         | 进程隔离、运行其他语言或程序         | 创建进程有开销，需要控制数量；进程隔离本身不等于安全沙箱 |
+| Worker Threads | 在同一进程内并行执行 JavaScript 计算 | 可通信或共享内存，需要处理同步与资源管理                 |
+| 消息队列       | 跨进程或跨机器分发任务               | 需要部署和维护相应组件                                   |
 
 **child_process配置速通**
 
@@ -1142,20 +500,11 @@ await build({
 |  encoding   |    'utf8'    |         `string`         | 字符编码，设置为 'buffer' 则输出 Buffer 对象 |
 |  maxBuffer  | 1024 \* 1024 | `'number'\|'undefined' ` |                  缓冲区大小                  |
 
-::: danger 危险
-`exec`和`execFile`的核心就是有关**shell**配置，因为`execFile`就是针对`exec`的封装，主要就是解决shell注入问题。
-
-- `exec`中shell默认启用(true)
-- `execFile`中shell默认关闭(false)
-
-因此`execFile`就不支持了shell语法。
-:::
+`exec` 默认通过 shell 执行命令；`execFile` 默认直接运行可执行文件，因此默认不解析 shell 语法。使用 shell 时不要拼接不可信输入，以免产生命令注入。
 
 **fork特点和配置**
 
-IPC通信（基于spawn）封装，主要用于CPU任务拆分，优化CPU利用。只会在Node环境下执行，默认包含IPC通信通道。
-
-一般类似就是像electron通信一样，还有就是node脚本执行，进程守护等。
+`fork` 启动新的 Node.js 子进程并默认建立 IPC 通道，适合运行 Node.js 模块并与父进程交换消息。
 
 [fork官方配置文档](https://nodejs.org/api/child_process.html#child_processforkmodulepath-args-options)
 

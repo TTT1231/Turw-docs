@@ -6,135 +6,91 @@ outline: [2, 3]
 
 ## 核心机制
 
-针对定义对象vue2抛出错误的问题，vue3结合使用**ES6**中的Reflect（对象操作工具箱），  
-相比Object.defineProperty()【vue2】成功返回对象，失败抛出错的头疼问题。
+Vue 3 使用 `Proxy` 拦截响应式对象的属性访问和修改，并在读取时收集依赖、修改时触发相关更新。`ref` 则通过 `.value` 的 getter 和 setter 跟踪访问。
 
-该结合Reflect.get/set直接返回true or false这样就让错误处理更加优雅  
-提升数据劫持的灵活性和安全性。同时也完美解决了this指向windows或undefined错误。
+使用 `Reflect.get` 时传入 `receiver`，可以保留 getter 的接收者语义：
 
-```js{3}
+```js
 const obj = { name: 'testname' };
 const proxy = new Proxy(obj, {
-   //使得receiver始终指向该代理对象proxy,避免指向问题
-   get(target, key, receiver) {
-      return Reflect.get(target, key, receiver);
-   }
+    get(target, key, receiver) {
+        return Reflect.get(target, key, receiver);
+    }
 });
 ```
 
 ### reactivity
 
-以响应式对象为例，vue一个响应式系统包含所有的响应式对象的集合set  
-然后每个响应式对象又包含多个响应式属性  
-这个响应式属性其实就是一个装有副作用函数的盒子，  
-当依赖发生变化然后指向副作用函数就完成了响应式实现。例如:
+可以用三层结构理解依赖关系：对象 → 属性 → 依赖这个属性的副作用。读取属性时收集当前副作用，修改属性时通知订阅者。下面是概念模型，不是 Vue 内部实现的完整代码：
 
-```js
-// ===== 核心数据结构详解 =====
-// 第三层：Dep - 依赖集合（最内层）
-// 就是一个装副作用函数的盒子
-type Dep = Set<Function>                 // [!code warning]
-// 例子：假设有3个副作用函数都用到了 obj.name
-const nameDepSet = new Set()             // [!code warning]
-nameDepSet.add(effect1)  // 副作用函数1   // [!code warning]
-nameDepSet.add(effect2)  // 副作用函数2   // [!code warning]
-nameDepSet.add(effect3)  // 副作用函数3   // [!code warning]
-// 现在 nameDepSet 就是 obj.name 属性的依赖集合
-// 第二层：KeyToDepMap - 属性映射表（中间层）
-// 一个对象有多个属性，每个属性都有自己的依赖集合
-type KeyToDepMap = Map<string, Dep>     // [!code warning]
-// 例子：obj 对象有 name 和 age 两个属性
-const objDepsMap = new Map()           // [!code warning]
-objDepsMap.set('name', nameDepSet)    // name属性 -> 它的依赖集合  // [!code warning]
-objDepsMap.set('age', ageDepSet)      // age属性 -> 它的依赖集合   // [!code warning]
-// 第一层：targetMap - 对象映射表（最外层）  
-// 全局可能有多个响应式对象，每个对象都有自己的属性映射表
-const targetMap = new WeakMap<object, KeyToDepMap>()              // [!code warning]
+```ts
+type Dep = Set<Function>;
+type KeyToDepMap = Map<PropertyKey, Dep>;
+const targetMap = new WeakMap<object, KeyToDepMap>();
 ```
+
+例如，两个副作用都读取 `state.name`，它们都会订阅这个属性；更新 `state.name` 时，响应式系统会通知它们。
 
 ### 重绘 & 回流
 
-当响应式数据发生变化，然后需要实时渲染页面,vue就会发生**重绘**，使得数据能够实时展示。  
-而**回流**只是css外观风格发生改变，不会受到响应式数据的影响。
+响应式数据变化会触发相关更新；浏览器是否需要布局或绘制，取决于最终修改了哪些 DOM 和样式：
+
+- **回流（布局）**：需要重新计算元素的尺寸或位置，例如修改宽度。
+- **重绘**：外观需要更新，例如修改颜色；不一定需要重新布局。
+
+一次更新可能触发布局和绘制，也可能不会产生可见的 DOM 变化。
 
 ### 消除异步
 
-核心针对**异步源头中的Promise**将异步转化同步，以此来消除异步传染性。
+异步操作不能真正变成同步操作。下面的示例通过缓存结果和抛出待处理的 Promise，让调用方在请求完成后重新执行；这种模式需要专门的调度机制支持。
 
-::: warning
-但是会使的同步代码逻辑执行两次。也即第一段同步代码执行到目标【异步改同步】直接抛出promise中断同步执行队列,第二段重新执行同步代码,此时这里已经出结果了，就屏蔽了异步特性
+::: warning 注意
+重试会再次执行等待点之前的同步代码，因此这些代码应避免不可重复的副作用。普通业务请求通常直接使用 `async` / `await` 更清晰。
 :::
 
 ::: code-group-fold line-numbers
 
 ```ts [demo.ts]
-//Promise缓存
-const cache: {
-    status: 'pending' | 'fulfilled' | 'rejected';
-    data: any;
-} = {
-    status: 'pending',
-    data: null
-};
+type State =
+    | { status: 'pending'; promise: Promise<void> }
+    | { status: 'fulfilled'; data: unknown }
+    | { status: 'rejected'; error: unknown };
 
-//当前正在进行的Promise
-let currentPromise: Promise<any> | null = null;
+let state: State | undefined;
 
-//异步源头，转化同步代码===========主要解决这里========= // [!code warning]
-function asyncToSync() {
-    const targetRequestPromise = () => $fetch('example', { method: '[target]' }); //nuxt
-
-    if (cache.status === 'fulfilled') {
-        return cache.data;
+function readData(): unknown {
+    if (!state) {
+        const promise = fetch('/api/data')
+            .then((response) => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(
+                (data) => {
+                    state = { status: 'fulfilled', data };
+                },
+                (error) => {
+                    state = { status: 'rejected', error };
+                }
+            );
+        state = { status: 'pending', promise };
     }
 
-    if (cache.status === 'pending') {
-        //当前没有promise在进行
-        if (!currentPromise) {
-            currentPromise = targetRequestPromise()
-                .then((res) => {
-                    cache.status = 'fulfilled';
-                    cache.data = res.data;
-                    currentPromise = null;
-                })
-                .cache((error) => {
-                    cache.status = 'rejected';
-                    cache.data = err ?? new Error('Unknown error');
-                    currentPromise = null;
-                });
-        }
-
-        //已有promise，直接抛出错误，交给外层cache执行
-        throw currentPromise;
-    }
-
-    //请求失败了,下次请求失败后续都会抛出这个错误，除非重置cache。
-    // 注：由于这里是同步在这做请求重试会死循环
-    if (cache.status === 'rejected') {
-        throw cache.data;
-    }
+    if (state.status === 'pending') throw state.promise;
+    if (state.status === 'rejected') throw state.error;
+    return state.data;
 }
 
-function callSync() {
-    return asyncToSync();
-}
-
-function main() {
+function render() {
     try {
-        console.log('run main');
-        const data = callSync();
-    } catch (error) {
-        if (error instanceof Promise) {
-            error.finally?.(() => {
-                main();
-            });
-        } else {
-            //返回了不是promise错误对象，请求失败
-            //=========可以在这做请求重试===========
-            //if-else判断即可，但是注意重置缓存状态
-        }
+        console.log(readData());
+    } catch (value) {
+        if (value instanceof Promise) value.then(render, render);
+        else console.error(value);
     }
 }
+
+render();
 ```
 
 :::
@@ -146,15 +102,15 @@ function main() {
 ```vue [Qwe.vue]
 <template>
     <slot greet="hi hello" />
-    <slot reply="yes you too" name="named slot" />
+    <slot reply="yes you too" name="reply" />
 </template>
 ```
 
 ```vue [Base.vue]
 <template>
     <Qwe>
-        <template #eric>
-            <h3>这是来自 App 组件的具名插槽内容</h3>
+        <template #reply="slotProps">
+            <h3>具名插槽：{{ slotProps.reply }}</h3>
         </template>
         <template #default="slotProps">
             <div>这是默认内容{{ slotProps.greet }}</div>
@@ -165,21 +121,11 @@ function main() {
 
 :::
 
-::: info 通知
-**第一阶段**，App.vue渲染时会将上诉的`template #default`生成一个h函数，这个函数参数就是`slotProps.nihao`交给Qwe.vue
-
-**第二阶段**，Qwe.vue开始渲染，拿出`greet`参数进行传递，然后执行该h函数，生成dom节点
-
-**第三阶段**，生成DOM树，渲染内容
-:::
+父组件提供插槽内容，子组件渲染 `<slot>` 时传入插槽属性。上例中，默认插槽读取 `greet`，具名插槽 `reply` 读取 `reply`。
 
 ## router
 
-::: tip 提示
-Hash:带#不美观，部署简单，刷新能正确加载
-
-history模式，干净标准的url，直接访问子路由会404，需要配置try_files(刷新会报404)在nginx情况下
-:::
+Hash 模式使用 URL 中的 `#`，静态部署通常较简单。History 模式的 URL 更简洁，但直接访问子路由时服务器需要回退到应用入口，否则可能返回 404。
 
 vue-router做权限控制可以对路由中meta元信息进行类型拓展，这里可以自定义角色和权限。例如:
 
@@ -205,11 +151,9 @@ declare module 'vue-router' {
 
 ## env & proxy
 
-主要介绍vue中环境变量，以及使用的代理问题。
+Vite 按模式加载环境变量：`.env` 在所有模式下加载，`.env.development` 和 `.env.production` 分别用于对应模式；模式专属文件中的同名变量优先。也可以通过 `--mode` 指定其他模式。
 
-- .env全局默认环境变量，所有环境都会被加载，相同变量会被其他环境变量覆盖（也即如果.env和开发环境和生产环境只要有一个相同就会被覆盖掉，因为其首先加载）。
-- .env.development开发环境变量，仅仅在使用pnpm run dev或vite时加载
-- .env.production生成环境变量，仅打包代码pnpm run build时加载
+客户端代码只能直接访问配置前缀（默认 `VITE_`）的变量，这些值会进入客户端产物，不要存放密钥。
 
 ::: code-group
 
@@ -238,28 +182,21 @@ export default defineConfig({
 # vite打包后，proxy配置不会生效，需要在Nginx中配置/javaserver转发规则，
 # 代替vite中proxy使得请求进行转发。
 server {
-  # API 代理 - 不需要 CORS！
+  # 浏览器通过同源路径访问 API
   location /javaserver/ {
     proxy_pass http://127.0.0.1:7002/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    rewrite ^/javaserver/(.*)$ /$1 break;
    }
 }
 ```
 
 :::
 
-::: danger 危险
-代理的核心作用就是避免`CORS`问题，而不是解决`CORS`问题
+如果浏览器向同源地址发送请求，再由服务器转发到后端，浏览器看到的是同源请求，通常不需要对这条请求配置 CORS。若浏览器实际访问的是不同源的网关或 API，仍需由目标服务正确配置 CORS。
 
-因此当开启代理之后，就不需要再`Nginx`中启用`CORS`，因为这里`vite`作为了中转站点，因此这里是一个同源请求转发。
-
-因此实践中如果是网关的话，只需统一经过网关，然后网关转发即可，此时也是不需要`CORS`，和配置`vite`请求转发，然后nginx配置代理类似。
-:::
-
-反向代理就是代理服务器地址，充当中间商，隐藏真实的服务器地址，特别适合防范ddos攻击等。
+Vite 的开发代理只在开发服务器中生效；生产环境需要由 Web 服务器或网关配置转发。反向代理也可统一入口和隐藏源站，但不能单独防御 DDoS。
 
 ::: code-group-fold line-numbers
 
@@ -273,7 +210,7 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': {
-                target: 'your-example.ip', // 动态设置代理目标
+                target: 'http://127.0.0.1:7002',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, ''),
                 // 添加更多配置选项
@@ -284,7 +221,7 @@ export default defineConfig({
                     });
                     //代理请求发出前，一般记录请求日志/修改请求头
                     proxy.on('proxyReq', (proxyReq, req) => {
-                        console.log('📤 代理请求:', req.method, req.url, '→', proxyTarget);
+                        console.log('📤 代理请求:', req.method, req.url);
                     });
                     //收到响应后，一般记录响应日志/修改响应数据
                     proxy.on('proxyRes', (proxyRes, req) => {
@@ -302,13 +239,11 @@ export default defineConfig({
 
 ## 性能优化
 
-::: tip 提示
-格式优化、懒加载、CDN、代码压缩、请求合并（可以使用es6特性allSettled并发）、以及缓存策略、代码分割、Tree Shaking
-:::
+先通过性能指标定位瓶颈，再按需选择图片格式与尺寸、非关键资源懒加载、CDN、缓存、代码分割和 tree shaking。并发请求可以减少等待时间，但不会自动合并请求。
 
 ### 构建优化
 
-使用vite-plugin-inspect监控打包，开启代码压缩、css代码分割和关闭源码映射,以及删除console.log打印,和删除未使用变量、注释和混淆变量。
+使用 `vite-plugin-inspect` 检查插件转换过程；按需配置压缩、CSS 分割和 source map。删除日志或混淆代码前，应确认不会影响排障与运行行为。
 
 ::: code-group-fold line-numbers
 
@@ -328,7 +263,7 @@ export default defineConfig({
         })
     ],
     build: {
-        minify: 'terser', //默认
+        minify: 'terser', // 需要安装 terser
         sourcemap: false,
         cssCodeSplit: true, //css代码分离 // [!code warning]
         terserOptions: {
@@ -361,7 +296,7 @@ export default defineConfig({
 
 ### 图片压缩
 
-`vite-plugin-imagemin`vite插件为例（还是使用vite）
+以下以 `vite-plugin-imagemin` 为例，按图片类型调整压缩参数，并检查画质是否满足需求：
 
 ::: code-group-fold line-numbers
 
@@ -398,11 +333,11 @@ ViteImagemin({
 
 #### 缓存方式对比
 
-| 方式            | 存储位置   | 状态码               | 使用场景       | 说明                                              |
-| --------------- | ---------- | -------------------- | -------------- | ------------------------------------------------- |
-| **Storage API** | 浏览器本地 | -                    | 持久化数据     | 包括 localStorage（永久）、sessionStorage（会话） |
-| **强缓存**      | 内存/硬盘  | `200 (from cache)`   | 不变的静态资源 | 浏览器自动调度，不可自定义                        |
-| **协商缓存**    | 服务器验证 | `304 (Not Modified)` | 变化的动态资源 | 需要与服务器验证                                  |
+| 方式        | 存储位置                 | 状态码                    | 使用场景                 | 说明                                                   |
+| ----------- | ------------------------ | ------------------------- | ------------------------ | ------------------------------------------------------ |
+| Storage API | 浏览器本地               | -                         | 应用主动存取的数据       | `localStorage` 跨会话；`sessionStorage` 随页面会话结束 |
+| 强缓存      | 浏览器缓存               | 常见为 `200 (from cache)` | 可在一段时间内复用的资源 | 通过 `Cache-Control` 等响应头控制                      |
+| 协商缓存    | 浏览器缓存，向服务器验证 | 未变化时 `304`            | 需要确认是否更新的资源   | 可使用 ETag 或修改时间验证                             |
 
 #### 协商缓存策略
 
@@ -414,13 +349,11 @@ ViteImagemin({
 
 ##### ETag / If-None-Match
 
-- **适用于** - 动态内容、API 数据
-- **原理** - 基于内容哈希计算，变化即改变
-- **精确度** - 高（内容级别）
+- **适用于** - 需要验证版本的静态或动态资源
+- **原理** - 服务器提供资源版本标识；可以基于内容生成，也可以由其他版本信息生成
+- **精确度** - 取决于服务端如何生成标识
 
-::: tip 提示
-两种方式可配对使用，服务器会根据 `If-Modified-Since` 或 `If-None-Match` 判断资源是否变化
-:::
+两种验证方式可以配合；同时存在时，支持 ETag 的服务器通常优先处理 `If-None-Match`。
 
 ::: code-group-fold line-numbers
 
@@ -470,9 +403,7 @@ app.get('/api/data', (req, res, next) => {
 
 :::
 
-::: tip 提示
-Cache-Control中，public表示任何服务器都可以缓存，而private只能游览器缓存不包含代理服务器，当设置`Cache-Control: no-cache` 则表示**不用强缓存**，当`·`Cache-Control`与`Expires`同时存在时，游览器会以Cache-Control为准
-:::
+`Cache-Control: public` 允许共享缓存存储响应；`private` 限制共享缓存存储。`no-cache` 允许存储，但复用前必须验证；需要禁止存储时使用 `no-store`。`max-age` 与 `Expires` 同时存在时，`max-age` 优先。
 
 ::: code-group
 
@@ -495,11 +426,11 @@ app.get('/api/data', (req, res) => {
 
 ## Vite
 
-冷启动、按需加载模块、热更新、高效`Rollup`打包。
+Vite 在开发时按需提供模块并支持热更新，在生产时构建可部署的资源。构建工具和配置选项会随 Vite 版本变化，应以项目版本为准。
 
 ### 动态路由
 
-采用`import.meta.glob`方式，其是一个异步导入函数（懒加载函数），只有当路由真正被访问的时候，才会去加载对应组件文件。
+`import.meta.glob` 默认返回路径到异步导入函数的映射。把对应函数交给路由配置，就可以在访问路由时加载组件。
 
 #### 示例
 
@@ -589,9 +520,7 @@ app.get('/api/data', (req, res) => {
 
 通过递归函数遍历路由配置，将组件字符串转换为异步导入函数，实现动态加载。
 
-::: tip 提示
-**文件位置和名字需要约定**，保证 `components` 对象中的路径能正确对应到实际组件文件
-:::
+组件路径需要与 `components` 中的键保持一致，否则无法找到对应的导入函数。
 
 ##### 实现示例
 
@@ -674,80 +603,45 @@ declare global {
 export {};
 ```
 
-::: tip 提示
-这里其实也可以不用导入这个`.d.ts`，定义全局类型也是一样的，或者`import type`,然后该声明文件会变为局部声明文件，使用`export {}` 导出，变为全局声明文件也是一样可以的。
-:::
+在模块化的 `.d.ts` 文件中，可以通过 `declare global` 扩展全局类型；`export {}` 确保文件被视为模块。
 
 ### env tip
 
-在环境变量验证中，不能将
+环境变量需要分别考虑类型提示和运行时验证。Vite 提供 `BASE_URL`、`MODE`、`DEV`、`PROD` 和 `SSR` 等内置字段；应用变量可以通过扩展 `ImportMetaEnv` 提供类型提示，再使用验证工具检查实际值。
+
+如果需要在 Vite 启动时验证环境变量，可以在配置中使用 `loadEnv` 手动加载，再交给验证函数：
 
 ```ts
-interface ImportMetaEnv extends Record<ImportMetaEnvFallbackKey, any> {
-    BASE_URL: string;
-    MODE: string;
-    DEV: boolean;
-    PROD: boolean;
-    SSR: boolean;
-}
+// vite.config.ts：validateEnv 由应用自行实现
+import { defineConfig, loadEnv } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { validateEnv } from './env-validation';
+
+export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, process.cwd());
+    validateEnv(env);
+    return { plugins: [vue()] };
+});
 ```
 
-其中的BASE_URL，MODE，DEV，PROD，SSR属性移除掉组合一个新类型，例如`type newType = Omit<ImportMetaEnv,'BASE_URL',...>`这时ts会推断不出来全局拓展的环境变量，也就没有了类型安全。
-
-> [!IMPORTANT]
-> 解决方案就是**保留它**，在需要的验证的地方例如`zod`中scheme只针对特定的变量进行验证，
-> parse验证时直接将`import.meta.env`进行解构赋值即可
-
-> [!WARNING]
-> 如果想在vite启动时就对环境变量进行验证，使得验证不通过应用程序直接终止，那么就需要在`vite.config.ts`文件中在defineConfig进行验证，缺点就是要**手动加载环境变量**，vite不会自动处理，如下:
+可以为应用需要的环境变量维护共享类型，再分别用于客户端声明和配置文件。类型断言不会执行运行时验证，仍需对实际读取的值做校验。
 
 ```ts
-//vite.config.ts
-export default defineConfig(({mode})=>{
-   //手动加载环境变量,env-> Record<string,string>
-   const env = loadEnv(mode,process.cwd().'path-to-envfile')//.env,.env*
-
-   //validate env config
-   validateEnv(env)
-
-   return {
-      plugins:[
-         vue()
-      ]
-   }
-
-})
-```
-
-为保障类型安全需手动定义相关类型，但易出现重复定义情况（例如在 `env.d.ts` 中拓展 `ImportMeta` 全局类型时，可能与其他位置类型冲突）。
-
-::: tip 提示
-解决方案是将所需的 `envConfig` 直接定义为全局类型，再嵌入 `ImportMeta` 中，`vite.config.ts` 可直接使用，既避免重复定义，也解决了多位置维护类型的问题。
-:::
-
-::: tip
-上诉中这个`ImportMeta`是自定义的环境变量类型
-:::
-
-```ts
-//这是全局类型，这里是局部类型定义
+// 示例：在配置文件中描述需要读取的变量
 type RequiredEnv = {
     VITE_API_BASE_URL: string;
 };
 type ViteEnv = RequiredEnv & Record<string, string>;
 
-//类型安全，这是env.VITE_API_BASE_URL就会有类型提示了
+// 断言只提供类型提示，不会验证变量是否存在
 const env = loadEnv(mode, process.cwd(), '') as ViteEnv;
 ```
 
-这种手动没有vite自动加载BASE_URL，MODE，DEV，PROD，SSR属性，如果要对其进行验证就需要手动完成vite的这个功能。
+`loadEnv` 返回加载到的环境变量；`import.meta.env` 中的 Vite 内置字段不等同于这些文件变量。
 
 ## Uniapp
 
-在 uni-app 微信小程序中使用环境变量时，直接使用 `import.meta.env.VITE_XXX` 会返回 `undefined`。
-uni-app 小程序端使用自己的编译流程，Vite 默认不会自动将 `.env` 文件中的变量注入到小程序代码中。
-
-因此需要手动加载环境变量并通过`define`注入，同时还要替换整个env对象，然后就可以用`import.meta.env`访问了。
+uni-app 不同版本和目标平台的环境变量处理可能不同。如果小程序端无法读取预期变量，可以先检查构建模式与变量前缀；以下示例展示如何在配置中加载并显式注入所需值。注入到客户端的值不是秘密。
 
 ```ts
 import { defineConfig, loadEnv } from 'vite';

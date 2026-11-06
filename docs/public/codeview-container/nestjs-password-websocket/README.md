@@ -1,14 +1,17 @@
-# 鉴权和webSocket
+# HTTP 与 WebSocket 鉴权
 
-## 鉴权策略
+此示例分别展示 HTTP 的 Passport JWT 守卫，以及 Socket.IO 连接建立后的 JWT 校验。
 
-采用passport 策略进行快速验证，`jwt.guard.ts`负责执行`jwt.strategy.ts`，
-自定义一个`AuthHttpPublic`装饰器被guard进行守卫不守卫
+## HTTP 鉴权
 
-## webSocket
+`JwtGuard` 调用 `jwt.strategy.ts` 验证令牌。`@AuthHttpPublic()` 将路由标记为公开接口，守卫遇到该标记时放行；示例登录接口位于 `src/auth/auth.controller.ts`。
 
-根据webSocket进行鉴权，为了速率与鉴权的平衡，采用定时器心跳进行检测
+## WebSocket 鉴权
+
+`SocketGateway` 从握手信息中读取令牌，验证令牌和用户状态；验证通过后将用户信息放入 `socket.data.user`。连接期间每分钟重新检查，失败时断开连接；断开时清理定时器。
+
+可从 `src/socket/socket.gateway.ts` 查看连接与消息处理流程，`test-websocket-client.html` 是配套客户端。周期性检查有时间间隔，敏感操作仍需按业务要求检查权限；此示例用于理解流程，接入前应检查异常和连接生命周期处理。
 
 ## 自定义全局过滤器
 
-根据需要进行即可
+异常过滤器示例位于 `src/exception-filter`，可根据应用需要选择注册方式。
